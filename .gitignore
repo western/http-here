@@ -1,0 +1,7 @@
+
+
+/public/*
+!/public/favicon.ico
+
+/t/
+README.fiber.txt
