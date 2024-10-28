@@ -27,7 +27,11 @@ Also you can download any files inside current folder, just click on them
 
 
 ### 1.0.1
-- [x] first release
-
+first release
+- upload file up to 7 Gb
+- multiple upload to 20 files
+- make folder in current show path
+- show current folder
+- basic auth for one account
 
 
