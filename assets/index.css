@@ -1,0 +1,65 @@
+
+
+/* index.css */
+
+a.nodecor {
+    text-decoration: none;
+}
+ul.list-group {
+    padding: 0 12px;
+}
+
+li.breadcrumb-item {
+    font-size: 18px;
+
+}
+li.breadcrumb-item i{
+
+    margin-right: 10px;
+}
+
+li.list-group-item{
+    font-size: 18px;
+}
+li.list-group-item i{
+    margin-right: 10px;
+}
+
+
+
+
+div.list-group {
+    padding: 0 12px;
+}
+
+div.list-group a {
+    font-size: 18px;
+}
+
+div.list-group a i{
+    margin-right: 10px;
+}
+
+div.list-group a.file {
+    background-color: #efefef;
+}
+
+
+
+
+#progress {
+    display: none;
+    width: 95%;
+    margin:0 auto;
+}
+
+.blink_me {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
