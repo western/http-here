@@ -8,6 +8,8 @@ Also you can download any files inside current folder, just click on them
 
 ## Download and first run
 
+linux / amd64
+
 ```console
 # go to your home bin
 cd ~/bin
