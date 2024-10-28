@@ -1,6 +1,6 @@
-module greetings
+module httphere
 
-replace greetings => /home/andrew/Code/http-here
+
 
 go 1.22.5
 
