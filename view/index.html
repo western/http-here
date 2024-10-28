@@ -1,0 +1,96 @@
+
+
+            <br>
+            <div class="container">
+
+
+
+                <div class="row" style="padding:10px 0;">
+
+                    <div class="col">
+
+
+                        <div class="input-group mb-3">
+                            <input class="form-control" type="file" id="upload_file" multiple >
+
+                            <span class="input-group-text blink_me visually-hidden" id="signal">
+                                <i class="bi bi-upload " ></i>
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="New folder name" aria-label="New folder name" id="make_folder_input" >
+                            <button class="btn btn-outline-secondary" type="button" id="make_folder_button">Do</button>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="row" style="padding:0 0;">
+
+                    <progress id="progress" max="100" value="0" >0</progress>
+
+                </div>
+
+
+                <div class="row" style="padding:10px 0;">
+
+
+
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
+
+                            {{.Breadcrumb}}
+                        </ol>
+                    </nav>
+
+                </div>
+
+
+                <div class="row" style="padding:10px 0 100px 0;">
+                <div class="list-group">
+
+
+
+
+
+
+
+
+
+                    {{.Filelist}}
+
+
+
+
+
+
+
+                </div>
+                </div>
+
+            </div>
+
+
+
+
+
+
+
+
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+
+
+            <script src="/__assets/assets/index.js" crossorigin="anonymous"></script>
+
+
+            </body>
+            </html>
