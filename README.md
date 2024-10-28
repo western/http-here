@@ -1,6 +1,6 @@
 # http-here
 
-Simple index folder via http with upload
+Share folder via http with upload
 
 Multiple files upload to current showed folder
 
@@ -8,6 +8,22 @@ Also you can download any files inside current folder, just click on them
 
 ## Download and first run
 
+```console
+http-here .
+```
+or
+```console
+http-here --port 7999 /path/to/folder
+```
+
+## Basic auth
+
+> [!IMPORTANT]  
+> It is recommend for work on public network interfaces
+
+```console
+http-here --user loginXX --password MugMf7AHs .
+```
 
 
 ## Desktop window
@@ -18,7 +34,12 @@ Also you can download any files inside current folder, just click on them
 
 ## Notes
 
-- Be careful, if you start this App on public network interface, anybody can work with it
+> [!CAUTION]
+> Be careful, if you start this App on public network interface, anybody can work with it
+
+> [!CAUTION]  
+> Always run this app only under unprivileged common user
+
 - If you run application under some User, this user should be have privileges to write current folder
 
 
