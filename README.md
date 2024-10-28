@@ -9,7 +9,18 @@ Also you can download any files inside current folder, just click on them
 ## Download and first run
 
 ```console
-http-here .
+# go to your home bin
+cd ~/bin
+
+# download and unpack
+wget https://github.com/western/http-here/releases/download/v1.0.0/http-here.gz
+gzip -d http-here.gz
+
+chmod +x http-here
+
+cd ~
+
+http-here /tmp
 ```
 or
 ```console
