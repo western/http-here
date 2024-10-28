@@ -58,7 +58,7 @@ http-here --user loginXX --password MugMf7AHs .
 
 
 
-### 1.0.1
+### 1.0.0
 first release
 - upload file up to 7 Gb
 - multiple upload to 20 files
