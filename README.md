@@ -6,7 +6,12 @@ Multiple files upload to current showed folder
 
 Also you can download any files inside current folder, just click on them
 
-## Download and first run
+## Install from github
+```console
+go install github.com/western/http-here
+```
+
+## Manual download
 
 linux / amd64
 
@@ -19,9 +24,10 @@ wget https://github.com/western/http-here/releases/download/v1.0.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
+```
 
-cd ~
-
+## Run
+```console
 http-here /tmp
 ```
 or
