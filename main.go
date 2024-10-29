@@ -146,7 +146,7 @@ func main() {
 		}))
 		
 		fmt.Println("")
-		fmt.Println("  Basic auth set: " + cian(*arg_user) + "  " + cian(*arg_password))
+		fmt.Println("  Basic auth set: " + cian(*arg_user) + " " + cian(*arg_password))
 	}
 
 	app.Use("/__assets", filesystem.New(filesystem.Config{

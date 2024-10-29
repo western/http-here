@@ -27,11 +27,16 @@ func GetAll(c *fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
+		/*
 		log.Fatal(err)
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"err":  err,
 		}, "application/json")
+		*/
+		log.Println(err)
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
+		return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
 	//fmt.Println("c_path1="+c_path)
@@ -62,7 +67,10 @@ func GetAll(c *fiber.Ctx) error {
 
 			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
 			if err != nil {
-				log.Fatal(err)
+				//log.Fatal(err)
+				log.Println(err)
+				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
+				return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
 			}
 
 			if len(entries) == 0 {
