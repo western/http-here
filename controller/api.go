@@ -6,6 +6,7 @@ import (
 
 	"path/filepath"
 	"strings"
+	"regexp"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -45,11 +46,13 @@ func PostUpload(c *fiber.Ctx) error {
 			filepath.Base(file.Filename),
 			filepath.Ext(file.Filename),
 		)
-
-		//now := time.Now()
-		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", now.Unix()) + fileExt
-		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + fileExt
-		filename := strings.ReplaceAll(originalFileName, " ", "-") + fileExt
+        
+		originalFileName = strings.ReplaceAll(originalFileName, "/", "")
+		re := regexp.MustCompile("\\s+")
+	    originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
+		
+		
+		filename := originalFileName + fileExt
 		filename = CleanDirtyPath(filename)
 
 		//fmt.Println("filename=" + filename)
@@ -96,6 +99,11 @@ func PostFolder(c *fiber.Ctx) error {
 	//fmt.Println("u_path clean=" + u_path)
 
 	name := c.FormValue("name")
+	
+	name = strings.ReplaceAll(name, "/", "")
+	re := regexp.MustCompile("\\s+")
+	name = re.ReplaceAllLiteralString(name, " ")
+	
 	name = CleanDirtyPath(name)
 
 	//fmt.Println("name= " + name)
