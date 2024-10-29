@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"httphere/controller"
+	"github.com/western/http-here/controller"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"

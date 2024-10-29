@@ -1,4 +1,4 @@
-module httphere
+module github.com/western/http-here
 
 
 
