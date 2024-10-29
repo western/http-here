@@ -57,6 +57,17 @@ func PostUpload(c *fiber.Ctx) error {
 
 		//fmt.Println("filename=" + filename)
 		//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
+		
+		
+		
+		if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, filename)); err == nil {
+
+            if !fileInfo.IsDir() {
+        		LogPrefix(c, "200", "'"+filepath.Join(arg_fold, u_path, filename) + "' already exists. It will be rewrite.")
+            }
+    	}
+		
+		
 
 		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
 		if err != nil {
@@ -67,7 +78,7 @@ func PostUpload(c *fiber.Ctx) error {
 		}
 		defer out.Close()
 
-		LogPrefix(c, "200", "Save "+filepath.Join(arg_fold, u_path, filename))
+		LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
 
 		readerFile, _ := file.Open()
 		_, err = io.Copy(out, readerFile)
