@@ -67,6 +67,9 @@ http-here --user loginXX --password MugMf7AHs .
 ### backlog
 - [ ] --upload-disable and --folder-make-disable cmd keys
 
+### 1.0.4
+- add clear values and check exists
+
 ### 1.0.3
 - [x] clear all income variables
 - [x] rewrite log info
