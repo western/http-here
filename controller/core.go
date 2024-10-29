@@ -24,6 +24,11 @@ func OptionsAll(c *fiber.Ctx) error {
 func GetAll(c *fiber.Ctx) error {
 
 	arg_fold := os.Getenv("arg_fold")
+	arg_upload_disable := os.Getenv("arg_upload_disable")
+	arg_folder_make_disable := os.Getenv("arg_folder_make_disable")
+	
+	//log.Println("arg_upload_disable="+arg_upload_disable)
+	//log.Println("arg_folder_make_disable="+arg_folder_make_disable)
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -97,11 +102,17 @@ func GetAll(c *fiber.Ctx) error {
 			}
 
 			return c.Render("view/index", fiber.Map{
+				
 				"Breadcrumb":          template.HTML(breadcrumb),
 				"Filelist":            template.HTML(folderlist + filelist),
+				
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,
 				"fieldSize_max_human": "7 Gb",
+				
+				"arg_upload_disable": arg_upload_disable ,
+				"arg_folder_make_disable": arg_folder_make_disable ,
+				
 			}, "view/layout")
 
 		} else {

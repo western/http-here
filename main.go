@@ -37,7 +37,17 @@ func main() {
 	arg_user := flag.String("user", "", "login for user basic auth")
 	arg_password := flag.String("password", "", "password for user basic auth")
 	arg_help := flag.Bool("help", false, "show help")
+	arg_upload_disable := flag.Bool("upload-disable", false, "")
+	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "")
+	
 	flag.Parse()
+	
+	if *arg_upload_disable {
+	    os.Setenv("arg_upload_disable", "1")
+    }
+	if *arg_folder_make_disable {
+	    os.Setenv("arg_folder_make_disable", "1" )
+	}
 
 	if *arg_help {
 
@@ -55,8 +65,8 @@ func main() {
 			``,
 			//`     --basic       Set basic auth and generate several accounts every time.`,
 			``,
-			//`     --upload-disable`,
-			//`     --folder-make-disable`,
+			`     --upload-disable`,
+			`     --folder-make-disable`,
 			``,
 			//`     --tls`,
 		}
@@ -121,6 +131,8 @@ func main() {
 	
 	
 	
+	
+	
 	cian := color.New(color.FgCyan).SprintFunc()
 
 
@@ -158,10 +170,21 @@ func main() {
 	app.Options("/*", controller.OptionsAll)
 	app.Get("/*", controller.GetAll)
 
-	app.Post("/api/upload", controller.PostUpload)
-	app.Post("/api/folder", controller.PostFolder)
+    if !*arg_upload_disable {
+	    app.Post("/api/upload", controller.PostUpload)
+    }
 	
+	if !*arg_folder_make_disable {
+	    app.Post("/api/folder", controller.PostFolder)
+    }
 	
+	app.Use(func(c *fiber.Ctx) error {
+        
+        //fmt.Println(c.Path())
+        controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
+        
+        return c.Status(fiber.StatusNotFound).SendString("Not found!")
+    })
 	
 	
 	
