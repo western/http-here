@@ -66,6 +66,7 @@ http-here --user loginXX --password MugMf7AHs .
 
 ### backlog
 - [ ] --upload-disable and --folder-make-disable cmd keys
+- [ ] make img thumbnail storage 
 
 ### 1.0.4
 - add clear values and check exists
