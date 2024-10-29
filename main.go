@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-
 	"httphere/controller"
 
 	"github.com/gofiber/fiber/v2"
@@ -38,8 +37,6 @@ func main() {
 	arg_password := flag.String("password", "", "password for user basic auth")
 	arg_help := flag.Bool("help", false, "show help")
 	flag.Parse()
-
-
 
 	if *arg_help {
 
@@ -102,8 +99,6 @@ func main() {
 
 	app := fiber.New(config)
 
-
-
 	app.Use(cors.New(cors.Config{
 		//AllowOrigins: "*",
 		AllowCredentials: true,
@@ -114,8 +109,6 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
-
-
 
 	app.Use(logger.New(logger.Config{
 		Format:     "[${time}] [${ip}] ${status} ${method} ${path}  ${latency}\n",
@@ -133,19 +126,14 @@ func main() {
 
 				return false
 			},
-
 		}))
 	}
-
-
 
 	app.Use("/__assets", filesystem.New(filesystem.Config{
 		Root:       http.FS(embedDirStatic),
 		PathPrefix: "",
 		Browse:     true,
 	}))
-
-
 
 	app.Options("/*", controller.OptionsAll)
 	app.Get("/*", controller.GetAll)
@@ -170,7 +158,6 @@ func main() {
 		}
 		for _, a := range addrs {
 			switch v := a.(type) {
-
 
 			case *net.IPNet:
 				//fmt.Printf("%v : %s [%v/%v]\n", i.Name, v, v.IP, v.Mask)

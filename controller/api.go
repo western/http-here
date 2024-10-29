@@ -1,7 +1,6 @@
 package controller
 
 import (
-
 	_ "fmt"
 
 	"path/filepath"
@@ -9,10 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-
 	"os"
-
-
 
 	"io"
 	"log"
@@ -20,7 +16,6 @@ import (
 )
 
 func PostUpload(c *fiber.Ctx) error {
-
 
 	arg_fold := os.Getenv("arg_fold")
 
@@ -37,8 +32,6 @@ func PostUpload(c *fiber.Ctx) error {
 	u_path := filepath.Clean(u.Path)
 	//fmt.Println("u_path clean=" + u_path)
 
-
-
 	form, _ := c.MultipartForm()
 	files := form.File["fileBlob"]
 
@@ -46,13 +39,14 @@ func PostUpload(c *fiber.Ctx) error {
 		fileExt := filepath.Ext(file.Filename)
 		fileExt = strings.ToLower(fileExt)
 
-		originalFileName := strings.TrimSuffix(filepath.Base(file.Filename), filepath.Ext(file.Filename))
+		originalFileName := strings.TrimSuffix(
+			filepath.Base(file.Filename),
+			filepath.Ext(file.Filename),
+		)
 		//now := time.Now()
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", now.Unix()) + fileExt
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + fileExt
 		filename := strings.ReplaceAll(originalFileName, " ", "-") + fileExt
-
-
 
 		//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
 
@@ -76,7 +70,6 @@ func PostUpload(c *fiber.Ctx) error {
 
 func PostFolder(c *fiber.Ctx) error {
 
-
 	arg_fold := os.Getenv("arg_fold")
 
 	referer := c.Get("Referer")
@@ -88,11 +81,8 @@ func PostFolder(c *fiber.Ctx) error {
 		panic(err)
 	}
 
-
-
 	u_path := filepath.Clean(u.Path)
 	//fmt.Println("u_path clean=" + u_path)
-
 
 	name := c.FormValue("name")
 

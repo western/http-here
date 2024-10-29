@@ -23,12 +23,7 @@ func OptionsAll(c *fiber.Ctx) error {
 
 func GetAll(c *fiber.Ctx) error {
 
-
-
-
 	arg_fold := os.Getenv("arg_fold")
-
-
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -39,19 +34,11 @@ func GetAll(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-
 	c_path = filepath.Clean(c_path)
-
-
-
-
-
 
 	if fileInfo, err := os.Stat(arg_fold + c_path); err == nil {
 
-
 		if fileInfo.IsDir() {
-
 
 			breadcrumb := ""
 			folderlist := ""
@@ -72,14 +59,11 @@ func GetAll(c *fiber.Ctx) error {
 				log.Fatal(err)
 			}
 
-
-
 			if len(entries) == 0 {
 				filelist = "Empty folder"
 			}
 
 			for _, e := range entries {
-
 
 				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
@@ -108,12 +92,10 @@ func GetAll(c *fiber.Ctx) error {
 
 		} else {
 
-
 			return c.SendFile(arg_fold+c_path, false)
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
-
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -121,6 +103,5 @@ func GetAll(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
-
 
 }
