@@ -63,7 +63,7 @@ func main() {
 		fmt.Println(strings.Join(inf[:], "\n"))
 		return
 	}
-    
+
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -86,9 +86,9 @@ func main() {
 		fmt.Println(arg_fold + " is not exist")
 		return
 	}
-	
+
 	if strings.HasPrefix(arg_fold, "/etc") {
-	    fmt.Println("You can not serve /etc folder")
+		fmt.Println("You can not serve /etc folder")
 		return
 	}
 
@@ -118,11 +118,11 @@ func main() {
 		ExposeHeaders: "*",
 	}))
 
-    /*
-	app.Use(logger.New(logger.Config{
-		Format:     "[${time}] [${ip}] ${status} ${method} ${path}  ${latency}\n",
-		TimeFormat: "2006-01-02 15:04:05",
-	}))
+	/*
+		app.Use(logger.New(logger.Config{
+			Format:     "[${time}] [${ip}] ${status} ${method} ${path}  ${latency}\n",
+			TimeFormat: "2006-01-02 15:04:05",
+		}))
 	*/
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
@@ -137,22 +137,19 @@ func main() {
 				return false
 			},
 			Unauthorized: func(c *fiber.Ctx) error {
-                
-                controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
-                
-                //return c.SendFile("./unauthorized.html")
-                c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
-                return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{
-			       
-		        }, "view/layout")
-                
-                
-                //response.headers["WWW-Authenticate"] = "Basic realm=notes_api"
-                //c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
-                //return c.Status(fiber.StatusUnauthorized).SendString("Welcome 👋")
-            },
+
+				controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+
+				//return c.SendFile("./unauthorized.html")
+				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
+
+				//response.headers["WWW-Authenticate"] = "Basic realm=notes_api"
+				//c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+				//return c.Status(fiber.StatusUnauthorized).SendString("Welcome 👋")
+			},
 			//ContextUsername: "_user",
-            //ContextPassword: "_pass",
+			//ContextPassword: "_pass",
 		}))
 	}
 
@@ -204,7 +201,3 @@ func main() {
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
 }
-
-
-
-

@@ -1,8 +1,8 @@
 package controller
 
 import (
-	_ "fmt"
 	_ "errors"
+	_ "fmt"
 
 	"path/filepath"
 	"strings"
@@ -45,25 +45,25 @@ func PostUpload(c *fiber.Ctx) error {
 			filepath.Base(file.Filename),
 			filepath.Ext(file.Filename),
 		)
-		
+
 		//now := time.Now()
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", now.Unix()) + fileExt
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + fileExt
 		filename := strings.ReplaceAll(originalFileName, " ", "-") + fileExt
 		filename = CleanDirtyPath(filename)
 
-	    //fmt.Println("filename=" + filename)
-	    //fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
+		//fmt.Println("filename=" + filename)
+		//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
 
 		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
 		if err != nil {
 			//LogPrefix(c, "500", fmt.Errorf("%w", err))
 			//LogPrefix(c, "500", errors.Unwrap(err))
-			
+
 			log.Fatal(err)
 		}
 		defer out.Close()
-		
+
 		LogPrefix(c, "200", "Save "+filepath.Join(arg_fold, u_path, filename))
 
 		readerFile, _ := file.Open()
@@ -105,14 +105,10 @@ func PostFolder(c *fiber.Ctx) error {
 		//LogPrefix(c, "500", errors.Unwrap(err))
 		log.Fatal(err)
 	}
-	
+
 	LogPrefix(c, "200", "Mkdir "+filepath.Join(arg_fold, u_path, name))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
 }
-
-
-
-
