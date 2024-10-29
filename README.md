@@ -20,7 +20,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.0.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.0.3/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
