@@ -108,13 +108,30 @@ func PostFolder(c *fiber.Ctx) error {
 
 	//fmt.Println("name= " + name)
 	//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, name))
+	
+	
+	
+	
+	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
+
+        if fileInfo.IsDir() {
+    		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name) + "' already exists")
+    		return c.JSON(fiber.Map{
+    		    "code": 500,
+    		    "msg": filepath.Join( u_path, name) + " already exists",
+    	    }, "application/json")
+        }
+	}
+	
+	
+	
 
 	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
 		//LogPrefix(c, "500", errors.Unwrap(err))
 		log.Fatal(err)
 	}
 
-	LogPrefix(c, "200", "Mkdir "+filepath.Join(arg_fold, u_path, name))
+	LogPrefix(c, "200", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,
