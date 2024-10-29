@@ -42,7 +42,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.0.3`,
+			`v1.0.4`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -117,6 +117,8 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
+
+
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
 
