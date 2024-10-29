@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+	"math"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/fatih/color"
@@ -33,7 +34,7 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
     
 	pref := ""
 
-	pref += "[" + green(time.Now().UTC().Format("2006-01-02 15:04:05")) + "] "
+	pref += "[" + green(time.Now().Format("2006-01-02 15:04:05")) + "] "
 
 	pref += "[" + green(c.IP()) + "] "
 
@@ -69,3 +70,16 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
     
 	
 }
+
+
+func prettyByteSize(b int64) string {
+	bf := float64(b)
+	for _, unit := range []string{"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"} {
+		if math.Abs(bf) < 1024.0 {
+			return fmt.Sprintf("%3.1f%sB", bf, unit)
+		}
+		bf /= 1024.0
+	}
+	return fmt.Sprintf("%.1fYiB", bf)
+}
+

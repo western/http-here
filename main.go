@@ -98,10 +98,11 @@ func main() {
 		return
 	}
 
+    /*
 	if strings.HasPrefix(arg_fold, "/etc") {
 		fmt.Println("You can not serve /etc folder")
 		return
-	}
+	}*/
 
 	os.Setenv("arg_fold", arg_fold)
 

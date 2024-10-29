@@ -85,15 +85,42 @@ func GetAll(c *fiber.Ctx) error {
 			for _, e := range entries {
 
 				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
-
+                    
+                    modtime := fileInfo2.ModTime()
+                    modtime_human := modtime.Format("2006-01-02 15:04:05")
+                    
+                    size := fileInfo2.Size()
+                    size_human := prettyByteSize(size)
+                    
+                    
 					if fileInfo2.IsDir() {
 						folderlist += `
-                            <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold"><i class="bi bi-folder"></i> ` + e.Name() + `</a>
+                            
+                            <!--a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold"><i class="bi bi-folder"></i> ` + e.Name() + `</a-->
+                            
+                            <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1"><i class="bi bi-folder"></i> ` + e.Name() + `</h5>
+                                    <small class="text-muted">` + size_human + ` </small>
+                                </div>
+                                <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
+                                <small class="text-muted">` + modtime_human + `</small>
+                            </a>
 
                         `
 					} else {
 						filelist += `
-                            <a  href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</a>
+                            
+                            <!--a  href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</a-->
+                            
+                            <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</h6>
+                                    <small class="text-muted">` + size_human + ` </small>
+                                </div>
+                                <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
+                                <small class="text-muted">` + modtime_human + `</small>
+                            </a>
 
                         `
 					}
