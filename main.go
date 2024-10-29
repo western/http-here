@@ -44,7 +44,7 @@ func main() {
 			`usage: http-here [options] [path]`,
 			``,
 			`options:`,
-			`     --port        Port to use. [${config.defaultPort}]`,
+			`     --port        Port to use. [8000]`,
 			``,
 			`     --user        User for basic authorization.`,
 			`     --password    Password for basic authorization.`,
