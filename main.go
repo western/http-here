@@ -136,6 +136,21 @@ func main() {
 
 				return false
 			},
+			Unauthorized: func(c *fiber.Ctx) error {
+                
+                controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+                
+                //return c.SendFile("./unauthorized.html")
+                c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+                return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{
+			       
+		        }, "view/layout")
+                
+                
+                //response.headers["WWW-Authenticate"] = "Basic realm=notes_api"
+                //c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+                //return c.Status(fiber.StatusUnauthorized).SendString("Welcome 👋")
+            },
 			//ContextUsername: "_user",
             //ContextPassword: "_pass",
 		}))
