@@ -65,9 +65,11 @@ http-here --user loginXX --password MugMf7AHs .
 ## History
 
 ### backlog
-- [ ] clear all income variables
-- [ ] rewrite log info
 - [ ] --upload-disable and --folder-make-disable cmd keys
+
+### 1.0.3
+- [x] clear all income variables
+- [x] rewrite log info
 
 ### 1.0.0
 first release
