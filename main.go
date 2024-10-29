@@ -8,11 +8,12 @@ import (
 	"log"
 	"net"
 	"net/http"
-
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	
+	"github.com/fatih/color"
 
 	"github.com/western/http-here/controller"
 
@@ -152,9 +153,18 @@ func main() {
 
 	app.Post("/api/upload", controller.PostUpload)
 	app.Post("/api/folder", controller.PostFolder)
+	
+	
+	
+	
+	
+	cian := color.New(color.FgCyan).SprintFunc()
+	
+	
+	
 
 	fmt.Println("")
-	fmt.Println("Server port: " + strconv.Itoa(*arg_port))
+	fmt.Println("  Server port: " + cian(strconv.Itoa(*arg_port)))
 
 	fmt.Println("")
 	ifaces, err := net.Interfaces()
@@ -176,7 +186,7 @@ func main() {
 				//fmt.Printf("%v \n", v.IP)
 				if v.IP.To4() != nil {
 					//fmt.Println( "yes, ipv4" )
-					fmt.Println("http://" + v.IP.String() + ":" + strconv.Itoa(*arg_port))
+					fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
 				}
 			}
 
@@ -184,7 +194,9 @@ func main() {
 	}
 	fmt.Println("")
 
-	fmt.Println("Serve folder: " + arg_fold)
+	fmt.Println("  Serve folder: " + cian(arg_fold))
+	fmt.Println("")
+	fmt.Println("  [ Control + C ] Break Server")
 	fmt.Println("")
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
