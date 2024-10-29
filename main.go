@@ -20,7 +20,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	_ "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -41,6 +41,9 @@ func main() {
 	if *arg_help {
 
 		inf := []string{
+			``,
+			`v1.0.3`,
+			``,
 			`usage: http-here [options] [path]`,
 			``,
 			`options:`,
@@ -60,7 +63,7 @@ func main() {
 		fmt.Println(strings.Join(inf[:], "\n"))
 		return
 	}
-
+    
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -81,6 +84,11 @@ func main() {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 		fmt.Println(arg_fold + " is not exist")
+		return
+	}
+	
+	if strings.HasPrefix(arg_fold, "/etc") {
+	    fmt.Println("You can not serve /etc folder")
 		return
 	}
 
@@ -110,10 +118,12 @@ func main() {
 		ExposeHeaders: "*",
 	}))
 
+    /*
 	app.Use(logger.New(logger.Config{
 		Format:     "[${time}] [${ip}] ${status} ${method} ${path}  ${latency}\n",
 		TimeFormat: "2006-01-02 15:04:05",
 	}))
+	*/
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
 
@@ -126,6 +136,8 @@ func main() {
 
 				return false
 			},
+			//ContextUsername: "_user",
+            //ContextPassword: "_pass",
 		}))
 	}
 
@@ -177,3 +189,7 @@ func main() {
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
 }
+
+
+
+

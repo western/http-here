@@ -2,13 +2,14 @@ package controller
 
 import (
 	"errors"
-
+    _ "fmt"
 	"html/template"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -34,12 +35,21 @@ func GetAll(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	c_path = filepath.Clean(c_path)
+    //fmt.Println("c_path1="+c_path)
+    c_path = CleanDirtyPath(c_path)
+	//c_path = filepath.Clean(c_path)
+	//fmt.Println("c_path2="+c_path)
+	//fmt.Println("join="+filepath.Join(arg_fold, c_path))
+	
+	
+	
 
-	if fileInfo, err := os.Stat(arg_fold + c_path); err == nil {
+	if fileInfo, err := os.Stat( filepath.Join(arg_fold, c_path) ); err == nil {
 
 		if fileInfo.IsDir() {
-
+            
+            LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
+            
 			breadcrumb := ""
 			folderlist := ""
 			filelist := ""
@@ -54,7 +64,7 @@ func GetAll(c *fiber.Ctx) error {
 				breadcrumb += `<li class="breadcrumb-item"><a class="nodecor" href="` + pt + `">` + el + `</a></li>`
 			}
 
-			entries, err := os.ReadDir(arg_fold + c_path)
+			entries, err := os.ReadDir( filepath.Join(arg_fold, c_path) )
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -91,12 +101,16 @@ func GetAll(c *fiber.Ctx) error {
 			}, "view/layout")
 
 		} else {
-
-			return c.SendFile(arg_fold+c_path, false)
+            
+            LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
+            
+			return c.SendFile( filepath.Join(arg_fold, c_path) , false)
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
-
+        
+        LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+        
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
 		}, "view/layout")
@@ -105,3 +119,7 @@ func GetAll(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
 
 }
+
+
+
+

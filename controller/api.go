@@ -2,6 +2,7 @@ package controller
 
 import (
 	_ "fmt"
+	_ "errors"
 
 	"path/filepath"
 	"strings"
@@ -29,7 +30,8 @@ func PostUpload(c *fiber.Ctx) error {
 	}
 	//fmt.Println("u.path= " + u.Path)
 
-	u_path := filepath.Clean(u.Path)
+	//u_path := filepath.Clean(u.Path)
+	u_path := CleanDirtyPath(u.Path)
 	//fmt.Println("u_path clean=" + u_path)
 
 	form, _ := c.MultipartForm()
@@ -43,18 +45,26 @@ func PostUpload(c *fiber.Ctx) error {
 			filepath.Base(file.Filename),
 			filepath.Ext(file.Filename),
 		)
+		
 		//now := time.Now()
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", now.Unix()) + fileExt
 		//filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + fileExt
 		filename := strings.ReplaceAll(originalFileName, " ", "-") + fileExt
+		filename = CleanDirtyPath(filename)
 
-		//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
+	    //fmt.Println("filename=" + filename)
+	    //fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, filename))
 
 		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
 		if err != nil {
+			//LogPrefix(c, "500", fmt.Errorf("%w", err))
+			//LogPrefix(c, "500", errors.Unwrap(err))
+			
 			log.Fatal(err)
 		}
 		defer out.Close()
+		
+		LogPrefix(c, "200", "Save "+filepath.Join(arg_fold, u_path, filename))
 
 		readerFile, _ := file.Open()
 		_, err = io.Copy(out, readerFile)
@@ -81,19 +91,28 @@ func PostFolder(c *fiber.Ctx) error {
 		panic(err)
 	}
 
-	u_path := filepath.Clean(u.Path)
+	//u_path := filepath.Clean(u.Path)
+	u_path := CleanDirtyPath(u.Path)
 	//fmt.Println("u_path clean=" + u_path)
 
 	name := c.FormValue("name")
+	name = CleanDirtyPath(name)
 
 	//fmt.Println("name= " + name)
 	//fmt.Println("filepath.Join=" + filepath.Join(arg_fold, u_path, name))
 
 	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
+		//LogPrefix(c, "500", errors.Unwrap(err))
 		log.Fatal(err)
 	}
+	
+	LogPrefix(c, "200", "Mkdir "+filepath.Join(arg_fold, u_path, name))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
 }
+
+
+
+
