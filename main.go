@@ -118,6 +118,10 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
+	
+	
+	
+	cian := color.New(color.FgCyan).SprintFunc()
 
 
 
@@ -140,6 +144,9 @@ func main() {
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
 			},
 		}))
+		
+		fmt.Println("")
+		fmt.Println("  Basic auth set: " + cian(*arg_user) + "  " + cian(*arg_password))
 	}
 
 	app.Use("/__assets", filesystem.New(filesystem.Config{
@@ -158,7 +165,7 @@ func main() {
 	
 	
 	
-	cian := color.New(color.FgCyan).SprintFunc()
+	
 	
 	
 	
