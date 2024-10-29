@@ -36,8 +36,8 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 
 	if len(_user) > 0 {
 		pref += "[" + _user + "] "
-	}else{
-	    pref += "[] "
+	} else {
+		pref += "[] "
 	}
 
 	pref += "[" + status + "] "

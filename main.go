@@ -118,8 +118,6 @@ func main() {
 		ExposeHeaders: "*",
 	}))
 
-
-
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
 
 		app.Use(basicauth.New(basicauth.Config{
