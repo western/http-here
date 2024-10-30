@@ -39,6 +39,7 @@ func main() {
 	arg_help := flag.Bool("help", false, "show help")
 	arg_upload_disable := flag.Bool("upload-disable", false, "")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "")
+	arg_index_disable := flag.Bool("index-disable", false, "")
 
 	flag.Parse()
 
@@ -48,6 +49,7 @@ func main() {
 	if *arg_folder_make_disable {
 		os.Setenv("arg_folder_make_disable", "1")
 	}
+	
 
 	if *arg_help {
 
@@ -58,15 +60,16 @@ func main() {
 			`usage: http-here [options] [path]`,
 			``,
 			`options:`,
-			`     --port        Port to use. [8000]`,
+			`     --port                    Port to use [8000]`,
 			``,
-			`     --user        User for basic authorization.`,
-			`     --password    Password for basic authorization.`,
+			`     --user                    User for basic authorization.`,
+			`     --password                Password for basic authorization.`,
 			``,
 			//`     --basic       Set basic auth and generate several accounts every time.`,
 			``,
-			`     --upload-disable`,
-			`     --folder-make-disable`,
+			`     --upload-disable          Disable upload API and form controller.`,
+			`     --folder-make-disable     Disable make folder API and form controller.`,
+			`     --index-disable           Disable current folder read.`,
 			``,
 			//`     --tls`,
 		}
@@ -163,7 +166,10 @@ func main() {
 	}))
 
 	app.Options("/*", controller.OptionsAll)
-	app.Get("/*", controller.GetAll)
+	
+	if !*arg_index_disable {
+	    app.Get("/*", controller.GetAll)
+    }
 
 	if !*arg_upload_disable {
 		app.Post("/api/upload", controller.PostUpload)
@@ -178,7 +184,7 @@ func main() {
 		//fmt.Println(c.Path())
 		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
 
-		return c.Status(fiber.StatusNotFound).SendString("Not found!")
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
 	})
 
 	fmt.Println("")

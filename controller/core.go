@@ -21,6 +21,9 @@ func OptionsAll(c *fiber.Ctx) error {
 	}, "application/json")
 }
 
+
+
+
 func GetAll(c *fiber.Ctx) error {
 
 	arg_fold := os.Getenv("arg_fold")
