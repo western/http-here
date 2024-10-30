@@ -33,13 +33,16 @@ var embedDirStatic embed.FS
 
 func main() {
 
-	arg_port := flag.Int("port", 8000, "change default listen port")
-	arg_user := flag.String("user", "", "login for user basic auth")
-	arg_password := flag.String("password", "", "password for user basic auth")
-	arg_help := flag.Bool("help", false, "show help")
-	arg_upload_disable := flag.Bool("upload-disable", false, "")
-	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "")
-	arg_index_disable := flag.Bool("index-disable", false, "")
+	arg_port := flag.Int("port", 8000, "Change default listen port")
+	
+	arg_user := flag.String("user", "", "Login for user basic auth")
+	arg_password := flag.String("password", "", "Password for user basic auth")
+	
+	arg_help := flag.Bool("help", false, "Show help")
+	
+	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
+	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
+	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	flag.Parse()
 
@@ -54,7 +57,7 @@ func main() {
 			`options:`,
 			`     --port                    Port to use [8000]`,
 			``,
-			`     --user                    User for basic authorization.`,
+			`     --user                    Login for basic authorization.`,
 			`     --password                Password for basic authorization.`,
 			``,
 			//`     --basic       Set basic auth and generate several accounts every time.`,
@@ -181,7 +184,7 @@ func main() {
 	app.Use("/__assets", filesystem.New(filesystem.Config{
 		Root:       http.FS(embedDirStatic),
 		PathPrefix: "",
-		Browse:     true,
+		Browse:     false,
 	}))
 
 	app.Options("/*", controller.OptionsAll)
