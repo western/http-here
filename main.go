@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	
+
 	"github.com/fatih/color"
 
 	"github.com/western/http-here/controller"
@@ -39,14 +39,14 @@ func main() {
 	arg_help := flag.Bool("help", false, "show help")
 	arg_upload_disable := flag.Bool("upload-disable", false, "")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "")
-	
+
 	flag.Parse()
-	
+
 	if *arg_upload_disable {
-	    os.Setenv("arg_upload_disable", "1")
-    }
+		os.Setenv("arg_upload_disable", "1")
+	}
 	if *arg_folder_make_disable {
-	    os.Setenv("arg_folder_make_disable", "1" )
+		os.Setenv("arg_folder_make_disable", "1")
 	}
 
 	if *arg_help {
@@ -98,11 +98,11 @@ func main() {
 		return
 	}
 
-    /*
-	if strings.HasPrefix(arg_fold, "/etc") {
-		fmt.Println("You can not serve /etc folder")
-		return
-	}*/
+	/*
+		if strings.HasPrefix(arg_fold, "/etc") {
+			fmt.Println("You can not serve /etc folder")
+			return
+		}*/
 
 	os.Setenv("arg_fold", arg_fold)
 
@@ -129,14 +129,8 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
-	
-	
-	
-	
-	
+
 	cian := color.New(color.FgCyan).SprintFunc()
-
-
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
 
@@ -157,7 +151,7 @@ func main() {
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
 			},
 		}))
-		
+
 		fmt.Println("")
 		fmt.Println("  Basic auth set: " + cian(*arg_user) + " " + cian(*arg_password))
 	}
@@ -171,28 +165,21 @@ func main() {
 	app.Options("/*", controller.OptionsAll)
 	app.Get("/*", controller.GetAll)
 
-    if !*arg_upload_disable {
-	    app.Post("/api/upload", controller.PostUpload)
-    }
-	
+	if !*arg_upload_disable {
+		app.Post("/api/upload", controller.PostUpload)
+	}
+
 	if !*arg_folder_make_disable {
-	    app.Post("/api/folder", controller.PostFolder)
-    }
-	
+		app.Post("/api/folder", controller.PostFolder)
+	}
+
 	app.Use(func(c *fiber.Ctx) error {
-        
-        //fmt.Println(c.Path())
-        controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
-        
-        return c.Status(fiber.StatusNotFound).SendString("Not found!")
-    })
-	
-	
-	
-	
-	
-	
-	
+
+		//fmt.Println(c.Path())
+		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
+
+		return c.Status(fiber.StatusNotFound).SendString("Not found!")
+	})
 
 	fmt.Println("")
 	fmt.Println("  Server port: " + cian(strconv.Itoa(*arg_port)))
@@ -227,7 +214,7 @@ func main() {
 
 	fmt.Println("  Serve folder: " + cian(arg_fold))
 	fmt.Println("")
-	fmt.Println(cian("  [ Control + C ] ")+"Break Server")
+	fmt.Println(cian("  [ Control + C ] ") + "Break Server")
 	fmt.Println("")
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))

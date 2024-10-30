@@ -26,18 +26,18 @@ func GetAll(c *fiber.Ctx) error {
 	arg_fold := os.Getenv("arg_fold")
 	arg_upload_disable := os.Getenv("arg_upload_disable")
 	arg_folder_make_disable := os.Getenv("arg_folder_make_disable")
-	
+
 	//log.Println("arg_upload_disable="+arg_upload_disable)
 	//log.Println("arg_folder_make_disable="+arg_folder_make_disable)
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 		/*
-		log.Fatal(err)
-		return c.JSON(fiber.Map{
-			"code": 500,
-			"err":  err,
-		}, "application/json")
+			log.Fatal(err)
+			return c.JSON(fiber.Map{
+				"code": 500,
+				"err":  err,
+			}, "application/json")
 		*/
 		log.Println(err)
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
@@ -85,14 +85,13 @@ func GetAll(c *fiber.Ctx) error {
 			for _, e := range entries {
 
 				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
-                    
-                    modtime := fileInfo2.ModTime()
-                    modtime_human := modtime.Format("2006-01-02 15:04:05")
-                    
-                    size := fileInfo2.Size()
-                    size_human := prettyByteSize(size)
-                    
-                    
+
+					modtime := fileInfo2.ModTime()
+					modtime_human := modtime.Format("2006-01-02 15:04:05")
+
+					size := fileInfo2.Size()
+					size_human := prettyByteSize(size)
+
 					if fileInfo2.IsDir() {
 						folderlist += `
                             
@@ -129,17 +128,16 @@ func GetAll(c *fiber.Ctx) error {
 			}
 
 			return c.Render("view/index", fiber.Map{
-				
-				"Breadcrumb":          template.HTML(breadcrumb),
-				"Filelist":            template.HTML(folderlist + filelist),
-				
+
+				"Breadcrumb": template.HTML(breadcrumb),
+				"Filelist":   template.HTML(folderlist + filelist),
+
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,
 				"fieldSize_max_human": "7 Gb",
-				
-				"arg_upload_disable": arg_upload_disable ,
-				"arg_folder_make_disable": arg_folder_make_disable ,
-				
+
+				"arg_upload_disable":      arg_upload_disable,
+				"arg_folder_make_disable": arg_folder_make_disable,
 			}, "view/layout")
 
 		} else {

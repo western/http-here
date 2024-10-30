@@ -2,12 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"time"
-	"math"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/fatih/color"
+	"github.com/gofiber/fiber/v2"
 )
 
 func CleanDirtyPath(p string) string {
@@ -24,14 +24,12 @@ func CleanDirtyPath(p string) string {
 }
 
 func LogPrefix(c *fiber.Ctx, status string, addition string) {
-    
-    green := color.New(color.FgGreen).SprintFunc()
-    //magenta := color.New(color.FgMagenta).SprintFunc()
-    cian := color.New(color.FgCyan).SprintFunc()
-    yellow := color.New(color.FgYellow).SprintFunc()
-    
-    
-    
+
+	green := color.New(color.FgGreen).SprintFunc()
+	//magenta := color.New(color.FgMagenta).SprintFunc()
+	cian := color.New(color.FgCyan).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
+
 	pref := ""
 
 	pref += "[" + green(time.Now().Format("2006-01-02 15:04:05")) + "] "
@@ -45,32 +43,24 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 
 	if len(_user) > 0 {
 		pref += "[" + _user + "] "
-	}else{
-	    pref += "[] "
+	} else {
+		pref += "[] "
 	}
-	
-    if status != "200" {
-	    pref += "[" + yellow(status) + "] "
-	}else{
-	    pref += "[" + status + "] "
+
+	if status != "200" {
+		pref += "[" + yellow(status) + "] "
+	} else {
+		pref += "[" + status + "] "
 	}
 
 	pref += cian(addition)
 
 	fmt.Println(pref)
-    
-    
-    
-    
-    
-    
-    // [2024-10-29 18:22:46] [192.168.0.101] [loginT] [200] Dir /tmp/fold1/fold3
-    //fmt.Printf("[%s] [%s] [%s] [%s] %s\n", magenta("warning"), red("error"))
-    
-    
-	
-}
 
+	// [2024-10-29 18:22:46] [192.168.0.101] [loginT] [200] Dir /tmp/fold1/fold3
+	//fmt.Printf("[%s] [%s] [%s] [%s] %s\n", magenta("warning"), red("error"))
+
+}
 
 func prettyByteSize(b int64) string {
 	bf := float64(b)
@@ -82,4 +72,3 @@ func prettyByteSize(b int64) string {
 	}
 	return fmt.Sprintf("%.1fYiB", bf)
 }
-
