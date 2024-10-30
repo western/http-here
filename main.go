@@ -37,6 +37,7 @@ func main() {
 	
 	arg_user := flag.String("user", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
+	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
 	
 	arg_help := flag.Bool("help", false, "Show help")
 	
@@ -60,7 +61,7 @@ func main() {
 			`     --user                    Login for basic authorization.`,
 			`     --password                Password for basic authorization.`,
 			``,
-			//`     --basic       Set basic auth and generate several accounts every time.`,
+			`     --basic                   Set basic auth and generate several accounts every time.`,
 			``,
 			`     --upload-disable          Disable upload API and form controller.`,
 			`     --folder-make-disable     Disable make folder API and form controller.`,
@@ -156,6 +157,38 @@ func main() {
 	}))
 
 	cian := color.New(color.FgCyan).SprintFunc()
+	
+	if *arg_basic {
+	    
+	    fmt.Println("")
+		fmt.Println("  Basic auth set: ")
+	    
+	    var data = map[string]string{}
+	    
+	    for i := range 10 {
+	        
+	        login := "login" + strconv.Itoa(i) + controller.RandStringRunes(2)
+	        password := controller.RandStringRunes(16)
+	        
+	        data[login] = password
+	        
+	        fmt.Println("         "+login+"    "+password)
+	    }
+	    
+	    app.Use(basicauth.New(basicauth.Config{
+
+			Users: data,
+			
+			Unauthorized: func(c *fiber.Ctx) error {
+
+				controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+
+				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
+			},
+		}))
+	    
+	}
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
 
@@ -247,3 +280,9 @@ func main() {
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
 }
+
+
+
+
+
+

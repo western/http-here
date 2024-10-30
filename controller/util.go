@@ -5,6 +5,7 @@ import (
 	"math"
 	"regexp"
 	"time"
+	"math/rand"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
@@ -72,3 +73,19 @@ func prettyByteSize(b int64) string {
 	}
 	return fmt.Sprintf("%.1fYiB", bf)
 }
+
+
+func init() {
+    rand.Seed(time.Now().UnixNano())
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func RandStringRunes(n int) string {
+    b := make([]rune, n)
+    for i := range b {
+        b[i] = letterRunes[rand.Intn(len(letterRunes))]
+    }
+    return string(b)
+}
+
