@@ -19,7 +19,9 @@ import (
 
 func PostUpload(c *fiber.Ctx) error {
 
-	arg_fold := os.Getenv("arg_fold")
+	//arg_fold := os.Getenv("arg_fold")
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
 
 	referer := c.Get("Referer")
 	//fmt.Println("referer= " + referer)
@@ -89,7 +91,9 @@ func PostUpload(c *fiber.Ctx) error {
 
 func PostFolder(c *fiber.Ctx) error {
 
-	arg_fold := os.Getenv("arg_fold")
+	//arg_fold := os.Getenv("arg_fold")
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
 
 	referer := c.Get("Referer")
 	//fmt.Println("referer= " + referer)
