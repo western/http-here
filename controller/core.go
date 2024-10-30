@@ -23,8 +23,6 @@ func OptionsAll(c *fiber.Ctx) error {
 
 func GetAll(c *fiber.Ctx) error {
 
-	
-
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
@@ -44,15 +42,13 @@ func GetAll(c *fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
-		
+
 		log.Println(err)
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
 		return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
-	
 	c_path = CleanDirtyPath(c_path)
-	
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
 
@@ -76,7 +72,7 @@ func GetAll(c *fiber.Ctx) error {
 
 			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
 			if err != nil {
-				
+
 				log.Println(err)
 				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
 				return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")

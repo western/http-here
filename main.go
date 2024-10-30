@@ -35,17 +35,17 @@ var embedDirStatic embed.FS
 func main() {
 
 	arg_port := flag.Int("port", 8000, "Change default listen port")
-	
+
 	arg_user := flag.String("user", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
 	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
-	
+
 	arg_help := flag.Bool("help", false, "Show help")
-	
+
 	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
-	
+
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
 
 	flag.Parse()
@@ -100,8 +100,6 @@ func main() {
 		return
 	}
 
-	
-
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
@@ -117,15 +115,14 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		
 		c.Locals("arg_fold", arg_fold)
 
 		if *arg_upload_disable {
-			
+
 			c.Locals("arg_upload_disable", "1")
 		}
 		if *arg_folder_make_disable {
-			
+
 			c.Locals("arg_folder_make_disable", "1")
 		}
 
@@ -161,28 +158,28 @@ func main() {
 
 	cian := color.New(color.FgCyan).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
-	
+
 	if *arg_basic {
-	    
-	    fmt.Println("")
+
+		fmt.Println("")
 		fmt.Println("  Basic auth set: ")
-	    
-	    var data = map[string]string{}
-	    
-	    for i := range 10 {
-	        
-	        login := "login" + strconv.Itoa(i) + controller.RandStringRunes(2)
-	        password := controller.RandStringRunes(16)
-	        
-	        data[login] = password
-	        
-	        fmt.Println("         "+login+"    "+password)
-	    }
-	    
-	    app.Use(basicauth.New(basicauth.Config{
+
+		var data = map[string]string{}
+
+		for i := range 10 {
+
+			login := "login" + strconv.Itoa(i) + controller.RandStringRunes(2)
+			password := controller.RandStringRunes(16)
+
+			data[login] = password
+
+			fmt.Println("         " + login + "    " + password)
+		}
+
+		app.Use(basicauth.New(basicauth.Config{
 
 			Users: data,
-			
+
 			Unauthorized: func(c *fiber.Ctx) error {
 
 				controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
@@ -191,7 +188,7 @@ func main() {
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
 			},
 		}))
-	    
+
 	}
 
 	if len(*arg_user) > 0 && len(*arg_password) > 0 {
@@ -240,143 +237,112 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		
 		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
 	})
 
-	
-	
-
-	
-	
-	
-	
 	// /home/andrew/.httphere/easyrsa/pki/issued/server1.crt
 	// /home/andrew/.httphere/easyrsa/pki/private/server1.key
-	
+
 	homepath, err2 := os.UserHomeDir()
-    if err2 != nil {
-        log.Fatal( err2 )
-    }
-    //fmt.Println( homepath )
-	
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+	//fmt.Println( homepath )
+
 	crt_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
 	key_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
-	
+
 	crt_is_exists := false
-	
-	
+
 	if _, err3 := os.Stat(crt_filename); err3 == nil {
-	    crt_is_exists = true
+		crt_is_exists = true
 	}
-	
-	
+
 	if *arg_tls && crt_is_exists {
-	    
-	    fmt.Println("")
-	    fmt.Println("     Crt: " + yellow(crt_filename))
-	    fmt.Println("     Key: " + yellow(key_filename))
-	    fmt.Println("")
+
+		fmt.Println("")
+		fmt.Println("     Crt: " + yellow(crt_filename))
+		fmt.Println("     Key: " + yellow(key_filename))
+		fmt.Println("")
 	}
-	
-	
+
 	if *arg_tls && !crt_is_exists {
-	    
-	    //log.Fatal(crt_is_exists)
-	    
-	    _, err1 := exec.Command("bash", "-c", "easyrsa --help").Output()
-    	if err1 != nil {
-    		log.Fatal(err1)
-    	}
-    	//fmt.Printf("The date is %s\n", out)
-    	
-    	
-    	
-    	
-	    
-	    if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
-	        
-	        if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
-        		log.Fatal( err4 )
-        	}
-	    }
-	    
-	    
-	    _, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
-    	if err5 != nil {
-    		log.Fatal(err5)
-    	}
-    	//fmt.Printf("The date is %s\n", out)
-    	
-    	
-    	
-    	
-    	cmd := exec.Command("bash", "-c", "easyrsa init-pki")
-        cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-        out3, _ := cmd.Output()
-    	
-    	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf(" %s\n", out3)
-    	
-    	
-    	var_data := `
+
+		//log.Fatal(crt_is_exists)
+
+		_, err1 := exec.Command("bash", "-c", "easyrsa --help").Output()
+		if err1 != nil {
+			log.Fatal(err1)
+		}
+		//fmt.Printf("The date is %s\n", out)
+
+		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
+
+			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
+				log.Fatal(err4)
+			}
+		}
+
+		_, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
+		if err5 != nil {
+			log.Fatal(err5)
+		}
+		//fmt.Printf("The date is %s\n", out)
+
+		cmd := exec.Command("bash", "-c", "easyrsa init-pki")
+		cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+		out3, _ := cmd.Output()
+
+		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+		fmt.Printf(" %s\n", out3)
+
+		var_data := `
 set_var EASYRSA_DN "cn_only"
 set_var EASYRSA_KEY_SIZE 2048
 set_var EASYRSA_REQ_CN   "ca@desec.example.com"
 set_var EASYRSA_BATCH    "yes"
 set_var EASYRSA_CA_EXPIRE 3650
 set_var EASYRSA_CERT_EXPIRE 3650
-        `;
-        
-        f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
-        if err7 != nil {
-            log.Fatal(err7)
-        }
-        defer f.Close()
-    	
-    	f.WriteString(var_data)
-    	f.Close()
-    	
-    	
-    	
-    	
-    	cmd2 := exec.Command("bash", "-c", "easyrsa build-ca nopass")
-        cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-        out4, _ := cmd2.Output()
-    	
-    	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf(" %s\n", out4)
-    	
-    	
-    	
-    	cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
-        cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-        out5, _ := cmd3.Output()
-    	
-    	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf(" %s\n", out5)
-	    
-	    
-	    
-	    fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-	    fmt.Println("")
-	    fmt.Println("     Crt: " + yellow(crt_filename))
-	    fmt.Println("     Key: " + yellow(key_filename))
-	    fmt.Println("")
+        `
+
+		f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+		if err7 != nil {
+			log.Fatal(err7)
+		}
+		defer f.Close()
+
+		f.WriteString(var_data)
+		f.Close()
+
+		cmd2 := exec.Command("bash", "-c", "easyrsa build-ca nopass")
+		cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+		out4, _ := cmd2.Output()
+
+		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+		fmt.Printf(" %s\n", out4)
+
+		cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
+		cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+		out5, _ := cmd3.Output()
+
+		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+		fmt.Printf(" %s\n", out5)
+
+		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+		fmt.Println("")
+		fmt.Println("     Crt: " + yellow(crt_filename))
+		fmt.Println("     Key: " + yellow(key_filename))
+		fmt.Println("")
 	}
-	
-	
-	
-	
-	
+
 	fmt.Println("")
 	if *arg_tls {
-	    fmt.Println( yellow("  TLS Server port " + strconv.Itoa(*arg_port)) )
-	}else{
-	    fmt.Println("  Server port " + cian(strconv.Itoa(*arg_port)))
-    }
+		fmt.Println(yellow("  TLS Server port " + strconv.Itoa(*arg_port)))
+	} else {
+		fmt.Println("  Server port " + cian(strconv.Itoa(*arg_port)))
+	}
 
 	fmt.Println("")
 	ifaces, err := net.Interfaces()
@@ -398,45 +364,30 @@ set_var EASYRSA_CERT_EXPIRE 3650
 				//fmt.Printf("%v \n", v.IP)
 				if v.IP.To4() != nil {
 					//fmt.Println( "yes, ipv4" )
-					
+
 					if *arg_tls {
-					    fmt.Println("     https://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
-					}else{
-					    fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
-				    }
+						fmt.Println("     https://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+					} else {
+						fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+					}
 				}
 			}
 
 		}
 	}
 	fmt.Println("")
-	
-	
-	
-	
-	
-	
-	
+
 	fmt.Println("  Serve folder: " + cian(arg_fold))
 	fmt.Println("")
 	fmt.Println(cian("  [ Control + C ] ") + "Break Server")
 	fmt.Println("")
-	
-	
+
 	if *arg_tls {
-        
-        
-        
-        log.Fatal(   app.ListenTLS(":" + strconv.Itoa(*arg_port), crt_filename, key_filename)    )
-        
-    } else {
-        
-	    log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
-    }
+
+		log.Fatal(app.ListenTLS(":"+strconv.Itoa(*arg_port), crt_filename, key_filename))
+
+	} else {
+
+		log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
+	}
 }
-
-
-
-
-
-

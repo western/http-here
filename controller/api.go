@@ -19,26 +19,23 @@ import (
 
 func PostUpload(c *fiber.Ctx) error {
 
-	
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
 	referer := c.Get("Referer")
-	
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
-		
+
 		log.Println(err)
-	    LogPrefix(c, "500", "Error url parse "+referer)
-	    return c.JSON(fiber.Map{
-	        "code": 500,
-        }, "application/json")
+		LogPrefix(c, "500", "Error url parse "+referer)
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
 	}
-	
+
 	u_path := CleanDirtyPath(u.Path)
-	
 
 	form, _ := c.MultipartForm()
 	files := form.File["fileBlob"]
@@ -59,8 +56,6 @@ func PostUpload(c *fiber.Ctx) error {
 		filename := originalFileName + fileExt
 		filename = CleanDirtyPath(filename)
 
-		
-
 		if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, filename)); err == nil {
 
 			if !fileInfo.IsDir() {
@@ -70,12 +65,12 @@ func PostUpload(c *fiber.Ctx) error {
 
 		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
 		if err != nil {
-			
+
 			log.Println(err)
-		    LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename))
-		    return c.JSON(fiber.Map{
-		        "code": 500,
-	        }, "application/json")
+			LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename))
+			return c.JSON(fiber.Map{
+				"code": 500,
+			}, "application/json")
 		}
 		defer out.Close()
 
@@ -84,12 +79,12 @@ func PostUpload(c *fiber.Ctx) error {
 		readerFile, _ := file.Open()
 		_, err = io.Copy(out, readerFile)
 		if err != nil {
-			
+
 			log.Println(err)
-		    LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename))
-		    return c.JSON(fiber.Map{
-		        "code": 500,
-	        }, "application/json")
+			LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename))
+			return c.JSON(fiber.Map{
+				"code": 500,
+			}, "application/json")
 		}
 	}
 
@@ -100,7 +95,6 @@ func PostUpload(c *fiber.Ctx) error {
 
 func PostFolder(c *fiber.Ctx) error {
 
-	
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
@@ -109,16 +103,15 @@ func PostFolder(c *fiber.Ctx) error {
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
-		
+
 		log.Println(err)
-	    LogPrefix(c, "500", "Error url parse "+referer)
-	    return c.JSON(fiber.Map{
-	        "code": 500,
-        }, "application/json")
+		LogPrefix(c, "500", "Error url parse "+referer)
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
 	}
 
 	u_path := CleanDirtyPath(u.Path)
-	
 
 	name := c.FormValue("name")
 
@@ -127,8 +120,6 @@ func PostFolder(c *fiber.Ctx) error {
 	name = re.ReplaceAllLiteralString(name, " ")
 
 	name = CleanDirtyPath(name)
-
-	
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
 
@@ -142,12 +133,12 @@ func PostFolder(c *fiber.Ctx) error {
 	}
 
 	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
-		
+
 		log.Println(err)
-	    LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name))
-	    return c.JSON(fiber.Map{
-	        "code": 500,
-        }, "application/json")
+		LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name))
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
 	}
 
 	LogPrefix(c, "200", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
