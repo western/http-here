@@ -20,7 +20,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.0.6/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.0.7/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,6 +66,11 @@ http-here --user loginXX --password MugMf7AHs .
 
 ### backlog
 - [ ] make img thumbnail storage 
+
+### 1.0.7
+- [x] add arg index-disable
+- [x] use Locals instead setenv
+- [x] change err handlers
 
 ### 1.0.6
 - [x] show extended info
