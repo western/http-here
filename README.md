@@ -76,6 +76,9 @@ http-here --user loginXX --password MugMf7AHs .
 - [ ] make img thumbnail storage
 - [ ] add TLS
 
+### 1.0.8
+- [x] add --basic arg
+
 ### 1.0.7
 - [x] add arg index-disable
 - [x] use Locals instead setenv
