@@ -20,7 +20,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.0.5/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.0.6/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,6 +66,10 @@ http-here --user loginXX --password MugMf7AHs .
 
 ### backlog
 - [ ] make img thumbnail storage 
+
+### 1.0.6
+- [x] show extended info
+- [x] fix datetime in log
 
 ### 1.0.5
 - [x] add --upload-disable and --folder-make-disable cmd keys
