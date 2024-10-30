@@ -354,7 +354,7 @@ func main() {
         out3, _ := cmd.Output()
     	
     	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf("The date is %s\n", out3)
+    	fmt.Printf(" %s\n", out3)
     	
     	
     	var_data := `
@@ -383,7 +383,7 @@ set_var EASYRSA_CERT_EXPIRE 3650
         out4, _ := cmd2.Output()
     	
     	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf("The date is %s\n", out4)
+    	fmt.Printf(" %s\n", out4)
     	
     	
     	
@@ -392,10 +392,11 @@ set_var EASYRSA_CERT_EXPIRE 3650
         out5, _ := cmd3.Output()
     	
     	fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-    	fmt.Printf("The date is %s\n", out5)
+    	fmt.Printf(" %s\n", out5)
 	    
 	    
 	    
+	    fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
 	    fmt.Println("     Crt: " + yellow(crt_filename))
 	    fmt.Println("     Key: " + yellow(key_filename))
 	    fmt.Println("")
