@@ -93,11 +93,7 @@ func main() {
 		return
 	}
 
-	/*
-		if strings.HasPrefix(arg_fold, "/etc") {
-			fmt.Println("You can not serve /etc folder")
-			return
-		}*/
+	
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -114,15 +110,15 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		//os.Setenv("arg_fold", arg_fold)
+		
 		c.Locals("arg_fold", arg_fold)
 
 		if *arg_upload_disable {
-			//os.Setenv("arg_upload_disable", "1")
+			
 			c.Locals("arg_upload_disable", "1")
 		}
 		if *arg_folder_make_disable {
-			//os.Setenv("arg_folder_make_disable", "1")
+			
 			c.Locals("arg_folder_make_disable", "1")
 		}
 
@@ -204,7 +200,7 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		//fmt.Println(c.Path())
+		
 		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
