@@ -21,9 +21,6 @@ func OptionsAll(c *fiber.Ctx) error {
 	}, "application/json")
 }
 
-
-
-
 func GetAll(c *fiber.Ctx) error {
 
 	//arg_fold := os.Getenv("arg_fold")
@@ -32,22 +29,20 @@ func GetAll(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
-	
+
 	arg_upload_disable := ""
 	if c.Locals("arg_upload_disable") != nil {
-	    arg_upload_disable = c.Locals("arg_upload_disable").(string)
-    }
-    
+		arg_upload_disable = c.Locals("arg_upload_disable").(string)
+	}
+
 	arg_folder_make_disable := ""
 	if c.Locals("arg_folder_make_disable") != nil {
-	    arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
+		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
 	}
-	
+
 	//arg_fold := "/tmp"
 	//arg_upload_disable := ""
 	//arg_folder_make_disable := ""
-	
-	
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {

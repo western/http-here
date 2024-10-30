@@ -43,9 +43,6 @@ func main() {
 
 	flag.Parse()
 
-	
-	
-
 	if *arg_help {
 
 		inf := []string{
@@ -102,8 +99,6 @@ func main() {
 			return
 		}*/
 
-	
-
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
@@ -116,45 +111,39 @@ func main() {
 	}
 
 	app := fiber.New(config)
-	
-	
-	
+
 	app.Use(func(c *fiber.Ctx) error {
-        
-        //os.Setenv("arg_fold", arg_fold)
-        c.Locals("arg_fold", arg_fold)
-        
-        if *arg_upload_disable {
-    		//os.Setenv("arg_upload_disable", "1")
-    		c.Locals("arg_upload_disable", "1")
-    	}
-    	if *arg_folder_make_disable {
-    		//os.Setenv("arg_folder_make_disable", "1")
-    		c.Locals("arg_folder_make_disable", "1")
-    	}
-        
-        return c.Next()
-    })
-    
-    
-    /*
-    app.Use([]string{"/api", "/"}, func(c *fiber.Ctx) error {
-        
-        c.Locals("arg_fold", arg_fold)
-        
-        
-        if *arg_upload_disable {
-    		c.Locals("arg_upload_disable", "1")
-    	}
-    	if *arg_folder_make_disable {
-    		c.Locals("arg_folder_make_disable", "1")
-    	}
-        
-        return c.Next()
-    })*/
-    
-    
-    
+
+		//os.Setenv("arg_fold", arg_fold)
+		c.Locals("arg_fold", arg_fold)
+
+		if *arg_upload_disable {
+			//os.Setenv("arg_upload_disable", "1")
+			c.Locals("arg_upload_disable", "1")
+		}
+		if *arg_folder_make_disable {
+			//os.Setenv("arg_folder_make_disable", "1")
+			c.Locals("arg_folder_make_disable", "1")
+		}
+
+		return c.Next()
+	})
+
+	/*
+	   app.Use([]string{"/api", "/"}, func(c *fiber.Ctx) error {
+
+	       c.Locals("arg_fold", arg_fold)
+
+
+	       if *arg_upload_disable {
+	   		c.Locals("arg_upload_disable", "1")
+	   	}
+	   	if *arg_folder_make_disable {
+	   		c.Locals("arg_folder_make_disable", "1")
+	   	}
+
+	       return c.Next()
+	   })*/
 
 	app.Use(cors.New(cors.Config{
 		//AllowOrigins: "*",
@@ -200,10 +189,10 @@ func main() {
 	}))
 
 	app.Options("/*", controller.OptionsAll)
-	
+
 	if !*arg_index_disable {
-	    app.Get("/*", controller.GetAll)
-    }
+		app.Get("/*", controller.GetAll)
+	}
 
 	if !*arg_upload_disable {
 		app.Post("/api/upload", controller.PostUpload)
