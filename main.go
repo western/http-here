@@ -227,7 +227,7 @@ func main() {
 
 	fmt.Println("  Serve folder: " + cian(arg_fold))
 	fmt.Println("")
-	fmt.Println("  [ Control + C ] Break Server")
+	fmt.Println(cian("  [ Control + C ] ")+"Break Server")
 	fmt.Println("")
 
 	log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
