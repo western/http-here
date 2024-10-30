@@ -65,7 +65,8 @@ http-here --user loginXX --password MugMf7AHs .
 ## History
 
 ### backlog
-- [ ] make img thumbnail storage 
+- [ ] make img thumbnail storage
+- [ ] add TLS
 
 ### 1.0.7
 - [x] add arg index-disable
