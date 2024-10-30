@@ -52,6 +52,17 @@ or only one basic auth specific user
 http-here --user loginXX --password MugMf7AHs .
 ```
 
+## The safest
+
+```console
+http-here --tls --basic /path/to/you
+```
+
+## Only share
+
+```console
+http-here --upload-disable --folder-make-disable /tmp/fold
+```
 
 ## Desktop window
 <p align="center">
