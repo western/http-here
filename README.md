@@ -69,12 +69,30 @@ http-here --user loginXX --password MugMf7AHs .
 
 - If you run application under some User, this user should be have privileges to write current folder
 
+## Automatic TLS keys generate
+
+- For start HTTPS server you need `easyrsa` linux package
+- When you start server with `--tls` option, all keys generate automatically
+
+```console
+http-here --tls .
+```
+
+- Server use self signed certs, generated at first time. Thus you need approve this connection on your clients.
+
+<p float="left">
+  <img src="https://github.com/western/http-up/blob/dev/doc/chrome_self_signed_cert.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-up/blob/dev/doc/firefox_self_signed_cert.png?raw=true" width="45%" >
+</p>
 
 ## History
 
 ### backlog
 - [ ] make img thumbnail storage
-- [ ] add TLS
+
+
+### 1.0.9
+- [x] add TLS
 
 ### 1.0.8
 - [x] add --basic arg
