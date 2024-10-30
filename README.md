@@ -40,6 +40,14 @@ http-here --port 7999 /path/to/folder
 > [!IMPORTANT]  
 > It is recommend for work on public network interfaces
 
+every time when you start, you get a list of random accounts
+
+```console
+http-here --basic .
+```
+
+or only one basic auth specific user
+
 ```console
 http-here --user loginXX --password MugMf7AHs .
 ```
