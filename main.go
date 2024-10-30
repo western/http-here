@@ -263,8 +263,8 @@ func main() {
 	if *arg_tls && crt_is_exists {
 
 		fmt.Println("")
-		fmt.Println("     Crt: " + yellow(crt_filename))
-		fmt.Println("     Key: " + yellow(key_filename))
+		fmt.Println("  Crt: " + yellow(crt_filename))
+		fmt.Println("  Key: " + yellow(key_filename))
 		fmt.Println("")
 	}
 
@@ -332,8 +332,8 @@ set_var EASYRSA_CERT_EXPIRE 3650
 
 		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
 		fmt.Println("")
-		fmt.Println("     Crt: " + yellow(crt_filename))
-		fmt.Println("     Key: " + yellow(key_filename))
+		fmt.Println("  Crt: " + yellow(crt_filename))
+		fmt.Println("  Key: " + yellow(key_filename))
 		fmt.Println("")
 	}
 
