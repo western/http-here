@@ -23,9 +23,7 @@ func OptionsAll(c *fiber.Ctx) error {
 
 func GetAll(c *fiber.Ctx) error {
 
-	//arg_fold := os.Getenv("arg_fold")
-	//arg_upload_disable := os.Getenv("arg_upload_disable")
-	//arg_folder_make_disable := os.Getenv("arg_folder_make_disable")
+	
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -46,23 +44,15 @@ func GetAll(c *fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
-		/*
-			log.Fatal(err)
-			return c.JSON(fiber.Map{
-				"code": 500,
-				"err":  err,
-			}, "application/json")
-		*/
+		
 		log.Println(err)
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
 		return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
-	//fmt.Println("c_path1="+c_path)
+	
 	c_path = CleanDirtyPath(c_path)
-	//c_path = filepath.Clean(c_path)
-	//fmt.Println("c_path2="+c_path)
-	//fmt.Println("join="+filepath.Join(arg_fold, c_path))
+	
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
 
@@ -86,7 +76,7 @@ func GetAll(c *fiber.Ctx) error {
 
 			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
 			if err != nil {
-				//log.Fatal(err)
+				
 				log.Println(err)
 				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
 				return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
@@ -109,22 +99,16 @@ func GetAll(c *fiber.Ctx) error {
 					if fileInfo2.IsDir() {
 						folderlist += `
                             
-                            <!--a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold"><i class="bi bi-folder"></i> ` + e.Name() + `</a-->
-                            
                             <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1"><i class="bi bi-folder"></i> ` + e.Name() + `</h5>
                                     <!--small class="text-muted">` + size_human + ` </small-->
                                 </div>
-                                <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
-                                <!--small class="text-muted">` + modtime_human + `</small-->
                             </a>
-
+                            
                         `
 					} else {
 						filelist += `
-                            
-                            <!--a  href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</a-->
                             
                             <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file">
                                 <div class="d-flex w-100 justify-content-between">
@@ -134,7 +118,7 @@ func GetAll(c *fiber.Ctx) error {
                                 <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
                                 <small class="text-muted">` + modtime_human + `</small>
                             </a>
-
+                            
                         `
 					}
 				}
