@@ -246,45 +246,8 @@ func main() {
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
 	})
 
-	fmt.Println("")
-	if *arg_tls {
-	    fmt.Println( yellow("  TLS Server port " + strconv.Itoa(*arg_port)) )
-	}else{
-	    fmt.Println("  Server port " + cian(strconv.Itoa(*arg_port)))
-    }
-
-	fmt.Println("")
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
-		return
-	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
-			continue
-		}
-		for _, a := range addrs {
-			switch v := a.(type) {
-
-			case *net.IPNet:
-				//fmt.Printf("%v : %s [%v/%v]\n", i.Name, v, v.IP, v.Mask)
-				//fmt.Printf("%v \n", v.IP)
-				if v.IP.To4() != nil {
-					//fmt.Println( "yes, ipv4" )
-					
-					if *arg_tls {
-					    fmt.Println("     https://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
-					}else{
-					    fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
-				    }
-				}
-			}
-
-		}
-	}
-	fmt.Println("")
+	
+	
 
 	
 	
@@ -312,6 +275,7 @@ func main() {
 	
 	if *arg_tls && crt_is_exists {
 	    
+	    fmt.Println("")
 	    fmt.Println("     Crt: " + yellow(crt_filename))
 	    fmt.Println("     Key: " + yellow(key_filename))
 	    fmt.Println("")
@@ -397,10 +361,60 @@ set_var EASYRSA_CERT_EXPIRE 3650
 	    
 	    
 	    fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+	    fmt.Println("")
 	    fmt.Println("     Crt: " + yellow(crt_filename))
 	    fmt.Println("     Key: " + yellow(key_filename))
 	    fmt.Println("")
 	}
+	
+	
+	
+	
+	
+	fmt.Println("")
+	if *arg_tls {
+	    fmt.Println( yellow("  TLS Server port " + strconv.Itoa(*arg_port)) )
+	}else{
+	    fmt.Println("  Server port " + cian(strconv.Itoa(*arg_port)))
+    }
+
+	fmt.Println("")
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
+		return
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
+			continue
+		}
+		for _, a := range addrs {
+			switch v := a.(type) {
+
+			case *net.IPNet:
+				//fmt.Printf("%v : %s [%v/%v]\n", i.Name, v, v.IP, v.Mask)
+				//fmt.Printf("%v \n", v.IP)
+				if v.IP.To4() != nil {
+					//fmt.Println( "yes, ipv4" )
+					
+					if *arg_tls {
+					    fmt.Println("     https://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+					}else{
+					    fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+				    }
+				}
+			}
+
+		}
+	}
+	fmt.Println("")
+	
+	
+	
+	
+	
 	
 	
 	fmt.Println("  Serve folder: " + cian(arg_fold))
@@ -411,9 +425,7 @@ set_var EASYRSA_CERT_EXPIRE 3650
 	
 	if *arg_tls {
         
-        //app.ListenTLS(":443", "./cert.pem", "./cert.key");
-        // crt_filename
-        // key_filename
+        
         
         log.Fatal(   app.ListenTLS(":" + strconv.Itoa(*arg_port), crt_filename, key_filename)    )
         
