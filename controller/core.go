@@ -54,6 +54,13 @@ func GetAll(c *fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 
+			// check index.html inside
+			if _, err := os.Stat(filepath.Join(arg_fold, c_path, "index.html")); err == nil {
+
+				LogPrefix(c, "200", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+				return c.SendFile(filepath.Join(arg_fold, c_path, "index.html"), false)
+			}
+
 			LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
 
 			breadcrumb := ""
