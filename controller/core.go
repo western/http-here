@@ -75,7 +75,7 @@ func GetAll(c *fiber.Ctx) error {
 
 				log.Println(err)
 				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
-				return c.Status(fiber.StatusNotFound).Render("view/500", fiber.Map{}, "view/layout")
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 			}
 
 			if len(entries) == 0 {
