@@ -77,12 +77,10 @@ func main() {
 		return
 	}
 
-	//ex, err := os.Executable()
-	ex, err := os.Getwd()
+	arg_fold, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	arg_fold := filepath.Dir(ex)
 
 	if len(flag.Args()) > 0 {
 		arg_fold = flag.Args()[0]
