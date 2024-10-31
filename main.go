@@ -84,6 +84,9 @@ func main() {
 
 	if len(flag.Args()) > 0 {
 		arg_fold = flag.Args()[0]
+		if arg_fold, err = filepath.Abs(arg_fold); err != nil {
+		    log.Fatal(err)
+		}
 	}
 	arg_fold = filepath.Clean(arg_fold)
 
