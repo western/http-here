@@ -97,6 +97,10 @@ http-here --tls .
   <img src="https://github.com/western/http-here/blob/dev/doc/firefox_self_signed_cert.png?raw=true" width="45%" >
 </p>
 
+## Magic file index.html inside any folder
+
+If you put inside folder file index.html, it will be return as context
+
 ## History
 
 ### backlog
