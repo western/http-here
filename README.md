@@ -6,6 +6,10 @@ Multiple files upload to current showed folder
 
 Also you can download any files inside current folder, just click on them
 
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
+</p>
+
 ## Install from github
 ```console
 go install github.com/western/http-here
@@ -65,10 +69,6 @@ read for TLS support below
 http-here --upload-disable --folder-make-disable /tmp/fold
 ```
 
-## Desktop window
-<p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
-</p>
 
 
 ## Notes
@@ -93,8 +93,8 @@ http-here --tls .
 - Server use self signed certs, generated at first time. Thus you need approve this connection on your clients.
 
 <p float="left">
-  <img src="https://github.com/western/http-up/blob/dev/doc/chrome_self_signed_cert.png?raw=true" width="45%" >
-  <img src="https://github.com/western/http-up/blob/dev/doc/firefox_self_signed_cert.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-here/blob/dev/doc/chrome_self_signed_cert.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-here/blob/dev/doc/firefox_self_signed_cert.png?raw=true" width="45%" >
 </p>
 
 ## History
