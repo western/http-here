@@ -121,7 +121,7 @@ func GetAll(c *fiber.Ctx) error {
                                 
                                 <tr>
                                   <!--th scope="row"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th-->
-                                  <td class="table_td"><a href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td class="table_td"><i class="bi bi-folder"></i> <a href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">fld</td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
