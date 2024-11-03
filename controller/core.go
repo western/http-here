@@ -121,7 +121,7 @@ func GetAll(c *fiber.Ctx) error {
                                 
                                 <tr>
                                   <!--th scope="row"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th-->
-                                  <td class="table_td"><i class="bi bi-folder"></i> <a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td ><i class="bi bi-folder"></i> <a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
@@ -137,7 +137,7 @@ func GetAll(c *fiber.Ctx) error {
                                 
                                 <tr>
                                   <!--th scope="row"><input class="form-check-input" type="checkbox" name="file" value="` + e.Name() + `" ></th-->
-                                  <td class="table_td"><a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td ><a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + size_human + `</td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + modtime_human + `</td>

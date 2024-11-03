@@ -69,6 +69,10 @@ div.list-group a.file {
     margin-bottom: 50px;
 }
 
+.table td:nth-child(1) {
+    padding-left: 20px;
+}
+
 /*
 .table>:not(caption)>*>* {
     padding: .5rem .5rem;
