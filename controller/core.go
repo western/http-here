@@ -35,7 +35,7 @@ func GetAll(c *fiber.Ctx) error {
 	if c.Locals("arg_folder_make_disable") != nil {
 		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
 	}
-	
+
 	arg_delete_enable := ""
 	if c.Locals("arg_delete_enable") != nil {
 		arg_delete_enable = c.Locals("arg_delete_enable").(string)
@@ -69,7 +69,6 @@ func GetAll(c *fiber.Ctx) error {
 			LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
 
 			breadcrumb := ""
-			
 
 			res1 := strings.Split(c_path, "/")
 			pt := ""
@@ -89,47 +88,38 @@ func GetAll(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 			}
 
-
-
-
-            folderlist := ""
+			folderlist := ""
 			filelist := ""
 
-			
+			fl := template.HTML("")
 
-            
-            fl := template.HTML("")
-            
-            
-            if arg_delete_enable == "1" {
-                
-                if len(entries) == 0 {
-				    filelist += `
+			if arg_delete_enable == "1" {
+
+				if len(entries) == 0 {
+					filelist += `
                         
                         <tr>
                           <td colspan="4">Empty folder</td>
                         </tr>
                     `
-			    }
-    			
-                
-                
-                for _, e := range entries {
+				}
 
-    				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
+				for _, e := range entries {
 
-    					modtime := fileInfo2.ModTime()
-    					modtime_human := modtime.Format("2006-01-02 15:04:05")
+					if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
-    					size := fileInfo2.Size()
-    					size_human := prettyByteSize(size)
+						modtime := fileInfo2.ModTime()
+						modtime_human := modtime.Format("2006-01-02 15:04:05")
 
-    					if fileInfo2.IsDir() {
-    						folderlist += `
+						size := fileInfo2.Size()
+						size_human := prettyByteSize(size)
+
+						if fileInfo2.IsDir() {
+							folderlist += `
                                 
                                 <tr>
                                   <!--th scope="row"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th-->
-                                  <td ><i class="bi bi-folder"></i> <a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td ><i class="bi bi-folder"></i> <a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">` + e.Name() + `</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
@@ -140,12 +130,12 @@ func GetAll(c *fiber.Ctx) error {
 
                                 
                             `
-    					} else {
-    						filelist += `
+						} else {
+							filelist += `
                                 
                                 <tr>
                                   <!--th scope="row"><input class="form-check-input" type="checkbox" name="file" value="` + e.Name() + `" ></th-->
-                                  <td ><a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td ><a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">` + e.Name() + `</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + size_human + `</td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + modtime_human + `</td>
@@ -155,16 +145,12 @@ func GetAll(c *fiber.Ctx) error {
                                 </tr>
                                 
                             `
-    					}
-    				}
+						}
+					}
 
-    			}
-    			
-    			
-    			
-    			
-    			
-    			fl = template.HTML(`
+				}
+
+				fl = template.HTML(`
     			
                     <table class="table table-hover ">
                       <thead>
@@ -188,27 +174,25 @@ func GetAll(c *fiber.Ctx) error {
                     </table>
     			
     			`)
-    			
-                
-                
-            }else{
-                
-                if len(entries) == 0 {
-				    filelist = "Empty folder"
-			    }
 
-    			for _, e := range entries {
+			} else {
 
-    				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
+				if len(entries) == 0 {
+					filelist = "Empty folder"
+				}
 
-    					modtime := fileInfo2.ModTime()
-    					modtime_human := modtime.Format("2006-01-02 15:04:05")
+				for _, e := range entries {
 
-    					size := fileInfo2.Size()
-    					size_human := prettyByteSize(size)
+					if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
-    					if fileInfo2.IsDir() {
-    						folderlist += `
+						modtime := fileInfo2.ModTime()
+						modtime_human := modtime.Format("2006-01-02 15:04:05")
+
+						size := fileInfo2.Size()
+						size_human := prettyByteSize(size)
+
+						if fileInfo2.IsDir() {
+							folderlist += `
                                 
                                 <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold">
                                     <div class="d-flex w-100 justify-content-between">
@@ -218,8 +202,8 @@ func GetAll(c *fiber.Ctx) error {
                                 </a>
                                 
                             `
-    					} else {
-    						filelist += `
+						} else {
+							filelist += `
                                 
                                 <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file">
                                     <div class="d-flex w-100 justify-content-between">
@@ -231,15 +215,14 @@ func GetAll(c *fiber.Ctx) error {
                                 </a>
                                 
                             `
-    					}
-    				}
+						}
+					}
 
-    			}
-    			
-    			fl = template.HTML("<div class='list-group'>" + folderlist + filelist + "</div>")
-    			
-    		}
-    		
+				}
+
+				fl = template.HTML("<div class='list-group'>" + folderlist + filelist + "</div>")
+
+			}
 
 			return c.Render("view/index", fiber.Map{
 

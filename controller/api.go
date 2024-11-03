@@ -120,17 +120,14 @@ func PostFolder(c *fiber.Ctx) error {
 	name = re.ReplaceAllLiteralString(name, " ")
 
 	name = CleanDirtyPath(name)
-	
-	
+
 	if len(name) == 0 {
-	    LogPrefix(c, "500", "name is empty")
+		LogPrefix(c, "500", "name is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
 		}, "application/json")
 	}
-	
-	
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
 
@@ -159,7 +156,6 @@ func PostFolder(c *fiber.Ctx) error {
 	}, "application/json")
 }
 
-
 func PostDelete(c *fiber.Ctx) error {
 
 	arg_fold := ""
@@ -187,20 +183,17 @@ func PostDelete(c *fiber.Ctx) error {
 	//name = re.ReplaceAllLiteralString(name, " ")
 
 	name = CleanDirtyPath(name)
-	
-	
+
 	if len(name) == 0 {
-	    LogPrefix(c, "500", "name is empty")
+		LogPrefix(c, "500", "name is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
 		}, "application/json")
 	}
-	
-	
-	fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name));
 
-	
+	fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+
 	if err != nil {
 		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 		return c.JSON(fiber.Map{
@@ -208,46 +201,40 @@ func PostDelete(c *fiber.Ctx) error {
 			"msg":  filepath.Join(u_path, name) + " not exists",
 		}, "application/json")
 	}
-	
-	
+
 	if fileInfo.IsDir() {
-	    
-	    // remove fold and all inside data
-	    
-	    if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
-	        
-	        LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+
+		// remove fold and all inside data
+
+		if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
+
+			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
 			return c.JSON(fiber.Map{
 				"code": 500,
 				"msg":  filepath.Join(u_path, name) + " err",
 			}, "application/json")
-	    }
-	    
-	    LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
-	    
-	}else{
-	    
-	    // remove one file
-	    
-	    if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
-	        
-	        LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+		}
+
+		LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+
+	} else {
+
+		// remove one file
+
+		if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+
+			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
 			return c.JSON(fiber.Map{
 				"code": 500,
 				"msg":  filepath.Join(u_path, name) + " err",
 			}, "application/json")
-	    }
-	    
-	    LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
-	    
+		}
+
+		LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+
 	}
-
-    
-
-	
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
 }
-

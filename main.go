@@ -47,9 +47,8 @@ func main() {
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
-	
+
 	arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
-	
 
 	flag.Parse()
 
@@ -90,7 +89,7 @@ func main() {
 	if len(flag.Args()) > 0 {
 		arg_fold = flag.Args()[0]
 		if arg_fold, err = filepath.Abs(arg_fold); err != nil {
-		    log.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 	arg_fold = filepath.Clean(arg_fold)
@@ -245,7 +244,7 @@ func main() {
 	if !*arg_folder_make_disable {
 		app.Post("/api/folder", controller.PostFolder)
 	}
-	
+
 	if *arg_delete_enable {
 		app.Post("/api/delete", controller.PostDelete)
 	}
