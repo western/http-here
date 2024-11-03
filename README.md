@@ -152,4 +152,10 @@ first release
 - show current folder
 - basic auth for one account
 
+## Pirates hiding their http
+
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/pirates_hiding_their_http.jpg?raw=true" />
+</p>
+
 
