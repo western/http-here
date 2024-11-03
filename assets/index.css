@@ -65,6 +65,9 @@ div.list-group a.file {
 }
 
 
+.table {
+    margin-bottom: 100px;
+}
 
 /*
 .table>:not(caption)>*>* {
