@@ -114,6 +114,8 @@ If you put inside folder file index.html, it will be return as context
 
 ### 1.0.10
 - [x] add --delete-enable arg
+- [x] check index file index.html inside folder and show it
+- [x] handle some 500-x errors
 
 ### 1.0.9
 - [x] add TLS
