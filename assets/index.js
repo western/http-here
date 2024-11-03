@@ -51,6 +51,55 @@ $(document).ready(function(){
             make_new_folder(ev);
         }
     });
+    
+    
+    
+    $('a.del').click((ev) => {
+        let el = ev.target;
+        if(el.tagName == "I"){
+            el = el.parentNode;
+            //console.log('el=', $(el).data('name'));
+            
+            
+            if( confirm("Delete "+$(el).data('name')+"?") ){
+                
+                let formData = new FormData();
+
+                formData.append('name', $(el).data('name'));
+                
+                $.ajax({
+                    url: '/api/delete',
+                    data: formData,
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                }).done(function( data ) {
+                    
+                    
+                    if( data.code == 200 ){
+                        location.href = location.href;
+                    }else{
+                        alert(data.msg);
+                    }
+                });
+            }
+        }
+    })
+    
+    
+    $(':checkbox.head-chk').click((ev) => {
+        
+        //let checkboxes = $(':checkbox[name=fold]');
+        //console.log('ev.target=', ev.target);
+        
+        let chk = $(ev.target).prop("checked") ? true : false;
+        
+        
+        $(':checkbox[name=fold]').prop("checked", chk);
+        $(':checkbox[name=file]').prop("checked", chk);
+        
+    })
+    
 
 });
 

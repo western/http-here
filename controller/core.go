@@ -35,6 +35,11 @@ func GetAll(c *fiber.Ctx) error {
 	if c.Locals("arg_folder_make_disable") != nil {
 		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
 	}
+	
+	arg_delete_enable := ""
+	if c.Locals("arg_delete_enable") != nil {
+		arg_delete_enable = c.Locals("arg_delete_enable").(string)
+	}
 
 	//arg_fold := "/tmp"
 	//arg_upload_disable := ""
@@ -64,8 +69,7 @@ func GetAll(c *fiber.Ctx) error {
 			LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
 
 			breadcrumb := ""
-			folderlist := ""
-			filelist := ""
+			
 
 			res1 := strings.Split(c_path, "/")
 			pt := ""
@@ -85,53 +89,152 @@ func GetAll(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 			}
 
+
+
+
+            folderlist := ""
+			filelist := ""
+
 			if len(entries) == 0 {
 				filelist = "Empty folder"
 			}
 
-			for _, e := range entries {
+            
+            fl := template.HTML("")
+            
+            
+            if arg_delete_enable == "1" {
+                
+                
+                for _, e := range entries {
 
-				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
+    				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
-					modtime := fileInfo2.ModTime()
-					modtime_human := modtime.Format("2006-01-02 15:04:05")
+    					modtime := fileInfo2.ModTime()
+    					modtime_human := modtime.Format("2006-01-02 15:04:05")
 
-					size := fileInfo2.Size()
-					size_human := prettyByteSize(size)
+    					size := fileInfo2.Size()
+    					size_human := prettyByteSize(size)
 
-					if fileInfo2.IsDir() {
-						folderlist += `
-                            
-                            <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1"><i class="bi bi-folder"></i> ` + e.Name() + `</h5>
-                                    <!--small class="text-muted">` + size_human + ` </small-->
-                                </div>
-                            </a>
-                            
-                        `
-					} else {
-						filelist += `
-                            
-                            <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</h6>
-                                    <small class="text-muted">` + size_human + ` </small>
-                                </div>
-                                <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
-                                <small class="text-muted">` + modtime_human + `</small>
-                            </a>
-                            
-                        `
-					}
-				}
+    					if fileInfo2.IsDir() {
+    						folderlist += `
+                                
+                                <tr>
+                                  <!--th scope="row"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th-->
+                                  <td class="table_td"><a href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">fld</td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
+                                  <td>
+                                    <a class="del" href="javascript:void(0)" data-name="` + e.Name() + `"><i class="bi bi-x-lg"></i></a>
+                                  </td>
+                                </tr>
 
-			}
+                                
+                            `
+    					} else {
+    						filelist += `
+                                
+                                <tr>
+                                  <!--th scope="row"><input class="form-check-input" type="checkbox" name="file" value="` + e.Name() + `" ></th-->
+                                  <td class="table_td"><a href="` + filepath.Join(c_path, e.Name()) + `">`+ e.Name() +`</a></td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + size_human + `</td>
+                                  <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + modtime_human + `</td>
+                                  <td>
+                                    <a class="del" href="javascript:void(0)" data-name="` + e.Name() + `"><i class="bi bi-x-lg"></i></a>
+                                  </td>
+                                </tr>
+                                
+                            `
+    					}
+    				}
+
+    			}
+    			
+    			
+    			
+    			
+    			
+    			
+    			fl = template.HTML(`
+    			
+                    <table class="table table-hover ">
+                      <thead>
+                        <tr>
+                          <!--th ><input class="form-check-input head-chk" type="checkbox" value="" ></th-->
+                          <th >name</th>
+                          <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
+                          <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
+                          <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
+                          <th >del</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      
+                        ` + folderlist + `
+                        
+                        ` + filelist + `
+                        
+                        
+                      </tbody>
+                    </table>
+    			
+    			`)
+    			
+                
+                
+            }else{
+            
+
+    			for _, e := range entries {
+
+    				if fileInfo2, _ := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
+
+    					modtime := fileInfo2.ModTime()
+    					modtime_human := modtime.Format("2006-01-02 15:04:05")
+
+    					size := fileInfo2.Size()
+    					size_human := prettyByteSize(size)
+
+    					if fileInfo2.IsDir() {
+    						folderlist += `
+                                
+                                <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action fold">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1"><i class="bi bi-folder"></i> ` + e.Name() + `</h5>
+                                        <!--small class="text-muted">` + size_human + ` </small-->
+                                    </div>
+                                </a>
+                                
+                            `
+    					} else {
+    						filelist += `
+                                
+                                <a href="` + filepath.Join(c_path, e.Name()) + `" class="list-group-item list-group-item-action file">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1"><i class="bi bi-file-earmark"></i> ` + e.Name() + `</h6>
+                                        <small class="text-muted">` + size_human + ` </small>
+                                    </div>
+                                    <!--p class="mb-1">Some placeholder content in a paragraph.</p-->
+                                    <small class="text-muted">` + modtime_human + `</small>
+                                </a>
+                                
+                            `
+    					}
+    				}
+
+    			}
+    			
+    			fl = template.HTML("<div class='list-group'>" + folderlist + filelist + "</div>")
+    			
+    		}
+    		
 
 			return c.Render("view/index", fiber.Map{
 
 				"Breadcrumb": template.HTML(breadcrumb),
-				"Filelist":   template.HTML(folderlist + filelist),
+				"Filelist":   fl,
 
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,

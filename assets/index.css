@@ -64,3 +64,42 @@ div.list-group a.file {
     }
 }
 
+
+
+/*
+.table>:not(caption)>*>* {
+    padding: .5rem .5rem;
+    color: var(--bs-table-color-state, var(--bs-table-color-type, var(--bs-table-color)));
+    background-color: var(--bs-table-bg);
+    border-bottom-width: var(--bs-border-width);
+    box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+    
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.table_td{
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+*/
+
+
+.table.table-ellipsis tbody td {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.table.table-ellipsis tbody td:hover {
+    text-overflow: clip;
+    white-space: normal;
+    word-break: break-all;
+}
+

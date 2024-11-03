@@ -47,6 +47,9 @@ func main() {
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
+	
+	arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
+	
 
 	flag.Parse()
 
@@ -71,6 +74,8 @@ func main() {
 			`     --index-disable           Disable current folder read.`,
 			``,
 			`     --tls                     Start HTTPS (need easyrsa linux package).`,
+			``,
+			`     --delete-enable           Enable delete mechanics. Be very carefull. It disabled by default.`,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
@@ -126,6 +131,10 @@ func main() {
 		if *arg_folder_make_disable {
 
 			c.Locals("arg_folder_make_disable", "1")
+		}
+		if *arg_delete_enable {
+
+			c.Locals("arg_delete_enable", "1")
 		}
 
 		return c.Next()
@@ -235,6 +244,10 @@ func main() {
 
 	if !*arg_folder_make_disable {
 		app.Post("/api/folder", controller.PostFolder)
+	}
+	
+	if *arg_delete_enable {
+		app.Post("/api/delete", controller.PostDelete)
 	}
 
 	app.Use(func(c *fiber.Ctx) error {
