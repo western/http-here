@@ -57,7 +57,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.0.9`,
+			`v1.0.10`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
