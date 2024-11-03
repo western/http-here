@@ -75,7 +75,7 @@ func main() {
 			``,
 			`     --tls                     Start HTTPS (need easyrsa linux package).`,
 			``,
-			`     --delete-enable           Enable delete mechanics. Be very carefull. It disabled by default.`,
+			`     --delete-enable           Enable delete mechanics. Be very careful. It disabled by default.`,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
