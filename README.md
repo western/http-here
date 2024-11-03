@@ -107,6 +107,15 @@ http-here --tls .
 
 If you put inside folder file index.html, it will be return as context
 
+## If you switch delete mode on --delete-enable
+
+Display width less than 992 and more than:
+
+<p float="left">
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_less_992.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_more_992.png?raw=true" width="45%" >
+</p>
+
 ## History
 
 ### backlog
