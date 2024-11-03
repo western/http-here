@@ -95,15 +95,23 @@ func GetAll(c *fiber.Ctx) error {
             folderlist := ""
 			filelist := ""
 
-			if len(entries) == 0 {
-				filelist = "Empty folder"
-			}
+			
 
             
             fl := template.HTML("")
             
             
             if arg_delete_enable == "1" {
+                
+                if len(entries) == 0 {
+				    filelist += `
+                        
+                        <tr>
+                          <td colspan="4">Empty folder</td>
+                        </tr>
+                    `
+			    }
+    			
                 
                 
                 for _, e := range entries {
@@ -156,7 +164,6 @@ func GetAll(c *fiber.Ctx) error {
     			
     			
     			
-    			
     			fl = template.HTML(`
     			
                     <table class="table table-hover ">
@@ -185,7 +192,10 @@ func GetAll(c *fiber.Ctx) error {
                 
                 
             }else{
-            
+                
+                if len(entries) == 0 {
+				    filelist = "Empty folder"
+			    }
 
     			for _, e := range entries {
 
