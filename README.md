@@ -112,6 +112,8 @@ If you put inside folder file index.html, it will be return as context
 ### backlog
 - [ ] make img thumbnail storage
 
+### 1.0.10
+- [x] add --delete-enable arg
 
 ### 1.0.9
 - [x] add TLS
