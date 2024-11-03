@@ -109,6 +109,8 @@ If you put inside folder file index.html, it will be return as context
 
 ## If you switch delete mode on --delete-enable
 
+App change main list view to table.
+
 Display width less than 992 and more than:
 
 <p float="left">
