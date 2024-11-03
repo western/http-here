@@ -125,7 +125,7 @@ func GetAll(c *fiber.Ctx) error {
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
-                                  <td>
+                                  <td class="text-center">
                                     <a class="del" href="javascript:void(0)" data-name="` + e.Name() + `"><i class="bi bi-x-lg"></i></a>
                                   </td>
                                 </tr>
@@ -141,7 +141,7 @@ func GetAll(c *fiber.Ctx) error {
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + size_human + `</td>
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + modtime_human + `</td>
-                                  <td>
+                                  <td class="text-center">
                                     <a class="del" href="javascript:void(0)" data-name="` + e.Name() + `"><i class="bi bi-x-lg"></i></a>
                                   </td>
                                 </tr>
@@ -167,7 +167,7 @@ func GetAll(c *fiber.Ctx) error {
                           
                           <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
                           <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
-                          <th >del</th>
+                          <th class="text-center">del</th>
                         </tr>
                       </thead>
                       <tbody>
