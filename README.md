@@ -122,7 +122,7 @@ Display width less than 992 and more than:
 
 ### backlog
 - [ ] make img thumbnail storage
-- [ ] still not enable select several elements in table
+- [ ] still not enable select several elements in table (group operations). it take a place in table
 
 ### 1.0.10
 - [x] add --delete-enable arg
