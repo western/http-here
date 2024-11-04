@@ -113,9 +113,8 @@ App change main list view to table.
 
 Display width less than 992 and more than:
 
-<p float="left">
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_less_992.png?raw=true" width="45%" >
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_more_992.png?raw=true" width="45%" >
+<p align="center">
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare.png?raw=true"  >
 </p>
 
 ## You can ask any question or suggest something in issue
