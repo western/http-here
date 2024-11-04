@@ -118,6 +118,10 @@ Display width less than 992 and more than:
   <img src="https://github.com/western/http-here/blob/dev/doc/width_more_992.png?raw=true" width="45%" >
 </p>
 
+## You can ask any question or suggest something in issue
+
+https://github.com/western/http-here/issues
+
 ## History
 
 ### backlog
