@@ -174,7 +174,7 @@ func GetAll(c *fiber.Ctx) error {
                     </table>
                     
                     <div class="d-grid gap-2 d-md-block">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="group_del">Delete group</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="group_del">Delete group</button>
                         <button type="button" class="btn btn-outline-secondary btn-sm" id="group_zip">Zip and download group</button>
                     </div>
     			
