@@ -6,7 +6,7 @@ Multiple files upload to current showed folder
 
 Also you can download any files inside current folder, just click on them
 
-In extended mode you can gzip group of files and download it
+In extended mode you can zip group of files and download it
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
