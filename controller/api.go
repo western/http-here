@@ -362,7 +362,7 @@ func PostZip(c *fiber.Ctx) error {
 					LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
 				*/
 
-				addFiles(zipWriter, filepath.Join(arg_fold, u_path, name), name)
+				addFilesToZip(zipWriter, filepath.Join(arg_fold, u_path, name), name)
 
 			} else {
 

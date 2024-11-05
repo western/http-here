@@ -91,7 +91,7 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-func addFiles(w *zip.Writer, basePath, baseInZip string) {
+func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	// Open the Directory
 	//files, err := ioutil.ReadDir(basePath)
 	files, err := os.ReadDir(basePath)
@@ -125,7 +125,8 @@ func addFiles(w *zip.Writer, basePath, baseInZip string) {
 			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
 			//fmt.Println("Recursing and Adding SubDir: " + newBase)
 
-			addFiles(w, newBase, baseInZip+file.Name()+"/")
+			//addFiles(w, newBase, baseInZip+file.Name()+"/")
+			addFilesToZip(w, newBase, filepath.Join(baseInZip, file.Name())+"/")
 		}
 	}
 }
