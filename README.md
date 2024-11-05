@@ -113,10 +113,10 @@ If you put inside folder file index.html, it will be return as context
 
 App change main list view to table.
 
-Display width less than 992 and more than:
+Display width more than 992, less than and mobile window:
 
 <p align="center">
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare.png?raw=true"  >
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare2.png?raw=true"  >
 </p>
 
 ## You can ask any question or suggest something in issue
