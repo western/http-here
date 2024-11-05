@@ -18,6 +18,16 @@ In extended mode you can zip group of files and download it
     <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile.png?raw=true&1" />
 </p>
 
+## If you switch delete mode on --delete-enable
+
+App change main list view to table.
+
+Display width more than 992, less than and mobile window:
+
+<p align="center">
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare2.png?raw=true"  >
+</p>
+
 ## Install from github
 ```console
 go install github.com/western/http-here
@@ -109,15 +119,7 @@ http-here --tls .
 
 If you put inside folder file index.html, it will be return as context
 
-## If you switch delete mode on --delete-enable
 
-App change main list view to table.
-
-Display width more than 992, less than and mobile window:
-
-<p align="center">
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare2.png?raw=true"  >
-</p>
 
 ## You can ask any question or suggest something in issue
 
