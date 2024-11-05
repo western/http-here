@@ -61,11 +61,12 @@ $(document).ready(function(){
             //console.log('el=', $(el).data('name'));
             
             
-            if( confirm("Delete "+$(el).data('name')+"?") ){
+            if( confirm('Delete "'+$(el).data('name')+'"?') ){
                 
                 let formData = new FormData();
 
-                formData.append('name', $(el).data('name'));
+                formData.append('name[1]', $(el).data('name'));
+                //formData.append('name[2]', $(el).data('name')+'_2');
                 
                 $.ajax({
                     url: '/api/delete',
@@ -97,6 +98,133 @@ $(document).ready(function(){
         
         $(':checkbox[name=fold]').prop("checked", chk);
         $(':checkbox[name=file]').prop("checked", chk);
+    })
+    
+    
+    $('#group_del').click((ev) => {
+        
+        let checked = [];
+        
+        $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+            
+            
+            if( $(el).prop('checked') ){
+                checked.push( $(el).val() );
+            }
+        });
+        
+        //console.log('checked=', checked);
+        
+        if( checked.length == 0 ){
+            alert('You need select something')
+        }
+        
+        if( checked.length > 0 && confirm('You really want to del this group?') ){
+            
+            //console.log('del=', checked);
+            
+            let formData = new FormData();
+            
+            $.each(checked, function(indx, val){
+                let i = indx+1;
+                formData.append('name['+i+']', val);
+            });
+            
+            //console.log('formData=', formData);
+            
+            
+            
+            
+            $.ajax({
+                url: '/api/delete',
+                data: formData,
+                type: 'POST',
+                contentType: false,
+                processData: false,
+            }).done(function( data ) {
+                
+                
+                if( data.code == 200 ){
+                    location.href = location.href;
+                }else{
+                    alert(data.msg);
+                }
+            });
+            
+            
+        }
+        
+    })
+    
+    
+    $('#group_zip').click((ev) => {
+        
+        let checked = [];
+        
+        $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+            
+            
+            if( $(el).prop('checked') ){
+                checked.push( $(el).val() );
+            }
+        });
+        
+        //console.log('checked=', checked);
+        
+        if( checked.length == 0 ){
+            alert('You need select something')
+        }
+        
+        if( checked.length > 0 && confirm('You really want to zip this group?') ){
+            
+            //console.log('zip=', checked);
+            
+            let formData = new FormData();
+            
+            $.each(checked, function(indx, val){
+                let i = indx+1;
+                formData.append('name['+i+']', val);
+            });
+            
+            //console.log('formData=', formData);
+            
+            
+            
+            
+            $.ajax({
+                url: '/api/zip',
+                data: formData,
+                type: 'POST',
+                contentType: false,
+                processData: false,
+            }).done(function( data ) {
+                
+                //console.log('data=', data);
+                
+                if( data.code == 200 ){
+                    
+                    window.location.href = data.file;
+                }
+                
+                
+                //let blob = new Blob([data], {type: 'application/zip'});
+                //console.log(blob)
+                
+                //let newWindow = window.open('/pages/loading');
+                
+                //newWindow.location = URL.createObjectURL(blob);
+                
+                /*
+                if( data.code == 200 ){
+                    location.href = location.href;
+                }else{
+                    alert(data.msg);
+                }
+                */
+            });
+            
+            
+        }
         
     })
     

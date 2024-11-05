@@ -99,7 +99,7 @@ func GetAll(c *fiber.Ctx) error {
 					filelist += `
                         
                         <tr>
-                          <td colspan="4">Empty folder</td>
+                          <td colspan="5">Empty folder</td>
                         </tr>
                     `
 				}
@@ -118,7 +118,7 @@ func GetAll(c *fiber.Ctx) error {
 							folderlist += `
                                 
                                 <tr>
-                                  <!--th scope="row"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th-->
+                                  <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="fold" value="` + e.Name() + `" ></th>
                                   <td ><i class="bi bi-folder"></i> <a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">` + e.Name() + `</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
@@ -134,7 +134,7 @@ func GetAll(c *fiber.Ctx) error {
 							filelist += `
                                 
                                 <tr>
-                                  <!--th scope="row"><input class="form-check-input" type="checkbox" name="file" value="` + e.Name() + `" ></th-->
+                                  <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="file" value="` + e.Name() + `" ></th>
                                   <td ><a class="nodecor" href="` + filepath.Join(c_path, e.Name()) + `">` + e.Name() + `</a></td>
                                   
                                   <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">` + size_human + `</td>
@@ -155,7 +155,7 @@ func GetAll(c *fiber.Ctx) error {
                     <table class="table table-hover ">
                       <thead>
                         <tr>
-                          <!--th ><input class="form-check-input head-chk" type="checkbox" value="" ></th-->
+                          <th class="text-center"><input class="form-check-input head-chk" type="checkbox" value="" ></th>
                           <th >name</th>
                           
                           <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
@@ -172,6 +172,11 @@ func GetAll(c *fiber.Ctx) error {
                         
                       </tbody>
                     </table>
+                    
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="group_del">Delete group</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="group_zip">Zip and download group</button>
+                    </div>
     			
     			`)
 

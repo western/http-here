@@ -6,6 +6,9 @@ import (
 	"math/rand"
 	"regexp"
 	"time"
+	"archive/zip"
+	"os"
+	"path/filepath"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
@@ -87,3 +90,45 @@ func RandStringRunes(n int) string {
 	}
 	return string(b)
 }
+
+
+func addFiles(w *zip.Writer, basePath, baseInZip string) {
+    // Open the Directory
+    //files, err := ioutil.ReadDir(basePath)
+    files, err := os.ReadDir(basePath)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    for _, file := range files {
+        //fmt.Println(  filepath.Join(basePath, file.Name())   )
+        if !file.IsDir() {
+            //dat, err := ioutil.ReadFile(basePath + file.Name())
+            dat, err := os.ReadFile(filepath.Join(basePath, file.Name()))
+            if err != nil {
+                fmt.Println(err)
+            }
+
+            // Add some files to the archive.
+            f, err := w.Create(filepath.Join(baseInZip, file.Name()))       
+            if err != nil {
+                fmt.Println(err)
+            }
+            _, err = f.Write(dat)
+            if err != nil {
+                fmt.Println(err)
+            }
+        } else if file.IsDir() {
+
+            // Recurse
+            //newBase := basePath + file.Name() + "/"
+            newBase := filepath.Join(basePath, file.Name()) + "/"
+            //fmt.Println("Recursing and Adding SubDir: " + file.Name())
+            //fmt.Println("Recursing and Adding SubDir: " + newBase)
+
+            addFiles(w, newBase, baseInZip  + file.Name() + "/")
+        }
+    }
+}
+
+
