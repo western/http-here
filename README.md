@@ -113,9 +113,8 @@ App change main list view to table.
 
 Display width less than 992 and more than:
 
-<p float="left">
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_less_992.png?raw=true" width="45%" >
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_more_992.png?raw=true" width="45%" >
+<p align="center">
+  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare.png?raw=true"  >
 </p>
 
 ## You can ask any question or suggest something in issue
@@ -127,6 +126,7 @@ https://github.com/western/http-here/issues
 ### backlog
 - [ ] make img thumbnail storage
 - [ ] still not enable select several elements in table (group operations). it take a place in table
+- [ ] add group operations: delete and zip
 
 ### 1.0.10
 - [x] add --delete-enable arg
