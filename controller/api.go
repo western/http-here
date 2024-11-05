@@ -4,11 +4,11 @@ import (
 	_ "errors"
 	_ "fmt"
 
+	"archive/zip"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"strconv"
-	"archive/zip"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -178,132 +178,109 @@ func PostDelete(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
-    
-    
-    
-    
-    
-    for i:=1 ; i<50 ; i++ {
-        
-        key := "name["+strconv.Itoa(i)+"]"
-        val := c.FormValue(key)
-        
-        if len(val) > 0 {
-            //fmt.Println("val="+val)
-            
-            
-            name := strings.ReplaceAll(val, "/", "")
-        	//re := regexp.MustCompile("\\s+")
-        	//name = re.ReplaceAllLiteralString(name, " ")
 
-        	name = CleanDirtyPath(name)
+	for i := 1; i < 50; i++ {
 
-        	if len(name) == 0 {
-        		LogPrefix(c, "500", "name is empty")
-        		continue
-        		/*
-        		return c.JSON(fiber.Map{
-        			"code": 500,
-        			"msg":  "name is empty",
-        		}, "application/json")
-        		*/
-        	}
+		key := "name[" + strconv.Itoa(i) + "]"
+		val := c.FormValue(key)
 
-        	fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+		if len(val) > 0 {
+			//fmt.Println("val="+val)
 
-        	if err != nil {
-        		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-        		continue
-        		/*
-        		return c.JSON(fiber.Map{
-        			"code": 500,
-        			"msg":  filepath.Join(u_path, name) + " not exists",
-        		}, "application/json")
-        		*/
-        	}
+			name := strings.ReplaceAll(val, "/", "")
+			//re := regexp.MustCompile("\\s+")
+			//name = re.ReplaceAllLiteralString(name, " ")
 
-        	if fileInfo.IsDir() {
+			name = CleanDirtyPath(name)
 
-        		// remove fold and all inside data
+			if len(name) == 0 {
+				LogPrefix(c, "500", "name is empty")
+				continue
+				/*
+					return c.JSON(fiber.Map{
+						"code": 500,
+						"msg":  "name is empty",
+					}, "application/json")
+				*/
+			}
 
-        		if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
+			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 
-        			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
-        			continue
-        			/*
-        			return c.JSON(fiber.Map{
-        				"code": 500,
-        				"msg":  filepath.Join(u_path, name) + " err",
-        			}, "application/json")
-        			*/
-        		}
+			if err != nil {
+				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				continue
+				/*
+					return c.JSON(fiber.Map{
+						"code": 500,
+						"msg":  filepath.Join(u_path, name) + " not exists",
+					}, "application/json")
+				*/
+			}
 
-        		LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+			if fileInfo.IsDir() {
 
-        	} else {
+				// remove fold and all inside data
 
-        		// remove one file
+				if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-        		if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+					continue
+					/*
+						return c.JSON(fiber.Map{
+							"code": 500,
+							"msg":  filepath.Join(u_path, name) + " err",
+						}, "application/json")
+					*/
+				}
 
-        			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
-        			continue
-        			/*
-        			return c.JSON(fiber.Map{
-        				"code": 500,
-        				"msg":  filepath.Join(u_path, name) + " err",
-        			}, "application/json")
-        			*/
-        		}
+				LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
 
-        		LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+			} else {
 
-        	}
-            
-            
-        }
-    }
-    
-    
-    
-    
-    return c.JSON(fiber.Map{
+				// remove one file
+
+				if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+
+					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+					continue
+					/*
+						return c.JSON(fiber.Map{
+							"code": 500,
+							"msg":  filepath.Join(u_path, name) + " err",
+						}, "application/json")
+					*/
+				}
+
+				LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+
+			}
+
+		}
+	}
+
+	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
-    
-    
-    
-    
+
 }
-
-
-
 
 func PostZip(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
-	
-	
-	
-	
-	
+
 	homepath, err2 := os.UserHomeDir()
 	if err2 != nil {
 		log.Fatal(err2)
 	}
 	//fmt.Println( homepath )
-	
-	
+
 	if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
 
 		if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 			log.Fatal(err4)
 		}
 	}
-	
-	
-	
 
 	referer := c.Get("Referer")
 
@@ -319,183 +296,139 @@ func PostZip(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //archive_name := "archive-"+time.Now().Format("2006-01-02T15:04:05")+".zip"
-    archive_name := "archive-"+time.Now().Format("20060102-150405")+".zip"
-    
-    
-    
-    //archive, err := os.Create(filepath.Join(arg_fold, u_path, "archive.zip"))
-    archive, err := os.Create(filepath.Join(homepath, ".httphere", "temp", archive_name))
-    
-    if err != nil {
-        panic(err)
-    }
-    defer archive.Close()
-    
-    
-    
-    zipWriter:=zip.NewWriter(archive)
-    
-    
-    
-    
-    
-    for i:=1 ; i<50 ; i++ {
-        
-        key := "name["+strconv.Itoa(i)+"]"
-        val := c.FormValue(key)
-        
-        if len(val) > 0 {
-            //fmt.Println("val="+val)
-            
-            
-            name := strings.ReplaceAll(val, "/", "")
-        	//re := regexp.MustCompile("\\s+")
-        	//name = re.ReplaceAllLiteralString(name, " ")
 
-        	name = CleanDirtyPath(name)
+	//archive_name := "archive-"+time.Now().Format("2006-01-02T15:04:05")+".zip"
+	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-        	if len(name) == 0 {
-        		LogPrefix(c, "500", "name is empty")
-        		continue
-        		/*
-        		return c.JSON(fiber.Map{
-        			"code": 500,
-        			"msg":  "name is empty",
-        		}, "application/json")
-        		*/
-        	}
+	//archive, err := os.Create(filepath.Join(arg_fold, u_path, "archive.zip"))
+	archive, err := os.Create(filepath.Join(homepath, ".httphere", "temp", archive_name))
 
-        	fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+	if err != nil {
+		panic(err)
+	}
+	defer archive.Close()
 
-        	if err != nil {
-        		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-        		continue
-        		/*
-        		return c.JSON(fiber.Map{
-        			"code": 500,
-        			"msg":  filepath.Join(u_path, name) + " not exists",
-        		}, "application/json")
-        		*/
-        	}
+	zipWriter := zip.NewWriter(archive)
 
-        	if fileInfo.IsDir() {
+	for i := 1; i < 50; i++ {
 
-        		/*
+		key := "name[" + strconv.Itoa(i) + "]"
+		val := c.FormValue(key)
 
-        		if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
+		if len(val) > 0 {
+			//fmt.Println("val="+val)
 
-        			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
-        			continue
-        			
-        		}
+			name := strings.ReplaceAll(val, "/", "")
+			//re := regexp.MustCompile("\\s+")
+			//name = re.ReplaceAllLiteralString(name, " ")
 
-        		LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
-        		*/
-        		
-        		addFiles(zipWriter, filepath.Join(arg_fold, u_path, name),  name)
+			name = CleanDirtyPath(name)
 
-        	} else {
-                
-                /*
-                zipWriter := zip.NewWriter(archive)
-                
-                
-                f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
-                if err != nil {
-                    panic(err)
-                }
-                defer f1.Close()
-                
-                
-                w1, err := zipWriter.Create( name)
-                if err != nil {
-                    panic(err)
-                }
-                if _, err := io.Copy(w1, f1); err != nil {
-                    panic(err)
-                }
-                
-                zipWriter.Close()
-                */
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                f1, err:=os.Open(filepath.Join(arg_fold, u_path, name))
-                if err!=nil{
-                    panic(err)
-                }
-                defer f1.Close()
+			if len(name) == 0 {
+				LogPrefix(c, "500", "name is empty")
+				continue
+				/*
+					return c.JSON(fiber.Map{
+						"code": 500,
+						"msg":  "name is empty",
+					}, "application/json")
+				*/
+			}
 
-                
-                w1,err:=zipWriter.Create( name)
-                if err!=nil{
-                    panic(err)
-                }
-                if _,err:=io.Copy(w1,f1); err != nil{
-                    panic(err)
-                }
-                
-                
-                
-                
-                
-                
-        		
-                /*
-        		if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 
-        			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
-        			continue
-        			
-        		}
+			if err != nil {
+				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				continue
+				/*
+					return c.JSON(fiber.Map{
+						"code": 500,
+						"msg":  filepath.Join(u_path, name) + " not exists",
+					}, "application/json")
+				*/
+			}
 
-        		LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
-        		*/
+			if fileInfo.IsDir() {
 
-        	}
-            
-            
-        }
-    }
-    
-    zipWriter.Close()
-    archive.Close()
-    
-    
-    //return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
-    //return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
-    
-    LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
-    
-    return c.JSON(fiber.Map{
+				/*
+
+					if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
+
+						LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+						continue
+
+					}
+
+					LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+				*/
+
+				addFiles(zipWriter, filepath.Join(arg_fold, u_path, name), name)
+
+			} else {
+
+				/*
+				   zipWriter := zip.NewWriter(archive)
+
+
+				   f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
+				   if err != nil {
+				       panic(err)
+				   }
+				   defer f1.Close()
+
+
+				   w1, err := zipWriter.Create( name)
+				   if err != nil {
+				       panic(err)
+				   }
+				   if _, err := io.Copy(w1, f1); err != nil {
+				       panic(err)
+				   }
+
+				   zipWriter.Close()
+				*/
+
+				f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
+				if err != nil {
+					panic(err)
+				}
+				defer f1.Close()
+
+				w1, err := zipWriter.Create(name)
+				if err != nil {
+					panic(err)
+				}
+				if _, err := io.Copy(w1, f1); err != nil {
+					panic(err)
+				}
+
+				/*
+					if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+
+						LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+						continue
+
+					}
+
+					LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+				*/
+
+			}
+
+		}
+	}
+
+	zipWriter.Close()
+	archive.Close()
+
+	//return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
+	//return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
+
+	LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
+
+	return c.JSON(fiber.Map{
 		"code": 200,
-		"file": filepath.Join( "/__temp/", archive_name),
+		"file": filepath.Join("/__temp/", archive_name),
 	}, "application/json")
-    
-    
-    
-    
+
 }
-
-
-
-

@@ -8,12 +8,12 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"net/url"
 
 	"github.com/fatih/color"
 
@@ -25,8 +25,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	_ "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/template/html/v2"
-	
-	
+
 	_ "archive/zip"
 	_ "io"
 )
@@ -56,12 +55,6 @@ func main() {
 	arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
 
 	flag.Parse()
-	
-	
-	
-	
-	
-	
 
 	if *arg_help {
 
@@ -116,20 +109,6 @@ func main() {
 		fmt.Println(arg_fold + " is not exist")
 		return
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -255,88 +234,68 @@ func main() {
 		PathPrefix: "",
 		Browse:     false,
 	}))
-	
-	
-	
-	
+
 	homepath, err2 := os.UserHomeDir()
 	if err2 != nil {
 		log.Fatal(err2)
 	}
 	//fmt.Println( homepath )
-	
-	
+
 	if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
-        
-        fmt.Println("")
-        fmt.Println("  Make temp folder")
-        
+
+		fmt.Println("")
+		fmt.Println("  Make temp folder")
+
 		if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 			log.Fatal(err4)
 		}
-	}else{
-	    
-	    fmt.Println("")
-	    fmt.Println(yellow("  Clear temp folder"))
-	    
-	    if err := os.RemoveAll(filepath.Join(homepath, ".httphere", "temp")); err != nil {
-    		log.Fatal(err)
-    	}
-    	
-    	if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
+	} else {
+
+		fmt.Println("")
+		fmt.Println(yellow("  Clear temp folder"))
+
+		if err := os.RemoveAll(filepath.Join(homepath, ".httphere", "temp")); err != nil {
+			log.Fatal(err)
+		}
+
+		if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 			log.Fatal(err4)
 		}
-	    
+
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	//app.Static("/__temp", filepath.Join(homepath, ".httphere", "temp"))
-	
+
 	app.Get("/__temp/*", func(c *fiber.Ctx) error {
-        
-        
-        c_path, err := url.QueryUnescape(c.Path())
-        c_path = strings.TrimLeft(c_path, "/__temp")
-    	if err != nil {
 
-    		log.Println(err)
-    		controller.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path))
-    		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
-    	}
+		c_path, err := url.QueryUnescape(c.Path())
+		c_path = strings.TrimLeft(c_path, "/__temp")
+		if err != nil {
 
-    	c_path = controller.CleanDirtyPath(c_path)
-    	//fmt.Println("c_path=" + c_path)
-        
-        
-        
-        _, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
+			log.Println(err)
+			controller.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path))
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		}
 
-    	if err != nil {
-    		controller.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
-    		
-    		
-    		return c.JSON(fiber.Map{
-    			"code": 404,
-    			"msg":  filepath.Join(c_path) + " not exists",
-    		}, "application/json")
-    		
-    	}
-    	
-    	controller.LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
-        
-        return c.SendFile(filepath.Join(homepath, ".httphere", "temp", c_path))
-    })
-	
-	
-	
+		c_path = controller.CleanDirtyPath(c_path)
+		//fmt.Println("c_path=" + c_path)
+
+		_, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
+
+		if err != nil {
+			controller.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+
+			return c.JSON(fiber.Map{
+				"code": 404,
+				"msg":  filepath.Join(c_path) + " not exists",
+			}, "application/json")
+
+		}
+
+		controller.LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
+
+		return c.SendFile(filepath.Join(homepath, ".httphere", "temp", c_path))
+	})
 
 	app.Options("/*", controller.OptionsAll)
 
@@ -355,10 +314,9 @@ func main() {
 	if *arg_delete_enable {
 		app.Post("/api/delete", controller.PostDelete)
 	}
-	
+
 	app.Post("/api/zip", controller.PostZip)
-    
-    
+
 	app.Use(func(c *fiber.Ctx) error {
 
 		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
@@ -368,11 +326,6 @@ func main() {
 
 	// /home/andrew/.httphere/easyrsa/pki/issued/server1.crt
 	// /home/andrew/.httphere/easyrsa/pki/private/server1.key
-
-	
-	
-
-	
 
 	crt_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
 	key_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
