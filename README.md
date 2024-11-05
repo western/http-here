@@ -169,7 +169,7 @@ https://github.com/western/http-here/issues
 
 ### 1.0.0
 first release
-- upload file up to 7 Gb
+- upload file BodyLimit 7 Gb
 - multiple upload to 20 files
 - make folder in current show path
 - show current folder
