@@ -313,9 +313,10 @@ func main() {
 
 	if *arg_delete_enable {
 		app.Post("/api/delete", controller.PostDelete)
+		app.Post("/api/zip", controller.PostZip)
 	}
 
-	app.Post("/api/zip", controller.PostZip)
+	
 
 	app.Use(func(c *fiber.Ctx) error {
 
