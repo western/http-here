@@ -125,8 +125,11 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [ ] make img thumbnail storage
-- [ ] still not enable select several elements in table (group operations). it take a place in table
-- [ ] add group operations: delete and zip
+
+### 1.0.11
+- [x] modify api for several names support
+- [x] temporary storage support .httphere/temp
+- [x] add group operations: delete and zip
 
 ### 1.0.10
 - [x] add --delete-enable arg
