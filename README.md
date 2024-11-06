@@ -121,7 +121,7 @@ If you put inside folder file index.html, it will be return as context
 
 
 
-## You can ask any question or suggest something in issue
+## You can ask any question or suggest something
 
 https://github.com/western/http-here/issues
 
