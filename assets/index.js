@@ -169,15 +169,15 @@ $(document).ready(function(){
             }
         });
         
-        //console.log('checked=', checked);
+        
         
         if( checked.length == 0 ){
             alert('You need select something')
         }
         
-        if( checked.length > 0 && confirm('You really want to zip this group?') ){
+        if( checked.length > 0  ){
             
-            //console.log('zip=', checked);
+            
             
             let formData = new FormData();
             
@@ -186,7 +186,7 @@ $(document).ready(function(){
                 formData.append('name['+i+']', val);
             });
             
-            //console.log('formData=', formData);
+            
             
             
             
@@ -199,7 +199,7 @@ $(document).ready(function(){
                 processData: false,
             }).done(function( data ) {
                 
-                //console.log('data=', data);
+                
                 
                 if( data.code == 200 ){
                     
@@ -207,20 +207,7 @@ $(document).ready(function(){
                 }
                 
                 
-                //let blob = new Blob([data], {type: 'application/zip'});
-                //console.log(blob)
                 
-                //let newWindow = window.open('/pages/loading');
-                
-                //newWindow.location = URL.createObjectURL(blob);
-                
-                /*
-                if( data.code == 200 ){
-                    location.href = location.href;
-                }else{
-                    alert(data.msg);
-                }
-                */
             });
             
             
