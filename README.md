@@ -127,7 +127,7 @@ https://github.com/western/http-here/issues
 ## History
 
 ### backlog
-
+- [ ] add --log and --tee args for save output
 
 ### 1.2.0
 - [x] make img thumbnail storage
