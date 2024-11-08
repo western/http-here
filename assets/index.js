@@ -56,6 +56,9 @@ $(document).ready(function(){
     
     $('a.del').click((ev) => {
         let el = ev.target;
+        
+        //console.log('el=', el);
+        
         if(el.tagName == "I"){
             el = el.parentNode;
             //console.log('el=', $(el).data('name'));

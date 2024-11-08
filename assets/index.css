@@ -5,6 +5,8 @@
 a.nodecor {
     text-decoration: none;
 }
+
+/*
 ul.list-group {
     padding: 0 12px;
 }
@@ -24,7 +26,7 @@ li.list-group-item{
 li.list-group-item i{
     margin-right: 10px;
 }
-
+*/
 
 
 
@@ -65,9 +67,11 @@ div.list-group a.file {
 }
 
 
-.table {
+
+.file-table {
     margin-bottom: 50px;
 }
+
 
 /*
 .table th:nth-child(1) {
@@ -111,5 +115,35 @@ div.list-group a.file {
     text-overflow: clip;
     white-space: normal;
     word-break: break-all;
+}
+
+
+
+
+
+
+
+
+
+
+.bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+@media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+    }
+}
+
+
+.input-group-text.font-reset{
+
+    font-size: unset !important;
+
 }
 

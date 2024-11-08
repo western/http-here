@@ -52,7 +52,8 @@ func main() {
 
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
 
-	arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
+	//arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
+	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
 
 	flag.Parse()
 
@@ -78,7 +79,7 @@ func main() {
 			``,
 			`     --tls                     Start HTTPS (need easyrsa linux package).`,
 			``,
-			`     --delete-enable           Enable delete mechanics. Be very careful. It disabled by default.`,
+			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
@@ -135,9 +136,9 @@ func main() {
 
 			c.Locals("arg_folder_make_disable", "1")
 		}
-		if *arg_delete_enable {
+		if *arg_extend_mode {
 
-			c.Locals("arg_delete_enable", "1")
+			c.Locals("arg_extend_mode", "1")
 		}
 
 		return c.Next()
@@ -311,12 +312,10 @@ func main() {
 		app.Post("/api/folder", controller.PostFolder)
 	}
 
-	if *arg_delete_enable {
+	if *arg_extend_mode {
 		app.Post("/api/delete", controller.PostDelete)
 		app.Post("/api/zip", controller.PostZip)
 	}
-
-	
 
 	app.Use(func(c *fiber.Ctx) error {
 
