@@ -5,10 +5,11 @@
 $(document).ready(function(){
 
     $('#upload_file').on('change', function(ev){
-
+        
+        $('#signal').removeClass('visually-hidden');
+        $(ev.target).prop('disabled', true);
+        
         return ev_target_files(ev.target.files);
-
-
     });
 
     let make_new_folder = function(ev){
@@ -126,6 +127,7 @@ $(document).ready(function(){
             
             //console.log('del=', checked);
             
+            
             let formData = new FormData();
             
             $.each(checked, function(indx, val){
@@ -180,7 +182,7 @@ $(document).ready(function(){
         
         if( checked.length > 0  ){
             
-            
+            $(ev.target).prop('disabled', true);
             
             let formData = new FormData();
             
@@ -206,6 +208,7 @@ $(document).ready(function(){
                 
                 if( data.code == 200 ){
                     
+                    $(ev.target).prop('disabled', false);
                     window.location.href = data.file;
                 }
                 
@@ -223,7 +226,7 @@ $(document).ready(function(){
 
 
 function ev_target_files(files){
-    $('#signal').removeClass('visually-hidden');
+    
 
 
     if ( files.length > config.files_count_max ){
