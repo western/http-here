@@ -42,7 +42,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.0.11/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.1.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -129,6 +129,9 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [ ] make img thumbnail storage
+
+### 1.1.0
+- [x] add extended view mode (replace delete mode)
 
 ### 1.0.11
 - [x] modify api for several names support
