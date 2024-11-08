@@ -18,7 +18,7 @@ In extended mode you can delete or zip group of files
     <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile.png?raw=true&1" />
 </p>
 
-## If you switch delete mode on --delete-enable
+## If you switch extended mode on --extend-mode
 
 App will change main list view to table.
 
