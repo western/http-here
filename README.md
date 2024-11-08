@@ -25,7 +25,8 @@ App will change main list view to table.
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
 
 <p align="center">
-  <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare2.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare3.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare4.png?raw=true"  >
 </p>
 
 ## Install from github
