@@ -430,10 +430,18 @@ func listGenerateViewThumbnails(arg_fold string, c_path string, entries []os.Dir
 				//if ext == "jpg" {
 				if is_match {
 
+					/*
+										img_preview = `
+					    		            <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat center/80% url(` + filepath.Join(c_path, e.Name()) + `); background-size: cover;  " >
+					    		            </div>
+					    				`
+					*/
+
 					img_preview = `
-    		            <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat center/80% url(` + filepath.Join(c_path, e.Name()) + `); background-size: cover;  " >
+    		            <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat center/80% url(` + filepath.Join("/__resize", c_path, e.Name()) + `); background-size: cover;  " >
     		            </div>
     				`
+
 				}
 
 				filelist += `

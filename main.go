@@ -267,6 +267,11 @@ func main() {
 
 	//app.Static("/__temp", filepath.Join(homepath, ".httphere", "temp"))
 
+	if *arg_extend_mode {
+		//app.Get("/__resize/:width/:height/**", controller.GetResize)
+		app.Get("/__resize/**", controller.GetResize)
+	}
+
 	app.Get("/__temp/*", func(c *fiber.Ctx) error {
 
 		c_path, err := url.QueryUnescape(c.Path())
@@ -315,6 +320,7 @@ func main() {
 	if *arg_extend_mode {
 		app.Post("/api/delete", controller.PostDelete)
 		app.Post("/api/zip", controller.PostZip)
+
 	}
 
 	app.Use(func(c *fiber.Ctx) error {
