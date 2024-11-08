@@ -4,8 +4,6 @@ Share folder via http with upload
 
 Multiple files upload to current showed folder
 
-Also you can download any files inside current folder, just click on them
-
 In extended mode you can delete or zip group of files
 
 <p align="center">
