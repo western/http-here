@@ -58,9 +58,9 @@ func PostUpload(c *fiber.Ctx) error {
 		file_ext := filepath.Ext(file.Filename)
 		file_ext = strings.Replace(file_ext, ".", "", -1)
 		file_ext = strings.ToLower(file_ext)
-	    if file_ext == "jpeg" {
-		    file_ext = "jpg"
-	    }
+		if file_ext == "jpeg" {
+			file_ext = "jpg"
+		}
 
 		originalFileName := strings.TrimSuffix(
 			filepath.Base(file.Filename),
@@ -498,22 +498,22 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
 	/*
-		c_width := c.Params("width")
-		c_height := c.Params("height")
+			c_width := c.Params("width")
+			c_height := c.Params("height")
 
-		c_path = strings.Replace(c_path, "/"+c_width, "", 1)
-		c_path = strings.Replace(c_path, "/"+c_height, "", 1)
+			c_path = strings.Replace(c_path, "/"+c_width, "", 1)
+			c_path = strings.Replace(c_path, "/"+c_height, "", 1)
 
 
-		i_width, err := strconv.Atoi(c_width)
-	    if err != nil {
-	        log.Fatal(err)
-	    }
+			i_width, err := strconv.Atoi(c_width)
+		    if err != nil {
+		        log.Fatal(err)
+		    }
 
-		i_height, err := strconv.Atoi(c_height)
-	    if err != nil {
-	        log.Fatal(err)
-	    }
+			i_height, err := strconv.Atoi(c_height)
+		    if err != nil {
+		        log.Fatal(err)
+		    }
 	*/
 
 	c_width := "800"
@@ -651,19 +651,19 @@ func GetResize(c *fiber.Ctx) error {
 
 		//dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X, src.Bounds().Max.Y))
 		var dst *image.RGBA
-		
+
 		if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
 			dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
-		}else{
-		    
-		    LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
-		    
-		    err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name)) 
-            if err != nil { 
-                log.Fatal(err)
-            }
+		} else {
 
-		    return c.SendFile(filepath.Join(arg_fold, c_path), false)
+			LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+
+			err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			return c.SendFile(filepath.Join(arg_fold, c_path), false)
 		}
 
 		// Resize:
