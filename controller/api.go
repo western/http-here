@@ -657,6 +657,11 @@ func GetResize(c *fiber.Ctx) error {
 		}else{
 		    
 		    LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+		    
+		    err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name)) 
+            if err != nil { 
+                log.Fatal(err)
+            }
 
 		    return c.SendFile(filepath.Join(arg_fold, c_path), false)
 		}
