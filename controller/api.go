@@ -55,8 +55,12 @@ func PostUpload(c *fiber.Ctx) error {
 	files := form.File["fileBlob"]
 
 	for _, file := range files {
-		fileExt := filepath.Ext(file.Filename)
-		fileExt = strings.ToLower(fileExt)
+		file_ext := filepath.Ext(file.Filename)
+		file_ext = strings.Replace(file_ext, ".", "", -1)
+		file_ext = strings.ToLower(file_ext)
+	    if file_ext == "jpeg" {
+		    file_ext = "jpg"
+	    }
 
 		originalFileName := strings.TrimSuffix(
 			filepath.Base(file.Filename),
@@ -67,7 +71,7 @@ func PostUpload(c *fiber.Ctx) error {
 		re := regexp.MustCompile("\\s+")
 		originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
 
-		filename := originalFileName + fileExt
+		filename := originalFileName + "." + file_ext
 		filename = CleanDirtyPath(filename)
 
 		if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, filename)); err == nil {
@@ -645,9 +649,16 @@ func GetResize(c *fiber.Ctx) error {
 		// Set the expected size that you want:
 		//dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/2, src.Bounds().Max.Y/2))
 
-		dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X, src.Bounds().Max.Y))
+		//dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X, src.Bounds().Max.Y))
+		var dst *image.RGBA
+		
 		if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
 			dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+		}else{
+		    
+		    LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+
+		    return c.SendFile(filepath.Join(arg_fold, c_path), false)
 		}
 
 		// Resize:
