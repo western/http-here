@@ -41,7 +41,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.2.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.2.2/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
