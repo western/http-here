@@ -98,7 +98,7 @@ func GetAll(c *fiber.Ctx) error {
 
 			//fmt.Println(reflect.TypeOf(fl))
 			//fmt.Println(reflect.TypeOf(entries))
-			
+
 			var rows []FileRow
 			var mode string
 
@@ -111,38 +111,34 @@ func GetAll(c *fiber.Ctx) error {
 					mode = q_mode
 				}
 
-				
-                
 				cookie := new(fiber.Cookie)
 				cookie.Name = "mode"
 				cookie.Value = mode
 				c.Cookie(cookie)
 
 			}
-			
-			
-			
+
 			rows = listGenerateView(arg_fold, c_path, entries)
-			
+
 			mode_thumb := false
 			if mode == "thumb" {
-			    mode_thumb = true
+				mode_thumb = true
 			}
-            
-            mode_list := false
+
+			mode_list := false
 			if mode == "list" {
-			    mode_list = true
+				mode_list = true
 			}
-            
+
 			return c.Render("view/index", fiber.Map{
 
 				"Breadcrumb": template.HTML(breadcrumb),
 				//"Filelist":   fl,
-				
-				"rows": rows,
+
+				"rows":            rows,
 				"arg_extend_mode": arg_extend_mode,
-				"mode_thumb": mode_thumb,
-				"mode_list": mode_list,
+				"mode_thumb":      mode_thumb,
+				"mode_list":       mode_list,
 
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,
@@ -172,36 +168,28 @@ func GetAll(c *fiber.Ctx) error {
 
 }
 
-
-
-
 type FileRow struct {
-    IsDir bool
-    FullPath string
-    Name string
-    SizeHuman string
-    ModTimeHuman string
-    IsPreview bool
+	IsDir        bool
+	FullPath     string
+	Name         string
+	SizeHuman    string
+	ModTimeHuman string
+	IsPreview    bool
 }
-
-
 
 func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []FileRow {
 
-	
-    
-    var rows_dir []FileRow
-    var rows_file []FileRow
-    
+	var rows_dir []FileRow
+	var rows_file []FileRow
+
 	for _, e := range entries {
-        
-        ext := filepath.Ext(e.Name())
+
+		ext := filepath.Ext(e.Name())
 		ext = strings.ToLower(ext)
 		ext = strings.Replace(ext, ".", "", -1)
-		
+
 		is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
-		
-        
+
 		if fileInfo2, err := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
 			modtime := fileInfo2.ModTime()
@@ -209,38 +197,30 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []F
 
 			size := fileInfo2.Size()
 			size_human := prettyByteSize(size)
-			
-			
-			
-			if fileInfo2.IsDir() {
-    			rows_dir = append(rows_dir, FileRow{
-    			    IsDir: fileInfo2.IsDir(),
-    			    FullPath: filepath.Join(c_path, e.Name()),
-    			    Name: e.Name(),
-    			    SizeHuman: size_human,
-    			    ModTimeHuman: modtime_human,
-    			    IsPreview: false,
-    			})
-    		}else{
-    		    rows_file = append(rows_file, FileRow{
-    			    IsDir: fileInfo2.IsDir(),
-    			    FullPath: filepath.Join(c_path, e.Name()),
-    			    Name: e.Name(),
-    			    SizeHuman: size_human,
-    			    ModTimeHuman: modtime_human,
-    			    IsPreview: is_preview_match,
-    			})
-    		}
 
-            
+			if fileInfo2.IsDir() {
+				rows_dir = append(rows_dir, FileRow{
+					IsDir:        fileInfo2.IsDir(),
+					FullPath:     filepath.Join(c_path, e.Name()),
+					Name:         e.Name(),
+					SizeHuman:    size_human,
+					ModTimeHuman: modtime_human,
+					IsPreview:    false,
+				})
+			} else {
+				rows_file = append(rows_file, FileRow{
+					IsDir:        fileInfo2.IsDir(),
+					FullPath:     filepath.Join(c_path, e.Name()),
+					Name:         e.Name(),
+					SizeHuman:    size_human,
+					ModTimeHuman: modtime_human,
+					IsPreview:    is_preview_match,
+				})
+			}
+
 		}
 
 	}
 
-	
 	return append(rows_dir, rows_file...)
 }
-
-
-
-
