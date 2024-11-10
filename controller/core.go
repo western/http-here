@@ -105,6 +105,9 @@ func GetAll(c *fiber.Ctx) error {
 			if arg_extend_mode == "1" {
 
 				mode = c.Cookies("mode")
+				if len(mode) == 0 {
+				    mode = "list"
+				}
 
 				q_mode := c.Query("mode")
 				if len(q_mode) > 0 {
