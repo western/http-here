@@ -20,9 +20,9 @@ $(document).ready(function(){
         
         $('div.list-group-item').click((ev) => {
             
-            //console.log(ev.target);
+            
             let path = $(ev.target).data('path');
-            console.log('path=', path);
+            //console.log('path=', path);
             
             $('#move_folder_input').val(path);
         });
