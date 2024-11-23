@@ -509,7 +509,7 @@ func GetResize(c *fiber.Ctx) error {
 	*/
 
 	c_width := "800"
-	c_height := "600"
+	//c_height := "600"
 
 	i_width := 800
 	i_height := 600
@@ -567,12 +567,11 @@ func GetResize(c *fiber.Ctx) error {
 	}
 	//fmt.Println("file_ext="+file_ext)
 
-	/*
-		orig_filename := strings.TrimSuffix(
-			filepath.Base(c_path),
-			filepath.Ext(c_path),
-		)
-	*/
+	// /fold1/forest_fog_road_126787_3840x2400.jpg => forest_fog_trees_127289_3840x2400
+	orig_filename := strings.TrimSuffix(
+		filepath.Base(c_path),
+		filepath.Ext(c_path),
+	)
 	//fmt.Println("orig_filename="+orig_filename)
 
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
@@ -585,7 +584,9 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	hash_name := md5.Sum([]byte(filepath.Join(arg_fold, c_path) + modtime_human + size_human + c_width + "x" + c_height))
+    //fmt.Println("modtime_human="+modtime_human)
+    
+	hash_name := md5.Sum([]byte( orig_filename + modtime_human + size_human + c_width ))
 	hex_name := hex.EncodeToString(hash_name[:])
 
 	//fmt.Println("hex_name="+hex_name)
