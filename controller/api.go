@@ -310,6 +310,8 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 	
+	to = CleanDirtyPath(to)
+	
 
 	for i := 1; i < 50; i++ {
 
