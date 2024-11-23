@@ -128,6 +128,7 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [ ] add --log and --tee args for save output
+- [ ] change background actions for FS driver
 
 ### 1.3.0
 - [x] add move function
