@@ -9,10 +9,27 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+
+
+func RandStringRunes(n int) string {
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
 
 func CleanDirtyPath(p string) string {
 
@@ -66,6 +83,15 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 
 }
 
+func GetExt(path string) string {
+
+	ext := filepath.Ext(path)
+	ext = strings.ToLower(ext)
+	ext = strings.Replace(ext, ".", "", -1)
+
+	return ext
+}
+
 func prettyByteSize(b int64) string {
 	bf := float64(b)
 	for _, unit := range []string{"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"} {
@@ -77,19 +103,6 @@ func prettyByteSize(b int64) string {
 	return fmt.Sprintf("%.1fYiB", bf)
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func RandStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
-}
 
 func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	// Open the Directory
@@ -130,3 +143,99 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 		}
 	}
 }
+
+func WalkAndClear( path string ){
+    
+    files, err := os.ReadDir(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for _, file := range files {
+	    
+	    full_name := filepath.Join(path, file.Name())
+	    
+	    if !file.IsDir() {
+	        
+	        fileInfo, _ := os.Stat(full_name)
+	        
+	        if time.Now().Sub(fileInfo.ModTime()) > 7 * 24 * time.Hour {
+	            //fmt.Println( "to del:", full_name )
+	            os.Remove( full_name )
+	        }else{
+	            //fmt.Println( "file:", full_name )
+	        }
+	        
+	    } else if file.IsDir() {
+	        WalkAndClear( full_name )
+	    }
+	}
+}
+
+
+type TreeRow struct {
+	
+	Text  string `json:"text"`
+	Path  string `json:"path"`
+	
+	
+	Expanded  bool `json:"expanded"`
+	
+	Nodes []TreeRow `json:"nodes"`
+}
+
+func WalkAndTreeBuild( path string, prev_path string, deep int ) []TreeRow {
+    
+    //fmt.Println("WalkAndTreeBuild ", path)
+    
+    var node_list []TreeRow
+    
+    
+    files, err := os.ReadDir(path)
+	if err != nil {
+		//fmt.Println(err)
+		return node_list
+	}
+	
+	if deep > 5 {
+        return node_list
+    }
+	
+
+	for _, file := range files {
+	    
+	    
+	    
+	    if !file.IsDir() {
+	        
+	        /*
+	        node_list = append( node_list, TreeRow{
+				
+				Text:         file.Name(),
+				
+			})
+	        */
+	        
+	        
+	    } else if file.IsDir() {
+	        
+	        
+	        
+	        nodes := WalkAndTreeBuild(  filepath.Join(path, file.Name()),  filepath.Join(prev_path, file.Name()),   deep+1 )
+	        
+	        node_list = append( node_list, TreeRow{
+				
+				Text:         file.Name(),
+				Path:         filepath.Join(prev_path, file.Name()),
+				
+				Nodes: nodes,
+			})
+			
+	    }
+	}
+	
+	return node_list
+}
+
+
+

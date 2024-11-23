@@ -3,7 +3,107 @@
 
 
 $(document).ready(function(){
+    
+    
+    
+    
+    if( typeof(folderTree) != 'undefined' ){
+    
+        $('#folderTree').bstreeview({
+            data: folderTree,
+            expandIcon: 'bi bi-caret-down',
+            collapseIcon: 'bi bi-caret-right',
+            indent: 1.25,
+            parentsMarginLeft: '1.25rem',
+            openNodeLinkOnNewTab: true
+        });
+        
+        $('div.list-group-item').click((ev) => {
+            
+            //console.log(ev.target);
+            let path = $(ev.target).data('path');
+            console.log('path=', path);
+            
+            $('#move_folder_input').val(path);
+        });
+        
+        $('#move_folder_button').click((ev) => {
+            
+            //console.log('button');
+            
+            
+            let val = $('#move_folder_input').val();
 
+            if ( val.length == 0 ){
+                alert('Please choose folder');
+                return;
+            }
+            
+            
+            let checked = [];
+            
+            $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+                
+                
+                if( $(el).prop('checked') ){
+                    checked.push( $(el).val() );
+                }
+            });
+            
+            
+            
+            if( checked.length == 0 ){
+                alert('Please select some file')
+            }
+            
+            if( checked.length > 0  ){
+                
+                //console.log('del=', checked);
+                
+                
+                let formData = new FormData();
+                
+                formData.append('to', val);
+                
+                $.each(checked, function(indx, val){
+                    let i = indx+1;
+                    formData.append('name['+i+']', val);
+                });
+                
+                //console.log('formData=', formData);
+                
+                
+                
+                
+                $.ajax({
+                    url: '/api/move',
+                    data: formData,
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                }).done(function( data ) {
+                    
+                    
+                    if( data.code == 200 ){
+                        location.href = location.href;
+                    }else{
+                        alert(data.msg);
+                    }
+                });
+                
+                
+            }
+            
+            
+        });
+    
+    }
+    
+    
+    
+    
+    
+    
     $('#upload_file').on('change', function(ev){
         
         $('#signal').removeClass('visually-hidden');
@@ -219,6 +319,33 @@ $(document).ready(function(){
             
         }
         
+    })
+    
+    
+    $('#group_move').click((ev) => {
+        
+        let checked = [];
+        
+        $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+            
+            
+            if( $(el).prop('checked') ){
+                checked.push( $(el).val() );
+            }
+        });
+        
+        
+        
+        if( checked.length == 0 ){
+            alert('You need select something')
+        }
+        
+        if( checked.length > 0  ){
+            
+            
+            new bootstrap.Offcanvas('#offcanvasMove').show()
+        }
+    
     })
     
 

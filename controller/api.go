@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	_ "fmt"
+	"fmt"
 
 	"archive/zip"
 	"path/filepath"
@@ -278,6 +278,86 @@ func PostDelete(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
+
+func PostMove(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+    
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
+	if err != nil {
+
+		log.Println(err)
+		LogPrefix(c, "500", "Error url parse "+referer)
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
+	}
+
+	u_path := CleanDirtyPath(u.Path)
+	
+	
+	to := c.FormValue("to")
+	_, err = os.Stat(filepath.Join(arg_fold, to))
+	if err != nil {
+		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists")
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
+	}
+	
+
+	for i := 1; i < 50; i++ {
+
+		key := "name[" + strconv.Itoa(i) + "]"
+		val := c.FormValue(key)
+
+		if len(val) > 0 {
+			//fmt.Println("val="+val)
+
+			name := strings.ReplaceAll(val, "/", "")
+			//re := regexp.MustCompile("\\s+")
+			//name = re.ReplaceAllLiteralString(name, " ")
+
+			name = CleanDirtyPath(name)
+
+			if len(name) == 0 {
+				LogPrefix(c, "500", "name is empty")
+				continue
+			}
+
+			_, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+			if err != nil {
+				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				continue
+			}
+
+			//if !fileInfo.IsDir() {
+                
+				
+                
+                err = os.Rename( filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name) )
+                
+                if err != nil {
+				    //fmt.Errorf("something %s", foo)
+				    LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
+				    
+			    }
+			//}   
+
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"code": 200,
+	}, "application/json")
+
+}
+
 
 func PostZip(c *fiber.Ctx) error {
 
