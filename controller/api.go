@@ -336,18 +336,21 @@ func PostMove(c *fiber.Ctx) error {
 				continue
 			}
 
-			//if !fileInfo.IsDir() {
+			
                 
 				
                 
-                err = os.Rename( filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name) )
-                
-                if err != nil {
-				    //fmt.Errorf("something %s", foo)
-				    LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
-				    
-			    }
-			//}   
+            err = os.Rename( filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name) )
+            
+            if err != nil {
+			    //fmt.Errorf("something %s", foo)
+			    LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
+			    
+		    }else{
+		        
+		        LogPrefix(c, "200", "Move '"+filepath.Join(arg_fold, u_path, name)+"' to "+filepath.Join(arg_fold, to, name))
+		    }
+			
 
 		}
 	}
