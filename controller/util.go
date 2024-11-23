@@ -155,7 +155,7 @@ func WalkAndClear(path string) {
 
 			fileInfo, _ := os.Stat(full_name)
 
-			if time.Now().Sub(fileInfo.ModTime()) > 7*24*time.Hour {
+			if time.Now().Sub(fileInfo.ModTime()) > 30 * 24 * time.Hour {
 				//fmt.Println( "to del:", full_name )
 				os.Remove(full_name)
 			} else {

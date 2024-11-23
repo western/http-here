@@ -61,7 +61,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.3.1`,
+			`v1.3.2`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -125,7 +125,7 @@ func main() {
 		}
 	}
 
-	//go controller.WalkAndClear( filepath.Join(homepath, ".httphere", "thumb") )
+	go controller.WalkAndClear( filepath.Join(homepath, ".httphere", "thumb") )
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
