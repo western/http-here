@@ -52,8 +52,8 @@ func main() {
 
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
 
-	//arg_delete_enable := flag.Bool("delete-enable", false, "Be very carefull. It disabled by default. Enable delete mechanics")
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
+	
 
 	flag.Parse()
 
@@ -61,7 +61,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.3.0`,
+			`v1.3.1`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
