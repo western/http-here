@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	_ "fmt"
 	"html/template"
@@ -11,7 +12,6 @@ import (
 	_ "reflect"
 	"regexp"
 	"strings"
-	"encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -105,12 +105,12 @@ func GetAll(c *fiber.Ctx) error {
 			var mode string
 
 			if arg_extend_mode == "1" {
-                
-                template_file = "index_extend"
-                
+
+				template_file = "index_extend"
+
 				mode = c.Cookies("mode")
 				if len(mode) == 0 {
-				    mode = "list"
+					mode = "list"
 				}
 
 				q_mode := c.Query("mode")
@@ -136,20 +136,18 @@ func GetAll(c *fiber.Ctx) error {
 			if mode == "list" {
 				mode_list = true
 			}
-			
-			
-			//folderTree := WalkAndTreeBuild( filepath.Join(arg_fold, c_path), "/", 1 )
-			folderTree := WalkAndTreeBuild( arg_fold, "/", 1 )
-			
-			folderTree_js, err := json.Marshal(folderTree)
-            if err != nil {
-                //fmt.Println(err)
-                panic(err)
-                return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
-            }
-			
 
-			return c.Render("view/" + template_file, fiber.Map{
+			//folderTree := WalkAndTreeBuild( filepath.Join(arg_fold, c_path), "/", 1 )
+			folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
+
+			folderTree_js, err := json.Marshal(folderTree)
+			if err != nil {
+				//fmt.Println(err)
+				panic(err)
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+			}
+
+			return c.Render("view/"+template_file, fiber.Map{
 
 				"Breadcrumb": template.HTML(breadcrumb),
 				//"Filelist":   fl,
@@ -167,7 +165,6 @@ func GetAll(c *fiber.Ctx) error {
 
 				"arg_upload_disable":      arg_upload_disable,
 				"arg_folder_make_disable": arg_folder_make_disable,
-				
 			}, "view/layout")
 
 		} else {

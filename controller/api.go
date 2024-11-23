@@ -284,7 +284,6 @@ func PostMove(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-    
 	referer := c.Get("Referer")
 
 	// already decoded
@@ -299,18 +298,17 @@ func PostMove(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
-	
-	
+
 	to := c.FormValue("to")
 	to = CleanDirtyPath(to)
-	
+
 	if len(to) == 0 {
 		LogPrefix(c, "500", "to is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 		}, "application/json")
 	}
-	
+
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err != nil {
 		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists")
@@ -318,9 +316,6 @@ func PostMove(c *fiber.Ctx) error {
 			"code": 500,
 		}, "application/json")
 	}
-	
-	
-	
 
 	for i := 1; i < 50; i++ {
 
@@ -347,21 +342,16 @@ func PostMove(c *fiber.Ctx) error {
 				continue
 			}
 
-			
-                
-				
-                
-            err = os.Rename( filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name) )
-            
-            if err != nil {
-			    //fmt.Errorf("something %s", foo)
-			    LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
-			    
-		    }else{
-		        
-		        LogPrefix(c, "200", "Move '"+filepath.Join(arg_fold, u_path, name)+"' to "+filepath.Join(arg_fold, to, name))
-		    }
-			
+			err = os.Rename(filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name))
+
+			if err != nil {
+				//fmt.Errorf("something %s", foo)
+				LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
+
+			} else {
+
+				LogPrefix(c, "200", "Move '"+filepath.Join(arg_fold, u_path, name)+"' to "+filepath.Join(arg_fold, to, name))
+			}
 
 		}
 	}
@@ -371,7 +361,6 @@ func PostMove(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
 
 func PostZip(c *fiber.Ctx) error {
 

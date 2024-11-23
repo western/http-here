@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
@@ -19,8 +19,6 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-
-
 func RandStringRunes(n int) string {
 	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	b := make([]rune, n)
@@ -29,7 +27,6 @@ func RandStringRunes(n int) string {
 	}
 	return string(b)
 }
-
 
 func CleanDirtyPath(p string) string {
 
@@ -103,7 +100,6 @@ func prettyByteSize(b int64) string {
 	return fmt.Sprintf("%.1fYiB", bf)
 }
 
-
 func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	// Open the Directory
 	//files, err := ioutil.ReadDir(basePath)
@@ -144,98 +140,85 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	}
 }
 
-func WalkAndClear( path string ){
-    
-    files, err := os.ReadDir(path)
+func WalkAndClear(path string) {
+
+	files, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for _, file := range files {
-	    
-	    full_name := filepath.Join(path, file.Name())
-	    
-	    if !file.IsDir() {
-	        
-	        fileInfo, _ := os.Stat(full_name)
-	        
-	        if time.Now().Sub(fileInfo.ModTime()) > 7 * 24 * time.Hour {
-	            //fmt.Println( "to del:", full_name )
-	            os.Remove( full_name )
-	        }else{
-	            //fmt.Println( "file:", full_name )
-	        }
-	        
-	    } else if file.IsDir() {
-	        WalkAndClear( full_name )
-	    }
+
+		full_name := filepath.Join(path, file.Name())
+
+		if !file.IsDir() {
+
+			fileInfo, _ := os.Stat(full_name)
+
+			if time.Now().Sub(fileInfo.ModTime()) > 7*24*time.Hour {
+				//fmt.Println( "to del:", full_name )
+				os.Remove(full_name)
+			} else {
+				//fmt.Println( "file:", full_name )
+			}
+
+		} else if file.IsDir() {
+			WalkAndClear(full_name)
+		}
 	}
 }
 
-
 type TreeRow struct {
-	
-	Text  string `json:"text"`
-	Path  string `json:"path"`
-	
-	
-	Expanded  bool `json:"expanded"`
-	
+	Text string `json:"text"`
+	Path string `json:"path"`
+
+	Expanded bool `json:"expanded"`
+
 	Nodes []TreeRow `json:"nodes"`
 }
 
-func WalkAndTreeBuild( path string, prev_path string, deep int ) []TreeRow {
-    
-    //fmt.Println("WalkAndTreeBuild ", path)
-    
-    var node_list []TreeRow
-    
-    
-    files, err := os.ReadDir(path)
+func WalkAndTreeBuild(path string, prev_path string, deep int) []TreeRow {
+
+	//fmt.Println("WalkAndTreeBuild ", path)
+
+	var node_list []TreeRow
+
+	files, err := os.ReadDir(path)
 	if err != nil {
 		//fmt.Println(err)
 		return node_list
 	}
-	
+
 	if deep > 5 {
-        return node_list
-    }
-	
+		return node_list
+	}
 
 	for _, file := range files {
-	    
-	    
-	    
-	    if !file.IsDir() {
-	        
-	        /*
-	        node_list = append( node_list, TreeRow{
-				
-				Text:         file.Name(),
-				
-			})
-	        */
-	        
-	        
-	    } else if file.IsDir() {
-	        
-	        
-	        
-	        nodes := WalkAndTreeBuild(  filepath.Join(path, file.Name()),  filepath.Join(prev_path, file.Name()),   deep+1 )
-	        
-	        node_list = append( node_list, TreeRow{
-				
-				Text:         file.Name(),
-				Path:         filepath.Join(prev_path, file.Name()),
-				
+
+		if !file.IsDir() {
+
+			/*
+				        node_list = append( node_list, TreeRow{
+
+							Text:         file.Name(),
+
+						})
+			*/
+
+		} else if file.IsDir() {
+
+			nodes := WalkAndTreeBuild(filepath.Join(path, file.Name()), filepath.Join(prev_path, file.Name()), deep+1)
+
+			node_list = append(node_list, TreeRow{
+
+				Text: file.Name(),
+				Path: filepath.Join(prev_path, file.Name()),
+
 				Nodes: nodes,
 			})
-			
-	    }
+
+		}
 	}
-	
+
 	return node_list
 }
-
-
-

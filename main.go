@@ -110,26 +110,23 @@ func main() {
 		fmt.Println(arg_fold + " is not exist")
 		return
 	}
-	
+
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 		//log.Fatal(err2)
 		fmt.Println("User homepath detect error: ", err)
 		return
 	}
-	
-	
+
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
 
 		if err2 := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err2 != nil {
 			log.Fatal(err2)
 		}
 	}
-    
-    
-    //go controller.WalkAndClear( filepath.Join(homepath, ".httphere", "thumb") )
-    
-    
+
+	//go controller.WalkAndClear( filepath.Join(homepath, ".httphere", "thumb") )
+
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
@@ -254,8 +251,6 @@ func main() {
 		PathPrefix: "",
 		Browse:     false,
 	}))
-
-	
 
 	if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
 
