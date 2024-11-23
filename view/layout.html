@@ -24,50 +24,8 @@
     
     <script>
         
-        let folderTree = [
-  {
-    text: "Node 1",
-    icon: "bi bi-folder",
-    expanded: true,
-    nodes: [
-      {
-        text: "Sub Node 1",
-        icon: "bi bi-folder",
-        nodes: [
-          {
-            id:    "sub-node-1",
-            icon:  "bi bi-folder",
-            text:  "Sub Child Node 1",
-            
-            _class: "nav-level-3",
-            _href:  "https://google.com"
-          },
-          {
-            text: "Sub Child Node 2",
-            icon: "bi bi-folder"
-          }
-        ]
-      },
-      {
-        text: "Sub Node 2",
-         icon: "bi bi-folder"
-      }
-    ]
-  },
-  {
-    text: "Node 2",
-    icon: "bi bi-folder"
-  },
-  {
-    text: "Node 3",
-    icon: "bi bi-folder"
-  },
-  
-];
-
-        folderTree = JSON.parse(  {{.folderTree_js}}  );
+        let folderTree = JSON.parse(  {{.folderTree_js}}  );
         
-
         
     </script>
 
