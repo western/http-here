@@ -12,6 +12,7 @@ import (
 	_ "reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -187,12 +188,20 @@ func GetAll(c *fiber.Ctx) error {
 
 }
 
+
+
 type FileRow struct {
 	IsDir        bool
 	FullPath     string
 	Name         string
+	
+	Size         int64
 	SizeHuman    string
+	
+	ModTime      time.Time
 	ModTimeHuman string
+	Md5          string
+	
 	IsPreview    bool
 }
 
@@ -222,8 +231,13 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []F
 					IsDir:        fileInfo2.IsDir(),
 					FullPath:     filepath.Join(c_path, e.Name()),
 					Name:         e.Name(),
+					
+					Size:         size,
 					SizeHuman:    size_human,
+					
+					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
+					
 					IsPreview:    false,
 				})
 			} else {
@@ -231,8 +245,13 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []F
 					IsDir:        fileInfo2.IsDir(),
 					FullPath:     filepath.Join(c_path, e.Name()),
 					Name:         e.Name(),
+					
+					Size:         size,
 					SizeHuman:    size_human,
+					
+					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
+					
 					IsPreview:    is_preview_match,
 				})
 			}
