@@ -41,7 +41,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.2.3/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.3.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -128,6 +128,9 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [ ] add --log and --tee args for save output
+
+### 1.3.0
+- [x] add move function
 
 ### 1.2.0
 - [x] make img thumbnail storage
