@@ -302,6 +302,15 @@ func PostMove(c *fiber.Ctx) error {
 	
 	
 	to := c.FormValue("to")
+	to = CleanDirtyPath(to)
+	
+	if len(to) == 0 {
+		LogPrefix(c, "500", "to is empty")
+		return c.JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
+	}
+	
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err != nil {
 		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists")
@@ -310,7 +319,7 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 	
-	to = CleanDirtyPath(to)
+	
 	
 
 	for i := 1; i < 50; i++ {
