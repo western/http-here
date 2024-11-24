@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -52,6 +53,10 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 	yellow := color.New(color.FgYellow).SprintFunc()
 
 	pref := ""
+
+	pid := strconv.Itoa(os.Getpid())
+
+	pref += "[" + pid + "] "
 
 	pref += "[" + green(time.Now().Format("2006-01-02 15:04:05")) + "] "
 
