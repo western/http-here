@@ -128,7 +128,7 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [ ] add --log and --tee args for save output
-- [ ] change background actions for FS driver
+- [ ] change background actions for FS drivers (i need one abstraction layer)
 
 ### 1.3.2
 - [x] enable thumb folder control (remove files older than 30 days)
