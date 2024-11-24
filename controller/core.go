@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"sort"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -104,6 +105,8 @@ func GetAll(c *fiber.Ctx) error {
 
 			var rows []FileRow
 			var mode string
+			var s_sort string
+			//s_sort := "name"
 
 			if arg_extend_mode == "1" {
 
@@ -118,15 +121,35 @@ func GetAll(c *fiber.Ctx) error {
 				if len(q_mode) > 0 {
 					mode = q_mode
 				}
-
+				
 				cookie := new(fiber.Cookie)
 				cookie.Name = "mode"
 				cookie.Value = mode
 				c.Cookie(cookie)
+				
+				
+				
+				
+				
+				s_sort = c.Cookies("sort")
+				if len(s_sort) == 0 {
+					s_sort = "name"
+				}
+				
+				
+				q_sort := c.Query("sort")
+				if len(q_sort) > 0 {
+					s_sort = q_sort
+				}
+
+				cookie = new(fiber.Cookie)
+				cookie.Name = "sort"
+				cookie.Value = s_sort
+				c.Cookie(cookie)
 
 			}
 
-			rows = listGenerateView(arg_fold, c_path, entries)
+			rows = listGenerateView(arg_fold, c_path, entries, s_sort)
 
 			mode_thumb := false
 			if mode == "thumb" {
@@ -137,6 +160,24 @@ func GetAll(c *fiber.Ctx) error {
 			if mode == "list" {
 				mode_list = true
 			}
+			
+			//fmt.Println("s_sort=", s_sort)
+			sort_name := false
+			if s_sort == "name" {
+				sort_name = true
+			}
+			
+			sort_modified := false
+			if s_sort == "modified" {
+				sort_modified = true
+			}
+			
+			sort_size := false
+			if s_sort == "size" {
+				sort_size = true
+			}
+			
+			
 
 			//folderTree := WalkAndTreeBuild( filepath.Join(arg_fold, c_path), "/", 1 )
 			folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
@@ -159,6 +200,12 @@ func GetAll(c *fiber.Ctx) error {
 				"arg_extend_mode": arg_extend_mode,
 				"mode_thumb":      mode_thumb,
 				"mode_list":       mode_list,
+				
+				"sort_name":       sort_name,
+				"sort_modified":       sort_modified,
+				"sort_size":       sort_size,
+				
+				
 
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,
@@ -205,7 +252,7 @@ type FileRow struct {
 	IsPreview    bool
 }
 
-func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []FileRow {
+func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
 
 	var rows_dir []FileRow
 	var rows_file []FileRow
@@ -258,6 +305,42 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry) []F
 
 		}
 
+	}
+	
+	if s_sort == "name" {
+    	//fmt.Println("s_sort=",s_sort)
+    	
+    	sort.Slice(rows_dir, func(i, j int) bool {
+            return rows_dir[i].Name < rows_dir[j].Name
+        })
+    	
+    	sort.Slice(rows_file, func(i, j int) bool {
+            return rows_file[i].Name < rows_file[j].Name
+        })
+	}
+	
+	if s_sort == "modified" {
+    	//fmt.Println("s_sort=",s_sort)
+    	
+    	sort.Slice(rows_dir, func(i, j int) bool {
+            return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
+        })
+    	
+    	sort.Slice(rows_file, func(i, j int) bool {
+            return rows_file[i].ModTime.Unix() < rows_file[j].ModTime.Unix()
+        })
+	}
+	
+	if s_sort == "size" {
+    	//fmt.Println("s_sort=",s_sort)
+    	
+    	sort.Slice(rows_dir, func(i, j int) bool {
+            return rows_dir[i].Size < rows_dir[j].Size
+        })
+    	
+    	sort.Slice(rows_file, func(i, j int) bool {
+            return rows_file[i].Size < rows_file[j].Size
+        })
 	}
 
 	return append(rows_dir, rows_file...)
