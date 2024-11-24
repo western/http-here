@@ -10,6 +10,9 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"mime/multipart"
+	"io"
+	_ "io/ioutil"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
@@ -222,3 +225,25 @@ func WalkAndTreeBuild(path string, prev_path string, deep int) []TreeRow {
 
 	return node_list
 }
+
+
+func MultipartToFile( file *multipart.FileHeader ) ( *os.File) {
+    
+    
+    f, err := os.CreateTemp("", "becloud_convert*")
+	fmt.Println("MultipartToFile Temp file name:", f.Name())
+	defer os.Remove(f.Name())
+
+	readerFile, _ := file.Open()
+	_, err = io.Copy(f, readerFile)
+	if err != nil {
+		//return false, err
+		panic(err)
+	}
+	f.Close()
+
+	file2, _ := os.Open(f.Name())
+    
+    return file2
+}
+
