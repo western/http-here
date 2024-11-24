@@ -73,7 +73,7 @@ or only one basic auth specific user
 http-here --user loginXX --password MugMf7AHs .
 ```
 
-## The safest
+## The safest run
 
 ```console
 http-here --tls --basic /path/to/you
@@ -86,7 +86,13 @@ read for TLS support below
 http-here --upload-disable --folder-make-disable /tmp/fold
 ```
 
+## Run with prefork
 
+Prefork help to handle with multiple heavy query (big image gallery as example)
+
+```console
+http-here --prefork --extend-mode /tmp
+```
 
 ## Notes
 
