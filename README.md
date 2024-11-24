@@ -130,6 +130,11 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS driver
 
+### 1.3.2
+- [x] enable thumb folder control (remove files older than 30 days)
+- [x] change hash_name build (in case moving between folders it should be better)
+- [x] show move_to button for thumbnails mode too
+
 ### 1.3.0
 - [x] add move function
 
