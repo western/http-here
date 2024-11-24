@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	_ "reflect"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
-	"sort"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -121,22 +121,17 @@ func GetAll(c *fiber.Ctx) error {
 				if len(q_mode) > 0 {
 					mode = q_mode
 				}
-				
+
 				cookie := new(fiber.Cookie)
 				cookie.Name = "mode"
 				cookie.Value = mode
 				c.Cookie(cookie)
-				
-				
-				
-				
-				
+
 				s_sort = c.Cookies("sort")
 				if len(s_sort) == 0 {
 					s_sort = "name"
 				}
-				
-				
+
 				q_sort := c.Query("sort")
 				if len(q_sort) > 0 {
 					s_sort = q_sort
@@ -160,24 +155,22 @@ func GetAll(c *fiber.Ctx) error {
 			if mode == "list" {
 				mode_list = true
 			}
-			
+
 			//fmt.Println("s_sort=", s_sort)
 			sort_name := false
 			if s_sort == "name" {
 				sort_name = true
 			}
-			
+
 			sort_modified := false
 			if s_sort == "modified" {
 				sort_modified = true
 			}
-			
+
 			sort_size := false
 			if s_sort == "size" {
 				sort_size = true
 			}
-			
-			
 
 			//folderTree := WalkAndTreeBuild( filepath.Join(arg_fold, c_path), "/", 1 )
 			folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
@@ -200,12 +193,10 @@ func GetAll(c *fiber.Ctx) error {
 				"arg_extend_mode": arg_extend_mode,
 				"mode_thumb":      mode_thumb,
 				"mode_list":       mode_list,
-				
-				"sort_name":       sort_name,
-				"sort_modified":       sort_modified,
-				"sort_size":       sort_size,
-				
-				
+
+				"sort_name":     sort_name,
+				"sort_modified": sort_modified,
+				"sort_size":     sort_size,
 
 				"files_count_max":     20,
 				"fieldSize_max":       7 * 1024 * 1024 * 1024,
@@ -235,21 +226,19 @@ func GetAll(c *fiber.Ctx) error {
 
 }
 
-
-
 type FileRow struct {
-	IsDir        bool
-	FullPath     string
-	Name         string
-	
-	Size         int64
-	SizeHuman    string
-	
+	IsDir    bool
+	FullPath string
+	Name     string
+
+	Size      int64
+	SizeHuman string
+
 	ModTime      time.Time
 	ModTimeHuman string
 	Md5          string
-	
-	IsPreview    bool
+
+	IsPreview bool
 }
 
 func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
@@ -275,72 +264,72 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 			if fileInfo2.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
-					IsDir:        fileInfo2.IsDir(),
-					FullPath:     filepath.Join(c_path, e.Name()),
-					Name:         e.Name(),
-					
-					Size:         size,
-					SizeHuman:    size_human,
-					
+					IsDir:    fileInfo2.IsDir(),
+					FullPath: filepath.Join(c_path, e.Name()),
+					Name:     e.Name(),
+
+					Size:      size,
+					SizeHuman: size_human,
+
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
-					
-					IsPreview:    false,
+
+					IsPreview: false,
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
-					IsDir:        fileInfo2.IsDir(),
-					FullPath:     filepath.Join(c_path, e.Name()),
-					Name:         e.Name(),
-					
-					Size:         size,
-					SizeHuman:    size_human,
-					
+					IsDir:    fileInfo2.IsDir(),
+					FullPath: filepath.Join(c_path, e.Name()),
+					Name:     e.Name(),
+
+					Size:      size,
+					SizeHuman: size_human,
+
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
-					
-					IsPreview:    is_preview_match,
+
+					IsPreview: is_preview_match,
 				})
 			}
 
 		}
 
 	}
-	
+
 	if s_sort == "name" {
-    	//fmt.Println("s_sort=",s_sort)
-    	
-    	sort.Slice(rows_dir, func(i, j int) bool {
-            return rows_dir[i].Name < rows_dir[j].Name
-        })
-    	
-    	sort.Slice(rows_file, func(i, j int) bool {
-            return rows_file[i].Name < rows_file[j].Name
-        })
+		//fmt.Println("s_sort=",s_sort)
+
+		sort.Slice(rows_dir, func(i, j int) bool {
+			return rows_dir[i].Name < rows_dir[j].Name
+		})
+
+		sort.Slice(rows_file, func(i, j int) bool {
+			return rows_file[i].Name < rows_file[j].Name
+		})
 	}
-	
+
 	if s_sort == "modified" {
-    	//fmt.Println("s_sort=",s_sort)
-    	
-    	sort.Slice(rows_dir, func(i, j int) bool {
-            return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
-        })
-    	
-    	sort.Slice(rows_file, func(i, j int) bool {
-            return rows_file[i].ModTime.Unix() < rows_file[j].ModTime.Unix()
-        })
+		//fmt.Println("s_sort=",s_sort)
+
+		sort.Slice(rows_dir, func(i, j int) bool {
+			return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
+		})
+
+		sort.Slice(rows_file, func(i, j int) bool {
+			return rows_file[i].ModTime.Unix() < rows_file[j].ModTime.Unix()
+		})
 	}
-	
+
 	if s_sort == "size" {
-    	//fmt.Println("s_sort=",s_sort)
-    	
-    	sort.Slice(rows_dir, func(i, j int) bool {
-            return rows_dir[i].Size < rows_dir[j].Size
-        })
-    	
-    	sort.Slice(rows_file, func(i, j int) bool {
-            return rows_file[i].Size < rows_file[j].Size
-        })
+		//fmt.Println("s_sort=",s_sort)
+
+		sort.Slice(rows_dir, func(i, j int) bool {
+			return rows_dir[i].Size < rows_dir[j].Size
+		})
+
+		sort.Slice(rows_file, func(i, j int) bool {
+			return rows_file[i].Size < rows_file[j].Size
+		})
 	}
 
 	return append(rows_dir, rows_file...)

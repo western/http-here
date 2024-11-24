@@ -3,16 +3,16 @@ package controller
 import (
 	"archive/zip"
 	"fmt"
+	"io"
+	_ "io/ioutil"
 	"math"
 	"math/rand"
+	"mime/multipart"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
-	"mime/multipart"
-	"io"
-	_ "io/ioutil"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
@@ -158,7 +158,7 @@ func WalkAndClear(path string) {
 
 			fileInfo, _ := os.Stat(full_name)
 
-			if time.Now().Sub(fileInfo.ModTime()) > 30 * 24 * time.Hour {
+			if time.Now().Sub(fileInfo.ModTime()) > 30*24*time.Hour {
 				//fmt.Println( "to del:", full_name )
 				os.Remove(full_name)
 			} else {
@@ -226,11 +226,9 @@ func WalkAndTreeBuild(path string, prev_path string, deep int) []TreeRow {
 	return node_list
 }
 
+func MultipartToFile(file *multipart.FileHeader) *os.File {
 
-func MultipartToFile( file *multipart.FileHeader ) ( *os.File) {
-    
-    
-    f, err := os.CreateTemp("", "becloud_convert*")
+	f, err := os.CreateTemp("", "becloud_convert*")
 	fmt.Println("MultipartToFile Temp file name:", f.Name())
 	defer os.Remove(f.Name())
 
@@ -243,7 +241,6 @@ func MultipartToFile( file *multipart.FileHeader ) ( *os.File) {
 	f.Close()
 
 	file2, _ := os.Open(f.Name())
-    
-    return file2
-}
 
+	return file2
+}

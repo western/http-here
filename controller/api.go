@@ -416,8 +416,6 @@ func PostZip(c *fiber.Ctx) error {
 
 			} else {
 
-				
-
 				f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
 				if err != nil {
 					panic(err)
@@ -431,8 +429,6 @@ func PostZip(c *fiber.Ctx) error {
 				if _, err := io.Copy(w1, f1); err != nil {
 					panic(err)
 				}
-
-				
 
 			}
 
@@ -470,9 +466,6 @@ func GetResize(c *fiber.Ctx) error {
 			log.Fatal(err2)
 		}
 	}
-
-	
-	
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -584,9 +577,9 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-    //fmt.Println("modtime_human="+modtime_human)
-    
-	hash_name := md5.Sum([]byte( orig_filename + modtime_human + size_human + c_width ))
+	//fmt.Println("modtime_human="+modtime_human)
+
+	hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
 	hex_name := hex.EncodeToString(hash_name[:])
 
 	//fmt.Println("hex_name="+hex_name)

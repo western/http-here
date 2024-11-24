@@ -53,7 +53,6 @@ func main() {
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
-	
 
 	flag.Parse()
 
@@ -125,7 +124,7 @@ func main() {
 		}
 	}
 
-	go controller.WalkAndClear( filepath.Join(homepath, ".httphere", "thumb") )
+	go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
