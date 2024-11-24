@@ -142,6 +142,8 @@ https://github.com/western/http-here/issues
 ### 1.4.0
 - [x] add sort option
 
+folders and files sort seperately
+
 ### 1.3.2
 - [x] enable thumb folder control (remove files older than 30 days)
 - [x] change hash_name build (in case moving between folders it should be better)
