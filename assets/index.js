@@ -66,8 +66,9 @@ $(document).ready(function(){
                 formData.append('to', val);
                 
                 $.each(checked, function(indx, val){
-                    let i = indx+1;
-                    formData.append('name['+i+']', val);
+                    //let i = indx+1;
+                    //formData.append('name['+i+']', val);
+                    formData.append('name', val);
                 });
                 
                 //console.log('formData=', formData);
@@ -169,7 +170,8 @@ $(document).ready(function(){
                 
                 let formData = new FormData();
 
-                formData.append('name[1]', $(el).data('name'));
+                formData.append('name', $(el).data('name'));
+                //formData.append('name[1]', $(el).data('name'));
                 //formData.append('name[2]', $(el).data('name')+'_2');
                 
                 $.ajax({
@@ -231,8 +233,9 @@ $(document).ready(function(){
             let formData = new FormData();
             
             $.each(checked, function(indx, val){
-                let i = indx+1;
-                formData.append('name['+i+']', val);
+                //let i = indx+1;
+                //formData.append('name['+i+']', val);
+                formData.append('name', val);
             });
             
             //console.log('formData=', formData);
@@ -287,8 +290,9 @@ $(document).ready(function(){
             let formData = new FormData();
             
             $.each(checked, function(indx, val){
-                let i = indx+1;
-                formData.append('name['+i+']', val);
+                //let i = indx+1;
+                //formData.append('name['+i+']', val);
+                formData.append('name', val);
             });
             
             
