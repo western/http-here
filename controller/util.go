@@ -11,27 +11,23 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	_ "runtime"
 	"strconv"
 	"strings"
 	"time"
-	_ "runtime"
 
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
-	
-	
+
 	"crypto/md5"
 	"encoding/hex"
-	
-	
+
 	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	
-	
 )
 
 func init() {
@@ -279,185 +275,154 @@ func MultipartToFile(file *multipart.FileHeader) *os.File {
 	return file2
 }
 
-
-func WalkAndMakeThumbnail(path string, deep int)  {
+func WalkAndMakeThumbnail(path string, deep int) {
 
 	//fmt.Println("WalkAndMakeThumbnail ", path)
-
-	
 
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return
 	}
 
-    
 	if deep > 5 {
 		return
 	}
 
 	for _, file := range files {
-        
-        
-        
-        fileInfo, err := os.Stat(filepath.Join(path, file.Name()))
-        
-        
-        homepath, err := os.UserHomeDir()
-    	if err != nil {
-    		//log.Fatal(err)
-    		panic(err)
-    	}
-    	
-    	modtime := fileInfo.ModTime()
+
+		fileInfo, err := os.Stat(filepath.Join(path, file.Name()))
+
+		homepath, err := os.UserHomeDir()
+		if err != nil {
+			//log.Fatal(err)
+			panic(err)
+		}
+
+		modtime := fileInfo.ModTime()
 		modtime_human := modtime.Format("2006-01-02 15:04:05")
-		
+
 		size := fileInfo.Size()
 		size_human := prettyByteSize(size)
-        
-        
-        //fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
-        
-        
-        
+
+		//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
+
 		if !file.IsDir() {
 
+			c_width := "800"
+			i_width := 800
 
-            
-			
-        	
-        	c_width := "800"
-        	i_width := 800
-        	
-        	file_ext := GetExtNorm( file.Name() )
-        	orig_filename := GetFileName( file.Name() )
-        	
-        	
-        	is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
-            if !is_preview_match {
-                continue
-            }
-        	
-        	
-        	hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
-	        hex_name := hex.EncodeToString(hash_name[:])
-        	
-        	
-        	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
-        	    //fmt.Println("Is exists ", filepath.Join(homepath, ".httphere", "thumb", hex_name))
-        	    continue
-        	}
-        	
-        	
-        	go func(){
-            	
-            	input, _ := os.Open(filepath.Join(path, file.Name()))
-        		defer input.Close()
+			file_ext := GetExtNorm(file.Name())
+			orig_filename := GetFileName(file.Name())
 
-        		output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
-        		defer output.Close()
+			is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
+			if !is_preview_match {
+				continue
+			}
 
-        		
-        		
-        		
-        		
-        		
-        		
-        		var src image.Image
+			hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
+			hex_name := hex.EncodeToString(hash_name[:])
 
-        		// Decode the image (from PNG to image.Image):
-        		if file_ext == "png" {
-        			src, err = png.Decode(input)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+			if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+				//fmt.Println("Is exists ", filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				continue
+			}
 
-        		if file_ext == "jpg" {
+			go func() {
 
-                    // src, err = jpeg.Decode(input)
-        			src, _, err = exiffix.Decode(input)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+				input, _ := os.Open(filepath.Join(path, file.Name()))
+				defer input.Close()
 
-        		if file_ext == "gif" {
-        			src, err = gif.Decode(input)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+				output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				defer output.Close()
 
-        		ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
-        		i_height := int(math.Round(float64(i_width) * ratio))
+				var src image.Image
 
-        		
-        		var dst *image.RGBA
+				// Decode the image (from PNG to image.Image):
+				if file_ext == "png" {
+					src, err = png.Decode(input)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
 
-        		if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
-        			dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
-        		} else {
+				if file_ext == "jpg" {
 
-                    
-        			
-        			err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        			
-        			//fmt.Println("Too small for thumb make ", filepath.Join(path, file.Name()))
-        			return
-        		}
+					// src, err = jpeg.Decode(input)
+					src, _, err = exiffix.Decode(input)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
 
-        		// Resize:
-        		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+				if file_ext == "gif" {
+					src, err = gif.Decode(input)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
 
-        		
+				ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
+				i_height := int(math.Round(float64(i_width) * ratio))
 
-        		if file_ext == "png" {
-        			err = png.Encode(output, dst)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+				var dst *image.RGBA
 
-        		if file_ext == "jpg" {
-        			err = jpeg.Encode(output, dst, nil)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+				if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
+					dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+				} else {
 
-        		if file_ext == "gif" {
-        			err = gif.Encode(output, dst, nil)
-        			if err != nil {
-        				//log.Fatal(err)
-        				panic(err)
-        			}
-        		}
+					err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
 
-        		output.Close()
-        		input.Close()
-        		
-        		src = nil
-        		dst = nil
-        		
-        		//fmt.Println("Make thumb for ", filepath.Join(path, file.Name()))
-        		
-        		//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
-    		
-    	    }()
-    	
-    	    //fmt.Println("Not wait for ", filepath.Join(path, file.Name()))
-    	
-        	
+					//fmt.Println("Too small for thumb make ", filepath.Join(path, file.Name()))
+					return
+				}
+
+				// Resize:
+				draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+				if file_ext == "png" {
+					err = png.Encode(output, dst)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
+
+				if file_ext == "jpg" {
+					err = jpeg.Encode(output, dst, nil)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
+
+				if file_ext == "gif" {
+					err = gif.Encode(output, dst, nil)
+					if err != nil {
+						//log.Fatal(err)
+						panic(err)
+					}
+				}
+
+				output.Close()
+				input.Close()
+
+				src = nil
+				dst = nil
+
+				//fmt.Println("Make thumb for ", filepath.Join(path, file.Name()))
+
+				//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
+
+			}()
+
+			//fmt.Println("Not wait for ", filepath.Join(path, file.Name()))
 
 		} else if file.IsDir() {
 
@@ -468,4 +433,3 @@ func WalkAndMakeThumbnail(path string, deep int)  {
 
 	return
 }
-

@@ -21,9 +21,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/template/html/v2"
 
 	_ "archive/zip"
@@ -37,12 +37,11 @@ var view_fs embed.FS
 var embedDirStatic embed.FS
 
 func main() {
-    
-    arg_help := flag.Bool("help", false, "Show help")
-    
+
+	arg_help := flag.Bool("help", false, "Show help")
+
 	arg_port := flag.Int("port", 8000, "Change default listen port")
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
-	
 
 	arg_user := flag.String("user", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
@@ -53,7 +52,7 @@ func main() {
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
-	
+
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
 	arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
 
@@ -129,22 +128,18 @@ func main() {
 		}
 	}
 
-    if !fiber.IsChild() {
-	    
-	    go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
+	if !fiber.IsChild() {
+
+		go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
 	}
-	
+
 	if *arg_prepare_thumbnails && !fiber.IsChild() {
-	    
-	    fmt.Println()
-	    fmt.Println("  Run and make thumbnails for target folders")
-	    
-	    go controller.WalkAndMakeThumbnail(arg_fold, 0)
-    }
-	
-	
-	
-	
+
+		fmt.Println()
+		fmt.Println("  Run and make thumbnails for target folders")
+
+		go controller.WalkAndMakeThumbnail(arg_fold, 0)
+	}
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -189,10 +184,10 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
-	
+
 	app.Use(compress.New(compress.Config{
-        Level: compress.LevelBestSpeed, // 1
-    }))
+		Level: compress.LevelBestSpeed, // 1
+	}))
 
 	cian := color.New(color.FgCyan).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
