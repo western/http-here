@@ -136,13 +136,20 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 
+### 1.5.1 - 1.5.4
+- [x] add --prepare-thumbnails key (Run and make thumbnails for target folders)
+- [x] add compression for server output (Change page size)
+- [x] template fix width
+
 ### 1.5.0
 - [x] add prefork arg
+
+Prefork help to handle with multiple heavy query (big image gallery as example)
 
 ### 1.4.0
 - [x] add sort option
 
-folders and files sort seperately
+folders and files sort separately
 
 ### 1.3.2
 - [x] enable thumb folder control (remove files older than 30 days)
@@ -150,7 +157,8 @@ folders and files sort seperately
 - [x] show move_to button for thumbnails mode too
 
 ### 1.3.0
-- [x] add move function
+- [x] added group of files move function (with folder select panel)
+- [x] added clear cache function, but disabled
 
 ### 1.2.0
 - [x] make img thumbnail storage
