@@ -105,13 +105,6 @@ $(document).ready(function(){
     
     
     
-    $('#upload_file').on('change', function(ev){
-        
-        $('#signal').removeClass('visually-hidden');
-        $(ev.target).prop('disabled', true);
-        
-        return ev_target_files(ev.target.files);
-    });
 
     let make_new_folder = function(ev){
 
@@ -352,6 +345,18 @@ $(document).ready(function(){
     
     })
     
+    
+    
+    
+    $('#upload_file').on('change', function(ev){
+        
+        $('#signal').removeClass('visually-hidden');
+        $(ev.target).prop('disabled', true);
+        
+        return ev_target_files(ev.target.files);
+    });
+    
+    
 
 });
 
@@ -376,13 +381,14 @@ function ev_target_files(files){
         }else{
 
             formData.append('fileBlob', file);
+            /*
             formData.append('fileMeta', JSON.stringify({
                 lastModified: file.lastModified,
                 lastModifiedDate: file.lastModifiedDate,
                 name: file.name,
                 size: file.size,
                 type: file.type,
-            }));
+            }));*/
         }
     });
 
