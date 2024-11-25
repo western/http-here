@@ -56,17 +56,11 @@ func PostUpload(c *fiber.Ctx) error {
 	files := form.File["fileBlob"]
 
 	for _, file := range files {
-		file_ext := filepath.Ext(file.Filename)
-		file_ext = strings.Replace(file_ext, ".", "", -1)
-		file_ext = strings.ToLower(file_ext)
-		if file_ext == "jpeg" {
-			file_ext = "jpg"
-		}
-
-		originalFileName := strings.TrimSuffix(
-			filepath.Base(file.Filename),
-			filepath.Ext(file.Filename),
-		)
+		
+		file_ext := GetExtNorm(file.Filename)
+		originalFileName := GetFileName( file.Filename )
+		
+		
 
 		originalFileName = strings.ReplaceAll(originalFileName, "/", "")
 		re := regexp.MustCompile("\\s+")
@@ -430,51 +424,6 @@ func PostMove(c *fiber.Ctx) error {
 	}, "application/json")
 	
 	
-	// ---------------------------------------------------------------------------------------------------------------------------------
-/*
-	for i := 1; i < 50; i++ {
-
-		key := "name[" + strconv.Itoa(i) + "]"
-		val := c.FormValue(key)
-
-		if len(val) > 0 {
-			//fmt.Println("val="+val)
-
-			name := strings.ReplaceAll(val, "/", "")
-			//re := regexp.MustCompile("\\s+")
-			//name = re.ReplaceAllLiteralString(name, " ")
-
-			name = CleanDirtyPath(name)
-
-			if len(name) == 0 {
-				LogPrefix(c, "500", "name is empty")
-				continue
-			}
-
-			_, err := os.Stat(filepath.Join(arg_fold, u_path, name))
-			if err != nil {
-				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-				continue
-			}
-
-			err = os.Rename(filepath.Join(arg_fold, u_path, name), filepath.Join(arg_fold, to, name))
-
-			if err != nil {
-				//fmt.Errorf("something %s", foo)
-				LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
-
-			} else {
-
-				LogPrefix(c, "200", "Move '"+filepath.Join(arg_fold, u_path, name)+"' to "+filepath.Join(arg_fold, to, name))
-			}
-
-		}
-	}
-
-	return c.JSON(fiber.Map{
-		"code": 200,
-	}, "application/json")
-*/
 }
 
 func PostZip(c *fiber.Ctx) error {
@@ -598,72 +547,6 @@ func PostZip(c *fiber.Ctx) error {
 	
 	
 	
-	// -----------------------------------------------------------------------------------------------------------------------
-/*
-	for i := 1; i < 50; i++ {
-
-		key := "name[" + strconv.Itoa(i) + "]"
-		val := c.FormValue(key)
-
-		if len(val) > 0 {
-			//fmt.Println("val="+val)
-
-			name := strings.ReplaceAll(val, "/", "")
-			//re := regexp.MustCompile("\\s+")
-			//name = re.ReplaceAllLiteralString(name, " ")
-
-			name = CleanDirtyPath(name)
-
-			if len(name) == 0 {
-				LogPrefix(c, "500", "name is empty")
-				continue
-			}
-
-			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
-
-			if err != nil {
-				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-				continue
-			}
-
-			if fileInfo.IsDir() {
-
-				addFilesToZip(zipWriter, filepath.Join(arg_fold, u_path, name), name)
-
-			} else {
-
-				f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
-				if err != nil {
-					panic(err)
-				}
-				defer f1.Close()
-
-				w1, err := zipWriter.Create(name)
-				if err != nil {
-					panic(err)
-				}
-				if _, err := io.Copy(w1, f1); err != nil {
-					panic(err)
-				}
-
-			}
-
-		}
-	}
-
-	zipWriter.Close()
-	archive.Close()
-
-	//return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
-	//return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
-
-	LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
-
-	return c.JSON(fiber.Map{
-		"code": 200,
-		"file": filepath.Join("/__temp/", archive_name),
-	}, "application/json")
-*/
 }
 
 func GetResize(c *fiber.Ctx) error {
@@ -688,8 +571,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		log.Println(err)
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
-		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
-		return c.JSON(fiber.Map{
+		
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error " + filepath.Join(arg_fold, c_path),
 		}, "application/json")
@@ -698,24 +581,8 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
-	/*
-			c_width := c.Params("width")
-			c_height := c.Params("height")
-
-			c_path = strings.Replace(c_path, "/"+c_width, "", 1)
-			c_path = strings.Replace(c_path, "/"+c_height, "", 1)
-
-
-			i_width, err := strconv.Atoi(c_width)
-		    if err != nil {
-		        log.Fatal(err)
-		    }
-
-			i_height, err := strconv.Atoi(c_height)
-		    if err != nil {
-		        log.Fatal(err)
-		    }
-	*/
+	
+	
 
 	c_width := "800"
 	//c_height := "600"
@@ -723,7 +590,7 @@ func GetResize(c *fiber.Ctx) error {
 	i_width := 800
 	i_height := 600
 
-	//fmt.Println("="+filepath.Join(arg_fold, c_path))
+	
 
 	modtime_human := ""
 	size_human := ""
@@ -732,17 +599,17 @@ func GetResize(c *fiber.Ctx) error {
 
 		modtime := fileInfo.ModTime()
 		modtime_human = modtime.Format("2006-01-02 15:04:05")
-		//fmt.Println("modtime_human="+modtime_human)
+		
 
 		size := fileInfo.Size()
 		size_human = prettyByteSize(size)
-		//fmt.Println("size_human="+size_human)
+		
 
 		if fileInfo.IsDir() {
-			//log.Println(err)
+			
 			LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
-			//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
-			return c.JSON(fiber.Map{
+			
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"file": filepath.Join("/__resize/", c_path) + " It is a folder",
 				"msg":  "It is a folder",
@@ -753,52 +620,36 @@ func GetResize(c *fiber.Ctx) error {
 
 		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
 
-		/*
-			return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
-				"File": c_path,
-			}, "view/layout")
-		*/
-		return c.JSON(fiber.Map{
+		
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
 			"file": filepath.Join("/__resize/", c_path),
 			"msg":  "Not found",
 		}, "application/json")
 	}
 
-	//orig_path := filepath.Dir(c_path)
-	//fmt.Println("orig_path="+orig_path)
+	
 
-	file_ext := filepath.Ext(c_path)
-	file_ext = strings.Replace(file_ext, ".", "", -1)
-	file_ext = strings.ToLower(file_ext)
-	if file_ext == "jpeg" {
-		file_ext = "jpg"
-	}
-	//fmt.Println("file_ext="+file_ext)
-
-	// /fold1/forest_fog_road_126787_3840x2400.jpg => forest_fog_trees_127289_3840x2400
-	orig_filename := strings.TrimSuffix(
-		filepath.Base(c_path),
-		filepath.Ext(c_path),
-	)
-	//fmt.Println("orig_filename="+orig_filename)
+    file_ext := GetExtNorm(c_path)
+	orig_filename := GetFileName( c_path )
+	
 
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 	if !is_match {
 		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG and GIF images")
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"file": filepath.Join("/__resize/", c_path),
 			"msg":  "Only for JPEG, PNG and GIF images",
 		}, "application/json")
 	}
 
-	//fmt.Println("modtime_human="+modtime_human)
+	
 
 	hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
 	hex_name := hex.EncodeToString(hash_name[:])
 
-	//fmt.Println("hex_name="+hex_name)
+	
 
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
@@ -807,7 +658,7 @@ func GetResize(c *fiber.Ctx) error {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		//fmt.Println("make new thumb="+filepath.Join( c_path))
+		
 
 		input, _ := os.Open(filepath.Join(arg_fold, c_path))
 		defer input.Close()
@@ -815,6 +666,12 @@ func GetResize(c *fiber.Ctx) error {
 		output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
 		defer output.Close()
 
+		
+		
+		
+		
+		
+		
 		var src image.Image
 
 		// Decode the image (from PNG to image.Image):
@@ -827,15 +684,11 @@ func GetResize(c *fiber.Ctx) error {
 
 		if file_ext == "jpg" {
 
+            // src, err = jpeg.Decode(input)
 			src, _, err = exiffix.Decode(input)
 			if err != nil {
 				log.Fatal(err)
 			}
-			/*
-			       src, err = jpeg.Decode(input)
-			   	if err != nil {
-			   		log.Fatal(err)
-			   	}*/
 		}
 
 		if file_ext == "gif" {
@@ -848,10 +701,7 @@ func GetResize(c *fiber.Ctx) error {
 		ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
 		i_height = int(math.Round(float64(i_width) * ratio))
 
-		// Set the expected size that you want:
-		//dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/2, src.Bounds().Max.Y/2))
-
-		//dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X, src.Bounds().Max.Y))
+		
 		var dst *image.RGBA
 
 		if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
@@ -871,8 +721,7 @@ func GetResize(c *fiber.Ctx) error {
 		// Resize:
 		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 
-		// Encode to `output`:
-		//png.Encode(output, dst)
+		
 
 		if file_ext == "png" {
 			err = png.Encode(output, dst)
@@ -896,18 +745,24 @@ func GetResize(c *fiber.Ctx) error {
 		}
 
 		output.Close()
+		input.Close()
+		
+		src = nil
+		dst = nil
+		
+		
+		
+		
 
 		LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
 
 		return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
-
 	}
 
-	//filepath.Join(homepath, ".httphere", "thumb")
+	
+	
 
-	//return c.SendFile(filepath.Join(arg_fold, c_path), false)
-
-	return c.JSON(fiber.Map{
+	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"code": 400,
 		"file": filepath.Join(c_path),
 		"msg":  "Bad request",

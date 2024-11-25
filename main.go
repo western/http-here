@@ -37,23 +37,25 @@ var view_fs embed.FS
 var embedDirStatic embed.FS
 
 func main() {
-
+    
+    arg_help := flag.Bool("help", false, "Show help")
+    
 	arg_port := flag.Int("port", 8000, "Change default listen port")
-	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
+	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
+	
 
 	arg_user := flag.String("user", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
 	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
 
-	arg_help := flag.Bool("help", false, "Show help")
-
 	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
-	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
-
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
+	
+	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
+	arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
 
 	flag.Parse()
 
@@ -61,13 +63,13 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.5.3`,
+			`v1.5.4`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
 			`options:`,
 			`     --port                    Port to use [8000]`,
-			`     --prefork                 Enable spawn multiple processes`,
+			`     --tls                     Start HTTPS (need easyrsa linux package).`,
 			``,
 			`     --user                    Login for basic authorization.`,
 			`     --password                Password for basic authorization.`,
@@ -78,9 +80,10 @@ func main() {
 			`     --folder-make-disable     Disable make folder API and form controller.`,
 			`     --index-disable           Disable current folder read.`,
 			``,
-			`     --tls                     Start HTTPS (need easyrsa linux package).`,
-			``,
 			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
+			``,
+			`     --prefork                 Enable spawn multiple processes`,
+			`     --prepare-thumbnails      Run and make thumbnails for target folders.`,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
@@ -126,7 +129,22 @@ func main() {
 		}
 	}
 
-	go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
+    if !fiber.IsChild() {
+	    
+	    go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
+	}
+	
+	if *arg_prepare_thumbnails && !fiber.IsChild() {
+	    
+	    fmt.Println()
+	    fmt.Println("  Run and make thumbnails for target folders")
+	    
+	    go controller.WalkAndMakeThumbnail(arg_fold, 0)
+    }
+	
+	
+	
+	
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
