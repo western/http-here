@@ -23,7 +23,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	_ "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/template/html/v2"
 
 	_ "archive/zip"
@@ -61,7 +61,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.5.1`,
+			`v1.5.2`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -171,6 +171,10 @@ func main() {
 		AllowHeaders:  "*",
 		ExposeHeaders: "*",
 	}))
+	
+	app.Use(compress.New(compress.Config{
+        Level: compress.LevelBestSpeed, // 1
+    }))
 
 	cian := color.New(color.FgCyan).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
