@@ -45,8 +45,8 @@ func TestSimpleConcatMd5(t *testing.T) {
 
 		if !file.IsDir() {
 
-			c_width := "800"
-			//i_width := 800
+			c_width := "600"
+			
 
 			file_ext := controller.GetExtNorm(file.Name())
 			orig_filename := controller.GetFileName(file.Name())
