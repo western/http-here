@@ -502,11 +502,10 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
-	c_width := "800"
-	//c_height := "600"
-
-	i_width := 800
-	i_height := 600
+	c_width := "600"
+	
+	i_width := 600
+	
 
 	modtime_human := ""
 	size_human := ""
@@ -517,7 +516,7 @@ func GetResize(c *fiber.Ctx) error {
 		modtime_human = modtime.Format("2006-01-02 15:04:05")
 
 		size := fileInfo.Size()
-		size_human = prettyByteSize(size)
+		size_human = PrettyByteSize(size)
 
 		if fileInfo.IsDir() {
 
@@ -597,7 +596,7 @@ func GetResize(c *fiber.Ctx) error {
 		}
 
 		ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
-		i_height = int(math.Round(float64(i_width) * ratio))
+		i_height := int(math.Round(float64(i_width) * ratio))
 
 		var dst *image.RGBA
 

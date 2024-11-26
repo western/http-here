@@ -122,7 +122,7 @@ func GetFileName(path string) string {
 	return filename
 }
 
-func prettyByteSize(b int64) string {
+func PrettyByteSize(b int64) string {
 	bf := float64(b)
 	for _, unit := range []string{"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"} {
 		if math.Abs(bf) < 1024.0 {
@@ -131,6 +131,24 @@ func prettyByteSize(b int64) string {
 		bf /= 1024.0
 	}
 	return fmt.Sprintf("%.1fYiB", bf)
+}
+
+func GetMd5File( path string ) string {
+    
+    f, err := os.Open(path)
+	if err != nil {
+		//log.Fatal(err)
+		panic(err)
+	}
+	defer f.Close()
+
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		//log.Fatal(err)
+		panic(err)
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
@@ -302,14 +320,14 @@ func WalkAndMakeThumbnail(path string, deep int) {
 		modtime_human := modtime.Format("2006-01-02 15:04:05")
 
 		size := fileInfo.Size()
-		size_human := prettyByteSize(size)
+		size_human := PrettyByteSize(size)
 
 		//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
 
 		if !file.IsDir() {
 
-			c_width := "800"
-			i_width := 800
+			c_width := "600"
+			i_width := 600
 
 			file_ext := GetExtNorm(file.Name())
 			orig_filename := GetFileName(file.Name())

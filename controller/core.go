@@ -260,7 +260,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 			modtime_human := modtime.Format("2006-01-02 15:04:05")
 
 			size := fileInfo2.Size()
-			size_human := prettyByteSize(size)
+			size_human := PrettyByteSize(size)
 
 			if fileInfo2.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
