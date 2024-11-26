@@ -503,9 +503,8 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
 	c_width := "600"
-	
+
 	i_width := 600
-	
 
 	modtime_human := ""
 	size_human := ""

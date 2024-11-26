@@ -133,9 +133,9 @@ func PrettyByteSize(b int64) string {
 	return fmt.Sprintf("%.1fYiB", bf)
 }
 
-func GetMd5File( path string ) string {
-    
-    f, err := os.Open(path)
+func GetMd5File(path string) string {
+
+	f, err := os.Open(path)
 	if err != nil {
 		//log.Fatal(err)
 		panic(err)
