@@ -94,6 +94,12 @@ Prefork help to handle with multiple heavy query (big image gallery as example)
 http-here --prefork --extend-mode /tmp
 ```
 
+If you run --prepare-thumbnails one time you maybe not need prefork
+
+```console
+http-here --prepare-thumbnails --extend-mode /tmp
+```
+
 ## Notes
 
 > [!CAUTION]
