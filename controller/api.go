@@ -42,8 +42,7 @@ func PostUpload(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error url parse "+referer)
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -77,8 +76,7 @@ func PostUpload(c *fiber.Ctx) error {
 		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
 		if err != nil {
 
-			log.Println(err)
-			LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename))
+			LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
@@ -92,8 +90,7 @@ func PostUpload(c *fiber.Ctx) error {
 		_, err = io.Copy(out, readerFile)
 		if err != nil {
 
-			log.Println(err)
-			LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename))
+			LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
@@ -117,8 +114,7 @@ func PostFolder(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error url parse "+referer)
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -156,8 +152,7 @@ func PostFolder(c *fiber.Ctx) error {
 
 	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name))
+		LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error mkdir " + filepath.Join(arg_fold, u_path, name),
@@ -182,8 +177,7 @@ func PostDelete(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error url parse "+referer)
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -233,7 +227,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
@@ -245,7 +239,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err")
+					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
@@ -273,8 +267,7 @@ func PostMove(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error url parse "+referer)
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -296,7 +289,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err != nil {
-		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists")
+		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, to) + "' not exists",
@@ -364,13 +357,21 @@ func PostZip(c *fiber.Ctx) error {
 
 	homepath, err2 := os.UserHomeDir()
 	if err2 != nil {
-		log.Fatal(err2)
+		fmt.Println(err2)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Error homedir detect",
+		}, "application/json")
 	}
 
 	if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
 
 		if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
-			log.Fatal(err4)
+			fmt.Println(err4)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error temp folder create",
+			}, "application/json")
 		}
 	}
 
@@ -380,9 +381,8 @@ func PostZip(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error url parse "+referer)
-		return c.JSON(fiber.Map{
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
@@ -395,7 +395,11 @@ func PostZip(c *fiber.Ctx) error {
 	archive, err := os.Create(filepath.Join(homepath, ".httphere", "temp", archive_name))
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Create file archive error",
+		}, "application/json")
 	}
 	defer archive.Close()
 
@@ -477,21 +481,28 @@ func GetResize(c *fiber.Ctx) error {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Error homedir detect",
+		}, "application/json")
 	}
 
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
 
 		if err2 := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err2 != nil {
-			log.Fatal(err2)
+			fmt.Println(err2)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error thumbnails folder create",
+			}, "application/json")
 		}
 	}
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,

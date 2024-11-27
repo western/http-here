@@ -5,7 +5,7 @@ import (
 	"errors"
 	_ "fmt"
 	"html/template"
-	"log"
+	_ "log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -53,8 +53,7 @@ func GetAll(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		log.Println(err)
-		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
@@ -88,8 +87,7 @@ func GetAll(c *fiber.Ctx) error {
 			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
 			if err != nil {
 
-				log.Println(err)
-				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path))
+				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 			}
 

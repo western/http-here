@@ -25,9 +25,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
-
-	_ "archive/zip"
-	_ "io"
 )
 
 //go:embed view/*
@@ -91,13 +88,15 @@ func main() {
 
 	arg_fold, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	if len(flag.Args()) > 0 {
 		arg_fold = flag.Args()[0]
 		if arg_fold, err = filepath.Abs(arg_fold); err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			return
 		}
 	}
 	arg_fold = filepath.Clean(arg_fold)
@@ -116,7 +115,6 @@ func main() {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		//log.Fatal(err2)
 		fmt.Println("User homepath detect error: ", err)
 		return
 	}
@@ -124,7 +122,9 @@ func main() {
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
 
 		if err2 := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err2 != nil {
-			log.Fatal(err2)
+
+			fmt.Println(err2)
+			return
 		}
 	}
 
@@ -271,7 +271,8 @@ func main() {
 			fmt.Println("  Make temp folder")
 
 			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
-				log.Fatal(err4)
+				fmt.Println(err4)
+				return
 			}
 		} else {
 
@@ -279,11 +280,13 @@ func main() {
 			fmt.Println(yellow("  Clear temp folder"))
 
 			if err := os.RemoveAll(filepath.Join(homepath, ".httphere", "temp")); err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				return
 			}
 
 			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
-				log.Fatal(err4)
+				fmt.Println(err4)
+				return
 			}
 		}
 	}
@@ -301,8 +304,7 @@ func main() {
 		c_path = strings.TrimLeft(c_path, "/__temp")
 		if err != nil {
 
-			log.Println(err)
-			controller.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path))
+			controller.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 		}
 
@@ -380,20 +382,24 @@ func main() {
 
 		_, err1 := exec.Command("bash", "-c", "easyrsa --help").Output()
 		if err1 != nil {
-			log.Fatal(err1)
+
+			fmt.Println(err1)
+			return
 		}
 		//fmt.Printf("The date is %s\n", out)
 
 		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
 
 			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
-				log.Fatal(err4)
+				fmt.Println(err4)
+				return
 			}
 		}
 
 		_, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
 		if err5 != nil {
-			log.Fatal(err5)
+			fmt.Println(err5)
+			return
 		}
 		//fmt.Printf("The date is %s\n", out)
 
@@ -415,7 +421,8 @@ set_var EASYRSA_CERT_EXPIRE 3650
 
 		f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 		if err7 != nil {
-			log.Fatal(err7)
+			fmt.Println(err7)
+			return
 		}
 		defer f.Close()
 
