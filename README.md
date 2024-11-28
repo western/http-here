@@ -4,7 +4,7 @@ Share folder via http with upload
 
 Multiple files upload to current showed folder
 
-In extended mode you can delete or zip group of files
+In extended mode you can delete or download group of files
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
