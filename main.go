@@ -59,7 +59,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.5.4`,
+			`v1.5.6`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -130,7 +130,9 @@ func main() {
 
 	if !fiber.IsChild() {
 
-		go controller.WalkAndClear(filepath.Join(homepath, ".httphere", "thumb"))
+		
+		controller.WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
+		go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
 	if *arg_prepare_thumbnails && !fiber.IsChild() {

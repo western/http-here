@@ -191,7 +191,7 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	}
 }
 
-func WalkAndClear(path string) {
+func WalkAndClearOld(path string) {
 
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -214,7 +214,7 @@ func WalkAndClear(path string) {
 			}
 
 		} else if file.IsDir() {
-			WalkAndClear(full_name)
+			WalkAndClearOld(full_name)
 		}
 	}
 }
@@ -293,6 +293,41 @@ func MultipartToFile(file *multipart.FileHeader) *os.File {
 	return file2
 }
 
+func WalkAndClearZeroFile(path string, deep int) {
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return
+	}
+
+	if deep > 5 {
+		return
+	}
+
+	for _, file := range files {
+
+		if !file.IsDir() {
+
+			if NewFileInfo, err := os.Stat(filepath.Join(path, file.Name())); err == nil {
+				if NewFileInfo.Size() == 0 {
+
+					//fmt.Println("WalkAndClearZeroFile", "remove=", filepath.Join(path, file.Name())    )
+
+					if err2 := os.Remove(filepath.Join(path, file.Name())); err2 != nil {
+						panic("Problem of remove zero file " + filepath.Join(path, file.Name()) + " " + err2.Error())
+					}
+				}
+			}
+
+		} else if file.IsDir() {
+
+			WalkAndClearZeroFile(filepath.Join(path, file.Name()), deep+1)
+
+		}
+	}
+
+}
+
 func WalkAndMakeThumbnail(path string, deep int) {
 
 	//fmt.Println("WalkAndMakeThumbnail ", path)
@@ -306,15 +341,14 @@ func WalkAndMakeThumbnail(path string, deep int) {
 		return
 	}
 
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
 	for _, file := range files {
 
 		fileInfo, err := os.Stat(filepath.Join(path, file.Name()))
-
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-			//log.Fatal(err)
-			panic(err)
-		}
 
 		modtime := fileInfo.ModTime()
 		modtime_human := modtime.Format("2006-01-02 15:04:05")
