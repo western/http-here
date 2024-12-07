@@ -314,7 +314,11 @@
                                                 </a>
                                                 <div class="card-body">
                                                     <p class="card-text text-truncate" >
-                                                        <b>{{.Name}}</b><br>
+                                                        {{if .IsPreview}}
+                                                            <a href="/__resize{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}"><i class="bi bi-zoom-in"></i></a> <b>{{.Name}}</b><br>
+                                                        {{else}}
+                                                            <b>{{.Name}}</b><br>
+                                                        {{end}}
                                                         <span class="fw-lighter">{{.ModTimeHuman}}</span>
                                                     </p>
                                                     <div class="d-flex justify-content-between align-items-center">
