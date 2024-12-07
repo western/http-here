@@ -573,7 +573,7 @@ func GetResize(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+			LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
 			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 
 		} else if errors.Is(err, os.ErrNotExist) {
@@ -692,7 +692,7 @@ func GetResize(c *fiber.Ctx) error {
 
 				} else {
 
-					LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+					LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
 					return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 				}
 			}
