@@ -4,7 +4,7 @@ Share folder via http with upload
 
 Multiple files upload to current showed folder
 
-In extended mode you can delete or zip group of files
+In extended mode you can delete or download group of files
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
@@ -41,7 +41,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.5.4/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.5.6/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -141,6 +141,9 @@ https://github.com/western/http-here/issues
 ### backlog
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS drivers (i need one abstraction layer)
+
+### 1.5.6
+- [x] fix zero size thumbnail file
 
 ### 1.5.1 - 1.5.4
 - [x] add --prepare-thumbnails key (Run and make thumbnails for target folders)
