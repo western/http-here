@@ -137,15 +137,17 @@ func GetMd5File(path string) string {
 
 	f, err := os.Open(path)
 	if err != nil {
-		//log.Fatal(err)
-		panic(err)
+		//panic(err)
+		fmt.Println(err)
+		return ""
 	}
 	defer f.Close()
 
 	h := md5.New()
 	if _, err := io.Copy(h, f); err != nil {
-		//log.Fatal(err)
-		panic(err)
+		//panic(err)
+		fmt.Println(err)
+		return ""
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil))

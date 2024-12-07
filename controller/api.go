@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"os"
+	"os/exec"
 
 	"io"
 	"log"
@@ -514,7 +515,6 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
 	c_width := "600"
-
 	i_width := 600
 
 	modtime_human := ""
@@ -553,111 +553,321 @@ func GetResize(c *fiber.Ctx) error {
 	file_ext := GetExtNorm(c_path)
 	orig_filename := GetFileName(c_path)
 
-	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
+    //is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
+	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
-		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG and GIF images")
+		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"file": filepath.Join("/__resize/", c_path),
-			"msg":  "Only for JPEG, PNG and GIF images",
+			"msg":  "Only for JPEG, PNG, GIF and office files",
 		}, "application/json")
 	}
 
 	hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
 	hex_name := hex.EncodeToString(hash_name[:])
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+	is_img_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 
-		LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
-		return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+	if is_img_match {
 
-	} else if errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-		input, _ := os.Open(filepath.Join(arg_fold, c_path))
-		defer input.Close()
+			LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 
-		output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
-		defer output.Close()
+		} else if errors.Is(err, os.ErrNotExist) {
 
-		var src image.Image
+			input, _ := os.Open(filepath.Join(arg_fold, c_path))
+			defer input.Close()
 
-		// Decode the image (from PNG to image.Image):
-		if file_ext == "png" {
-			src, err = png.Decode(input)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+			output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			defer output.Close()
 
-		if file_ext == "jpg" {
+			var src image.Image
 
-			// src, err = jpeg.Decode(input)
-			src, _, err = exiffix.Decode(input)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		if file_ext == "gif" {
-			src, err = gif.Decode(input)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
-		i_height := int(math.Round(float64(i_width) * ratio))
-
-		var dst *image.RGBA
-
-		if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
-			dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
-		} else {
-
-			LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
-
-			err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
-			if err != nil {
-				log.Fatal(err)
+			// Decode the image (from PNG to image.Image):
+			if file_ext == "png" {
+				src, err = png.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
-			return c.SendFile(filepath.Join(arg_fold, c_path), false)
-		}
+			if file_ext == "jpg" {
 
-		// Resize:
-		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
-
-		if file_ext == "png" {
-			err = png.Encode(output, dst)
-			if err != nil {
-				log.Fatal(err)
+				// src, err = jpeg.Decode(input)
+				src, _, err = exiffix.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-		}
 
-		if file_ext == "jpg" {
-			err = jpeg.Encode(output, dst, nil)
-			if err != nil {
-				log.Fatal(err)
+			if file_ext == "gif" {
+				src, err = gif.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-		}
 
-		if file_ext == "gif" {
-			err = gif.Encode(output, dst, nil)
-			if err != nil {
-				log.Fatal(err)
+			ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
+			i_height := int(math.Round(float64(i_width) * ratio))
+
+			var dst *image.RGBA
+
+			if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
+				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+			} else {
+
+				LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+
+				err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				return c.SendFile(filepath.Join(arg_fold, c_path), false)
 			}
+
+			// Resize:
+			draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+			if file_ext == "png" {
+				err = png.Encode(output, dst)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "jpg" {
+				err = jpeg.Encode(output, dst, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "gif" {
+				err = gif.Encode(output, dst, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			output.Close()
+			input.Close()
+
+			src = nil
+			dst = nil
+
+			LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
+
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
 
-		output.Close()
-		input.Close()
-
-		src = nil
-		dst = nil
-
-		LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
-
-		return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 	}
+
+	is_office_match, _ := regexp.MatchString("^(doc|docx|xls|xlsx|odt|ods)$", file_ext)
+
+	if is_office_match {
+
+		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		if err != nil {
+
+			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error libreoffice not found",
+			}, "application/json")
+		}
+
+		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+            
+            if FileInfo, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+				if FileInfo.Size() == 0 {
+                    
+					if err2 := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err2 != nil {
+						panic("Problem of remove zero file " + filepath.Join(homepath, ".httphere", "thumb", hex_name) + " " + err2.Error())
+					}
+					
+					
+				}else{
+				    
+				    LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+			        return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+				}
+			}
+            
+			
+
+		} else if errors.Is(err, os.ErrNotExist) {
+
+			//input, _ := os.Open(filepath.Join(arg_fold, c_path))
+			//defer input.Close()
+
+			output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			defer output.Close()
+
+			//filepath_dir := filepath.Dir(c_path)
+			filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+
+			// libreoffice --headless --convert-to png --outdir /tmp "000_RR_fff ddd ttt.docx"
+			// --accept='socket,host=localhost,port=8103;urp;StarOffice.ComponentContext'
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" "+filepath.Join(arg_fold, c_path))
+			cmd.Dir = arg_fold
+			//out, _ := cmd.Output()
+			//fmt.Println("out=", out)
+			stderr, err := cmd.StderrPipe()
+			if err != nil {
+				panic(err)
+			}
+
+			if err := cmd.Start(); err != nil {
+				panic(err)
+			}
+
+			slurp, _ := io.ReadAll(stderr)
+			fmt.Printf("%s\n", slurp)
+
+			if err := cmd.Wait(); err != nil {
+
+				LogPrefix(c, "500", "Error libreoffice "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice",
+				}, "application/json")
+
+			}
+
+			readerFile, err := os.Open(filepath.Join(filepath_tmp, orig_filename+".png"))
+			if err != nil {
+				//panic(err)
+				
+				LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice",
+				}, "application/json")
+				
+			}
+			//defer os.Remove( filepath.Join(filepath_tmp, orig_filename+".png") )
+			defer readerFile.Close()
+
+			_, err = io.Copy(output, readerFile)
+			if err != nil {
+				panic(err)
+			}
+			output.Close()
+
+			LogPrefix(c, "200", "Make office thumbnail and SendFile "+filepath.Join(c_path))
+
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+		}
+
+	}
+
+	/*
+
+
+
+		hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
+		hex_name := hex.EncodeToString(hash_name[:])
+
+		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+
+			LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+
+		} else if errors.Is(err, os.ErrNotExist) {
+
+			input, _ := os.Open(filepath.Join(arg_fold, c_path))
+			defer input.Close()
+
+			output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			defer output.Close()
+
+			var src image.Image
+
+			// Decode the image (from PNG to image.Image):
+			if file_ext == "png" {
+				src, err = png.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "jpg" {
+
+				// src, err = jpeg.Decode(input)
+				src, _, err = exiffix.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "gif" {
+				src, err = gif.Decode(input)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
+			i_height := int(math.Round(float64(i_width) * ratio))
+
+			var dst *image.RGBA
+
+			if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
+				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+			} else {
+
+				LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+
+				err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				return c.SendFile(filepath.Join(arg_fold, c_path), false)
+			}
+
+			// Resize:
+			draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+			if file_ext == "png" {
+				err = png.Encode(output, dst)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "jpg" {
+				err = jpeg.Encode(output, dst, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if file_ext == "gif" {
+				err = gif.Encode(output, dst, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			output.Close()
+			input.Close()
+
+			src = nil
+			dst = nil
+
+			LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
+
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+		}
+	*/
 
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"code": 400,
