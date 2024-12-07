@@ -314,11 +314,7 @@
                                                 </a>
                                                 <div class="card-body">
                                                     <p class="card-text text-truncate" >
-                                                        {{if .IsPreview}}
-                                                            <a href="/__resize{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}"><i class="bi bi-zoom-in"></i></a> <b>{{.Name}}</b><br>
-                                                        {{else}}
-                                                            <b>{{.Name}}</b><br>
-                                                        {{end}}
+                                                        <b>{{.Name}}</b><br>
                                                         <span class="fw-lighter">{{.ModTimeHuman}}</span>
                                                     </p>
                                                     <div class="d-flex justify-content-between align-items-center">
@@ -337,10 +333,16 @@
                                                         </div>
                                                         <small class="text-body-secondary">
                                                             <div class="btn-group">
+                                                                
+                                                                {{if .IsPreview}}
+                                                                    <a type="button" class="btn btn-sm btn-outline" href="/__resize{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}">
+                                                                        <i class="bi bi-zoom-in"></i>
+                                                                    </a>
+                                                                {{end}}
+                                                                
                                                                 <div class="input-group-text font-reset" >
                                                                     {{.SizeHuman}}
                                                                 </div>
-                                                                
                                                                 
                                                                 
                                                                 <a type="button" class="del btn btn-sm btn-outline-danger" href="javascript:void(0)" data-name="{{.Name}}" ><i class="bi bi-x-lg"></i></a>
