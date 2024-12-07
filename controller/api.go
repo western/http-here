@@ -553,7 +553,7 @@ func GetResize(c *fiber.Ctx) error {
 	file_ext := GetExtNorm(c_path)
 	orig_filename := GetFileName(c_path)
 
-    //is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
+	//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
@@ -682,23 +682,20 @@ func GetResize(c *fiber.Ctx) error {
 		}
 
 		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
-            
-            if FileInfo, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+
+			if FileInfo, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 				if FileInfo.Size() == 0 {
-                    
+
 					if err2 := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err2 != nil {
 						panic("Problem of remove zero file " + filepath.Join(homepath, ".httphere", "thumb", hex_name) + " " + err2.Error())
 					}
-					
-					
-				}else{
-				    
-				    LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
-			        return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+
+				} else {
+
+					LogPrefix(c, "200", "SendFile from cache "+filepath.Join(c_path))
+					return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 				}
 			}
-            
-			
 
 		} else if errors.Is(err, os.ErrNotExist) {
 
@@ -713,7 +710,7 @@ func GetResize(c *fiber.Ctx) error {
 
 			// libreoffice --headless --convert-to png --outdir /tmp "000_RR_fff ddd ttt.docx"
 			// --accept='socket,host=localhost,port=8103;urp;StarOffice.ComponentContext'
-			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" "+filepath.Join(arg_fold, c_path))
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
 			cmd.Dir = arg_fold
 			//out, _ := cmd.Output()
 			//fmt.Println("out=", out)
@@ -743,14 +740,14 @@ func GetResize(c *fiber.Ctx) error {
 			readerFile, err := os.Open(filepath.Join(filepath_tmp, orig_filename+".png"))
 			if err != nil {
 				//panic(err)
-				
+
 				LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
 					"msg":  "Error libreoffice",
 				}, "application/json")
-				
+
 			}
 			//defer os.Remove( filepath.Join(filepath_tmp, orig_filename+".png") )
 			defer readerFile.Close()
