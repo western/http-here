@@ -100,7 +100,7 @@ If you run --prepare-thumbnails one time you maybe not need prefork
 http-here --prepare-thumbnails --extend-mode /tmp
 ```
 
-## File crypt
+## File encrypt
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt2.png?raw=true"  >
@@ -115,7 +115,7 @@ http-here --extend-mode --crypt /tmp
 
 Then, set your passcode to the form.
 
-During the process of uploading, your files will be crypt and their EXT change to `.crypt`
+During the process of uploading, your files will be encrypt and their EXT change to `.crypt`
 
 When files lying on your server, their data is crypted.
 
