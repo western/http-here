@@ -249,6 +249,10 @@ func GetAll(c *fiber.Ctx) error {
 				DecryptFile(f.Name(), code)
 
 				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				
+				fname := filepath.Base(c_path)
+				fname = strings.Replace(fname, ".crypt", "", 1)
+				c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
 
 				return c.SendFile(f.Name(), false)
 
