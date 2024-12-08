@@ -116,12 +116,6 @@ When files lying on your server, their data is crypted.
 
 If you need decrypt any `.crypt` flles, set your passcode, and click on file. During download this file, it will be decrypt on the fly.
 
-Server will be use:
-
-```shell
-openssl aes-256-cbc
-```
-
 Server will be crypt upload file:
 - if you set `--crypt` arg on cmd
 - if you set passcode
@@ -130,6 +124,8 @@ Server will be decrypt download file:
 - if you set `--crypt` arg on cmd
 - if you set right passcode
 - if file contain `.crypt` extension
+
+Server will be use `openssl aes-256-cbc`
 
 ## Notes
 
