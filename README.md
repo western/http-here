@@ -41,7 +41,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.5.7/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.6.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -100,6 +100,24 @@ If you run --prepare-thumbnails one time you maybe not need prefork
 http-here --prepare-thumbnails --extend-mode /tmp
 ```
 
+## File crypt
+
+Your server need package `openssl`
+
+Then, you set passcode to the form.
+
+During the process of uploading, your files will be crypt and their EXT change to `.crypt`
+
+When files lying on your server, their data is crypted.
+
+If you need decrypt any `.crypt` flles, set your passcode, and click on file. During download this file, it will be decrypt on the fly.
+
+Server will be use:
+
+```shell
+openssl aes-256-cbc
+```
+
 ## Notes
 
 > [!CAUTION]
@@ -141,6 +159,11 @@ https://github.com/western/http-here/issues
 ### backlog
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS drivers (i need one abstraction layer)
+
+### 1.6.0
+- [x] add file crypt support
+
+need openssl package
 
 ### 1.5.7
 - [x] add experimental preview office files
