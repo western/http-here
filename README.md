@@ -103,7 +103,7 @@ http-here --prepare-thumbnails --extend-mode /tmp
 ## File crypt
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt2.png?raw=true"  >
     
 </p>
 
