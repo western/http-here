@@ -121,7 +121,7 @@ When files lying on your server, their data is crypted.
 
 If you need decrypt any `.crypt` flles, set your passcode, and click on file. During download this file, it will be decrypt on the fly.
 
-### Server will be crypt upload file:
+### Server will be encrypt upload file:
 ```console
 http-here --extend-mode --crypt /tmp
 ```
