@@ -105,7 +105,7 @@ http-here --prepare-thumbnails --extend-mode /tmp
 Your server need package `openssl`
 
 ```console
-http-here --prefork --extend-mode --crypt /tmp
+http-here --extend-mode --crypt /tmp
 ```
 
 Then, you set passcode to the form.
