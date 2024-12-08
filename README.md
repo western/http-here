@@ -113,7 +113,7 @@ Your server need package `openssl`
 http-here --extend-mode --crypt /tmp
 ```
 
-Then, you set passcode to the form.
+Then, set your passcode to the form.
 
 During the process of uploading, your files will be crypt and their EXT change to `.crypt`
 
@@ -136,7 +136,7 @@ http-here --extend-mode --crypt /tmp
 - if filename contain `.crypt` extension
 - if you set right passcode (pass code send by form input)
 
-### Server will be decrypt download file:
+### Server will be decrypt download file (case 2):
 ```console
 http-here /tmp
 ```
