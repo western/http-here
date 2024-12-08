@@ -230,7 +230,7 @@ func GetAll(c *fiber.Ctx) error {
 				c.Cookie(cookie)
 			}
 
-			if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || ( is_crypt_ext || len(code) > 0 ) {
+			if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || ( is_crypt_ext && len(code) > 0 ) {
 
 				f, err := os.CreateTemp("", "httphere_decrypt*")
 				if err != nil {
