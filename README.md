@@ -102,6 +102,11 @@ http-here --prepare-thumbnails --extend-mode /tmp
 
 ## File crypt
 
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt.png?raw=true"  >
+    
+</p>
+
 Your server need package `openssl`
 
 ```console
