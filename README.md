@@ -128,7 +128,7 @@ Server will be crypt upload file:
 
 Server will be decrypt download file:
 - if you set `--crypt` arg on cmd
-- if you set passcode
+- if you set right passcode
 - if file contain `.crypt` extension
 
 ## Notes
