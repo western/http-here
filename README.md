@@ -125,6 +125,10 @@ If you need decrypt any `.crypt` flles, set your passcode, and click on file. Du
 - if you set right passcode
 - if file contain `.crypt` extension
 
+### Server will be decrypt download file:
+- if you get file with `code` argument: `/fold3/file.jpg.crypt?code=YOUR_PASS_HERE`
+- if file contain `.crypt` extension
+
 Server will be use `openssl aes-256-cbc`
 
 ## Notes
