@@ -98,7 +98,7 @@ func PostUpload(c *fiber.Ctx) error {
 
 			//panic(code)
 
-			f, err := os.CreateTemp("", "becloud_crypt*")
+			f, err := os.CreateTemp("", "httphere_crypt*")
 			if err != nil {
 				panic(err)
 			}
