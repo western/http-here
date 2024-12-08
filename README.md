@@ -104,6 +104,10 @@ http-here --prepare-thumbnails --extend-mode /tmp
 
 Your server need package `openssl`
 
+```console
+http-here --prefork --extend-mode --crypt /tmp
+```
+
 Then, you set passcode to the form.
 
 During the process of uploading, your files will be crypt and their EXT change to `.crypt`
