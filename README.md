@@ -122,6 +122,15 @@ Server will be use:
 openssl aes-256-cbc
 ```
 
+Server will be crypt upload file:
+- if you set `--crypt` arg on cmd
+- if you set passcode
+
+Server will be decrypt download file:
+- if you set `--crypt` arg on cmd
+- if you set passcode
+- if file contain `.crypt` extension
+
 ## Notes
 
 > [!CAUTION]
