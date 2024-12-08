@@ -37,6 +37,11 @@ func PostUpload(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	arg_crypt := ""
+	if c.Locals("arg_crypt") != nil {
+		arg_crypt = c.Locals("arg_crypt").(string)
+	}
+
 	referer := c.Get("Referer")
 
 	// already decoded
@@ -51,6 +56,8 @@ func PostUpload(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	form, _ := c.MultipartForm()
 	files := form.File["fileBlob"]
@@ -67,6 +74,8 @@ func PostUpload(c *fiber.Ctx) error {
 		filename := originalFileName + "." + file_ext
 		filename = CleanDirtyPath(filename)
 
+		// -------------------------------------------------------------------------------------------------------------------------
+
 		if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, filename)); err == nil {
 
 			if !fileInfo.IsDir() {
@@ -74,29 +83,110 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 		}
 
-		out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
-		if err != nil {
+		// -------------------------------------------------------------------------------------------------------------------------
 
-			LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
-			}, "application/json")
+		code := c.Cookies("code")
+
+		if arg_crypt == "" && len(code) > 0 {
+
+			cookie := new(fiber.Cookie)
+			cookie.Name = "code"
+			c.Cookie(cookie)
 		}
-		defer out.Close()
 
-		LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
+		if arg_crypt == "1" && len(code) > 0 {
 
-		readerFile, _ := file.Open()
-		_, err = io.Copy(out, readerFile)
-		if err != nil {
+			//panic(code)
 
-			LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
-			}, "application/json")
+			f, err := os.CreateTemp("", "becloud_crypt*")
+			if err != nil {
+				panic(err)
+			}
+			//fmt.Println("Crypt Temp file name:", f.Name())
+			defer os.Remove(f.Name())
+
+			readerFile, _ := file.Open()
+			_, err = io.Copy(f, readerFile)
+			if err != nil {
+				panic(err)
+			}
+			f.Close()
+
+			CryptFile(f.Name(), code)
+
+			out, err := os.Create(filepath.Join(arg_fold, u_path, filename+".crypt"))
+			if err != nil {
+
+				LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename+".crypt"),
+				}, "application/json")
+			}
+			defer out.Close()
+
+			readerFile, _ = os.Open(f.Name())
+
+			_, err = io.Copy(out, readerFile)
+			if err != nil {
+				panic(err)
+			}
+			f.Close()
+
+		} else {
+
+			out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
+			if err != nil {
+
+				LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
+				}, "application/json")
+			}
+			defer out.Close()
+
+			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
+
+			readerFile, _ := file.Open()
+			_, err = io.Copy(out, readerFile)
+			if err != nil {
+
+				LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
+				}, "application/json")
+			}
+
 		}
+
+		/*
+			out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
+			if err != nil {
+
+				LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
+				}, "application/json")
+			}
+			defer out.Close()
+
+			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
+
+			readerFile, _ := file.Open()
+			_, err = io.Copy(out, readerFile)
+			if err != nil {
+
+				LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
+				}, "application/json")
+			}
+		*/
+
 	}
 
 	return c.JSON(fiber.Map{

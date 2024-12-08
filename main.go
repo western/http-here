@@ -49,6 +49,7 @@ func main() {
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
+	arg_crypt := flag.Bool("crypt", false, "Enable file crypt support.")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
 	arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
@@ -59,7 +60,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.5.8`,
+			`v1.6.0`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -80,6 +81,8 @@ func main() {
 			``,
 			`     --prefork                 Enable spawn multiple processes`,
 			`     --prepare-thumbnails      Run and make thumbnails for target folders.`,
+			``,
+			`     --crypt                   Enable file crypt support.`,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
@@ -170,6 +173,10 @@ func main() {
 		if *arg_extend_mode {
 
 			c.Locals("arg_extend_mode", "1")
+		}
+		if *arg_crypt {
+
+			c.Locals("arg_crypt", "1")
 		}
 
 		return c.Next()

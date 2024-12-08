@@ -348,6 +348,45 @@ $(document).ready(function(){
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    $('#set_code_button').click(function(ev){
+        
+        let val = $('#set_code_input').val();
+        //document.cookie = "code="+val;
+        setCookie('code', val, {});
+        
+        location.href = location.href;
+    });
+
+    $('#set_code_input').on('keypress', function(ev){
+
+        if(ev.which == 13) {
+            let val = $('#set_code_input').val();
+            //document.cookie = "code="+val;
+            setCookie('code', val, {});
+            
+            location.href = location.href;
+        }
+    });
+    
+    if( getCookie('code') ){
+        $('#set_code_input').val( getCookie('code') )
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     $('#upload_file').on('change', function(ev){
         
         $('#signal').removeClass('visually-hidden');
@@ -446,3 +485,44 @@ function ev_target_files(files){
     submit();
     return;
 }
+
+
+
+
+
+
+function getCookie(name) {
+  let matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+function setCookie(name, value, options = {}) {
+
+  options = {
+    path: '/',
+    ...options
+  };
+
+  if (options.expires instanceof Date) {
+    options.expires = options.expires.toUTCString();
+  }
+
+  let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+  for (let optionKey in options) {
+    updatedCookie += "; " + optionKey;
+    let optionValue = options[optionKey];
+    if (optionValue !== true) {
+      updatedCookie += "=" + optionValue;
+    }
+  }
+
+    //console.log('updatedCookie=', updatedCookie);
+    document.cookie = updatedCookie;
+}
+
+// setCookie('user', 'John', {secure: true, 'max-age': 3600});
+
+

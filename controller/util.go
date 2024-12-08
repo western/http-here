@@ -2,6 +2,7 @@ package controller
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io"
 	_ "io/ioutil"
@@ -9,11 +10,14 @@ import (
 	"math/rand"
 	"mime/multipart"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	_ "runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -486,4 +490,97 @@ func WalkAndMakeThumbnail(path string, deep int) {
 	}
 
 	return
+}
+
+// openssl aes-256-cbc -a -salt -in file.txt -out file.txt.cr -pass pass:123
+func CryptFile(path, pass string) (bool, error) {
+
+	_, err := exec.Command("bash", "-c", "openssl --help").Output()
+	if err != nil {
+		return false, err
+	}
+
+	if len(path) == 0 {
+		return false, errors.New("Path of file is empty")
+	}
+
+	if len(pass) == 0 {
+		return false, errors.New("Pass is empty")
+	}
+
+	//panic("yyy")
+
+	//fmt.Println( filepath.Dir(path) )
+	//fmt.Println( filepath.Base(path) )
+	from_file := filepath.Base(path)
+	to_file := filepath.Base(path) + ".cr"
+
+	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -a -salt -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
+	cmd.Dir = filepath.Dir(path)
+	out, _ := cmd.Output()
+	_ = out
+
+	//fmt.Println("--------------------------------------------------------------------------------------------------")
+	//fmt.Println("out=", out)
+
+	if err = os.Remove(path); err != nil {
+		return false, err
+	}
+
+	if err = os.Rename(filepath.Join(filepath.Dir(path), to_file), path); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// openssl aes-256-cbc -d -a -in file.txt.cr -out file.txt.new -pass pass:123
+func DecryptFile(path, pass string) (bool, error) {
+
+	_, err := exec.Command("bash", "-c", "openssl --help").Output()
+	if err != nil {
+		return false, err
+	}
+
+	if len(path) == 0 {
+		return false, errors.New("Path of file is empty")
+	}
+
+	if len(pass) == 0 {
+		return false, errors.New("Pass is empty")
+	}
+
+	//fmt.Println( filepath.Dir(path) )
+	//fmt.Println( filepath.Base(path) )
+	from_file := filepath.Base(path)
+	to_file := filepath.Base(path)
+	to_file = strings.Replace(to_file, ".cr", "", 1)
+	to_file += ".decrypt"
+
+	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -d -a  -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
+	cmd.Dir = filepath.Dir(path)
+	out, _ := cmd.Output()
+	_ = out
+
+	//fmt.Println("--------------------------------------------------------------------------------------------------")
+	//fmt.Println("out=", out)
+
+	if err = os.Remove(path); err != nil {
+		return false, err
+	}
+
+	if err = os.Rename(filepath.Join(filepath.Dir(path), to_file), path); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func MutexUnLocked(m *sync.Mutex) bool {
+	state := reflect.ValueOf(m).Elem().FieldByName("state")
+	//fmt.Println("state=", state)
+	//return state.Int()&mutexLocked == mutexLocked
+	//return atomic.CompareAndSwapInt32(&m.state, 0, mutexLocked)
+	//return false
+	return state.Int() == 0
 }

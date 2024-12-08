@@ -5,6 +5,7 @@ import (
 	"errors"
 	_ "fmt"
 	"html/template"
+	"io"
 	_ "log"
 	"net/url"
 	"os"
@@ -44,6 +45,11 @@ func GetAll(c *fiber.Ctx) error {
 	arg_extend_mode := ""
 	if c.Locals("arg_extend_mode") != nil {
 		arg_extend_mode = c.Locals("arg_extend_mode").(string)
+	}
+
+	arg_crypt := ""
+	if c.Locals("arg_crypt") != nil {
+		arg_crypt = c.Locals("arg_crypt").(string)
 	}
 
 	//arg_fold := "/tmp"
@@ -189,6 +195,7 @@ func GetAll(c *fiber.Ctx) error {
 
 				"rows":            rows,
 				"arg_extend_mode": arg_extend_mode,
+				"arg_crypt":       arg_crypt,
 				"mode_thumb":      mode_thumb,
 				"mode_list":       mode_list,
 
@@ -206,9 +213,45 @@ func GetAll(c *fiber.Ctx) error {
 
 		} else {
 
-			LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
+			code := c.Cookies("code")
+			is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
 
-			return c.SendFile(filepath.Join(arg_fold, c_path), false)
+			if arg_crypt == "" && len(code) > 0 {
+
+				cookie := new(fiber.Cookie)
+				cookie.Name = "code"
+				c.Cookie(cookie)
+			}
+
+			if is_crypt_ext && arg_crypt == "1" && len(code) > 0 {
+
+				f, err := os.CreateTemp("", "becloud_decrypt*")
+				if err != nil {
+					panic(err)
+				}
+				//fmt.Println("Decrypt Temp file name:", f.Name())
+				defer os.Remove(f.Name())
+
+				readerFile, _ := os.Open(filepath.Join(arg_fold, c_path))
+				_, err = io.Copy(f, readerFile)
+				if err != nil {
+					panic(err)
+				}
+				f.Close()
+
+				DecryptFile(f.Name(), code)
+
+				LogPrefix(c, "200", "SendFile decrypt "+f.Name())
+
+				return c.SendFile(f.Name(), false)
+
+			} else {
+
+				LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
+
+				return c.SendFile(filepath.Join(arg_fold, c_path), false)
+			}
+
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {

@@ -59,7 +59,7 @@
         </div>
 
 
-        <div class="row" style="padding:10px 0 100px 0;">
+        <div class="row" style="padding:10px 0 50px 0;">
             
 
                 
@@ -384,6 +384,38 @@
 
             
         </div>
+        
+        
+        
+        
+        
+        {{if .arg_crypt}}
+        <div class="row" style="padding:10px 0 50px 0;">
+
+            <div class="col">
+                
+                
+
+            </div>
+
+            <div class="col">
+                
+                
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Code to encrypt/decrypt" aria-label="Code to encrypt/decrypt" id="set_code_input" >
+                    <button class="btn btn-outline-secondary" type="button" id="set_code_button">Set</button>
+                </div>
+                
+                
+            </div>
+
+        </div>
+        {{end}}
+        
+        
+        
+        
+        
 
     </div>
 
