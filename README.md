@@ -133,15 +133,15 @@ http-here --extend-mode --crypt /tmp
 http-here --extend-mode --crypt /tmp
 ```
 - if you set `--crypt` arg on cmd
-- if file contain `.crypt` extension
+- if filename contain `.crypt` extension
 - if you set right passcode (pass code send by form input)
 
 ### Server will be decrypt download file:
 ```console
 http-here /tmp
 ```
-- if file contain `.crypt` extension
-- if you get file with `code` argument: `/fold3/file.jpg.crypt?code=YOUR_PASS_HERE`
+- if filename contain `.crypt` extension
+- if you get file with `code` param: `/fold3/file.jpg.crypt?code=YOUR_PASS_HERE`
 
 Server will be use `openssl aes-256-cbc`
 
