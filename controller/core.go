@@ -241,7 +241,7 @@ func GetAll(c *fiber.Ctx) error {
 
 				DecryptFile(f.Name(), code)
 
-				LogPrefix(c, "200", "SendFile decrypt "+f.Name())
+				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
 
 				return c.SendFile(f.Name(), false)
 
