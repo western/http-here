@@ -147,7 +147,7 @@
                                         
                                             <tr>
                                               <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="file" value="{{.Name}}" ></th>
-                                              <td ><a class="nodecor" href="{{.FullPath}}">{{.Name}}</a></td>
+                                              <td ><a class="nodecor" href="{{.FullPath}}?{{.Rndm}}">{{.Name}}</a></td>
                                               
                                               <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.SizeHuman}}</td>
                                               <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
@@ -293,7 +293,7 @@
                                     
                                         <div class="col">
                                             <div class="card shadow-sm">
-                                                <a href="{{.FullPath}}">
+                                                <a href="{{.FullPath}}?{{.Rndm}}">
                                                         
                                                         
                                                         {{if .IsPreview}}

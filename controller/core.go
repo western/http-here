@@ -290,6 +290,7 @@ type FileRow struct {
 	Md5          string
 
 	IsPreview bool
+	Rndm      string
 }
 
 func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
@@ -328,6 +329,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 					//Md5:   "",
 					IsPreview: false,
+					Rndm: RandStringRunes(2),
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
@@ -343,6 +345,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 					//Md5:       GetMd5File( filepath.Join(arg_fold, c_path, e.Name()) ),
 					IsPreview: is_preview_match,
+					Rndm: RandStringRunes(2),
 				})
 			}
 
