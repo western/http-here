@@ -2,6 +2,7 @@ package controller
 
 import (
 	"archive/zip"
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -517,8 +518,18 @@ func CryptFile(path, pass string) (bool, error) {
 
 	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -a -salt -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
 	cmd.Dir = filepath.Dir(path)
-	out, _ := cmd.Output()
-	_ = out
+	//out, _ := cmd.Output()
+	//_ = out
+
+	stderr, _ := cmd.StderrPipe()
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		//fmt.Println("openssl:", scanner.Text())
+	}
 
 	//fmt.Println("--------------------------------------------------------------------------------------------------")
 	//fmt.Println("out=", out)
@@ -559,8 +570,18 @@ func DecryptFile(path, pass string) (bool, error) {
 
 	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -d -a  -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
 	cmd.Dir = filepath.Dir(path)
-	out, _ := cmd.Output()
-	_ = out
+	//out, _ := cmd.Output()
+	//_ = out
+
+	stderr, _ := cmd.StderrPipe()
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		//fmt.Println("openssl:", scanner.Text())
+	}
 
 	//fmt.Println("--------------------------------------------------------------------------------------------------")
 	//fmt.Println("out=", out)

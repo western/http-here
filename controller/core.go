@@ -214,13 +214,12 @@ func GetAll(c *fiber.Ctx) error {
 		} else {
 
 			code := c.Cookies("code")
-			
+
 			q_code := c.Query("code")
 			if len(q_code) > 0 {
 				code = q_code
 			}
-			
-			
+
 			is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
 
 			if arg_crypt == "" && len(code) > 0 {
@@ -230,7 +229,7 @@ func GetAll(c *fiber.Ctx) error {
 				c.Cookie(cookie)
 			}
 
-			if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || ( is_crypt_ext && len(code) > 0 ) {
+			if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
 
 				f, err := os.CreateTemp("", "httphere_decrypt*")
 				if err != nil {
@@ -249,7 +248,7 @@ func GetAll(c *fiber.Ctx) error {
 				DecryptFile(f.Name(), code)
 
 				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
-				
+
 				fname := filepath.Base(c_path)
 				fname = strings.Replace(fname, ".crypt", "", 1)
 				c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
