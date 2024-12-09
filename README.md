@@ -106,7 +106,7 @@ http-here --prepare-thumbnails --extend-mode /tmp
 > Be careful. If you download `.crypt` file with WRONG password, it file will be contain MESS bytes
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt2.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt3.png?raw=true"  >
     
 </p>
 
