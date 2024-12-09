@@ -110,7 +110,7 @@ http-here --prepare-thumbnails --extend-mode /tmp
     
 </p>
 
-Your server need package `openssl`
+Your server need package `openssl`. It will be use `openssl aes-256-cbc`
 
 ```console
 http-here --extend-mode --crypt /tmp
@@ -145,8 +145,6 @@ http-here /tmp
 ```
 - if filename contain `.crypt` extension
 - if you get file with `code` param: `/fold3/file.jpg.crypt?code=YOUR_PASS_HERE`
-
-Server will be use `openssl aes-256-cbc`
 
 
 
