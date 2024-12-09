@@ -102,6 +102,9 @@ http-here --prepare-thumbnails --extend-mode /tmp
 
 ## File encrypt
 
+> [!IMPORTANT]  
+> Be careful. If you download file with WRONG password, it file will be contain MESS bytes
+
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt2.png?raw=true"  >
     
@@ -144,6 +147,8 @@ http-here /tmp
 - if you get file with `code` param: `/fold3/file.jpg.crypt?code=YOUR_PASS_HERE`
 
 Server will be use `openssl aes-256-cbc`
+
+
 
 ## Notes
 
