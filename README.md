@@ -178,7 +178,7 @@ http-here --tls .
 
 ## Magic file index.html inside any folder
 
-If you put inside folder file index.html, it will be return as context
+If you put inside folder file `index.html`, it will be return as context
 
 
 
