@@ -523,7 +523,8 @@ func CryptFile(path, pass string) (bool, error) {
 
 	stderr, _ := cmd.StderrPipe()
 	if err := cmd.Start(); err != nil {
-		panic(err)
+		//panic(err)
+		return false, err
 	}
 
 	scanner := bufio.NewScanner(stderr)
@@ -575,7 +576,8 @@ func DecryptFile(path, pass string) (bool, error) {
 
 	stderr, _ := cmd.StderrPipe()
 	if err := cmd.Start(); err != nil {
-		panic(err)
+		//panic(err)
+		return false, err
 	}
 
 	scanner := bufio.NewScanner(stderr)

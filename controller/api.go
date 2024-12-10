@@ -113,7 +113,15 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 			f.Close()
 
-			CryptFile(f.Name(), code)
+			isOk, err := CryptFile(f.Name(), code)
+			if !isOk {
+
+				LogPrefix(c, "500", "Error CryptFile "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error CryptFile",
+				}, "application/json")
+			}
 
 			out, err := os.Create(filepath.Join(arg_fold, u_path, filename+".crypt"))
 			if err != nil {

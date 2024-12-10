@@ -245,7 +245,12 @@ func GetAll(c *fiber.Ctx) error {
 				}
 				f.Close()
 
-				DecryptFile(f.Name(), code)
+				isOk, err := DecryptFile(f.Name(), code)
+				if !isOk {
+
+					LogPrefix(c, "500", "Error DecryptFile "+err.Error())
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+				}
 
 				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
 
@@ -329,7 +334,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 					//Md5:   "",
 					IsPreview: false,
-					Rndm: RandStringRunes(2),
+					Rndm:      RandStringRunes(2),
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
@@ -345,7 +350,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 					//Md5:       GetMd5File( filepath.Join(arg_fold, c_path, e.Name()) ),
 					IsPreview: is_preview_match,
-					Rndm: RandStringRunes(2),
+					Rndm:      RandStringRunes(2),
 				})
 			}
 
