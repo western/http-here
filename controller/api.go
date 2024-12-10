@@ -656,7 +656,7 @@ func GetResize(c *fiber.Ctx) error {
 	orig_filename := GetFileName(c_path)
 
 	//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
-	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|doc|docx|xls|xlsx|odt|ods)$", file_ext)
+	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -768,7 +768,7 @@ func GetResize(c *fiber.Ctx) error {
 
 	}
 
-	is_office_match, _ := regexp.MatchString("^(doc|docx|xls|xlsx|odt|ods)$", file_ext)
+	is_office_match, _ := regexp.MatchString("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 
 	if is_office_match {
 

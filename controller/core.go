@@ -310,7 +310,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 		ext = strings.Replace(ext, ".", "", -1)
 
 		//is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
-		is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|doc|docx|xls|xlsx|odt|ods)$", ext)
+		is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
 
 		if fileInfo2, err := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
