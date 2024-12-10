@@ -116,7 +116,7 @@ Your server need package `openssl`. It will be use `openssl aes-256-cbc`
 http-here --extend-mode --crypt /tmp
 ```
 
-Then, set your passcode to the form.
+Then, set your passcode to the form. The password store on the form between requests and you not need input it every time (if you clear it server will not use openssl).
 
 During the process of uploading, your files will be encrypt and their EXT change to `.crypt`
 
