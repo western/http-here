@@ -129,7 +129,7 @@ If you need decrypt any `.crypt` flles, set your passcode, and click on file. Du
 http-here --extend-mode --crypt /tmp
 ```
 - if you set `--crypt` arg on cmd
-- if you set passcode (pass code send by form input)
+- if you set passcode (pass code set by form)
 
 ### Server will be decrypt download file:
 ```console
@@ -137,7 +137,7 @@ http-here --extend-mode --crypt /tmp
 ```
 - if you set `--crypt` arg on cmd
 - if filename contain `.crypt` extension
-- if you set right passcode (pass code send by form input)
+- if you set right passcode (pass code set by form)
 
 ### Server will be decrypt download file (case 2):
 ```console
