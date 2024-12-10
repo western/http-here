@@ -141,6 +141,8 @@ func PostUpload(c *fiber.Ctx) error {
 				panic(err)
 			}
 			f.Close()
+			
+			LogPrefix(c, "200", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
 
 		} else {
 
@@ -155,8 +157,7 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 			defer out.Close()
 
-			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
-
+			
 			readerFile, _ := file.Open()
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
@@ -167,6 +168,8 @@ func PostUpload(c *fiber.Ctx) error {
 					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
 				}, "application/json")
 			}
+			
+			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
 
 		}
 
