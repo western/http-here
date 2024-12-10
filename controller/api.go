@@ -71,6 +71,8 @@ func PostUpload(c *fiber.Ctx) error {
 		originalFileName = strings.ReplaceAll(originalFileName, "/", "")
 		re := regexp.MustCompile("\\s+")
 		originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
+		re = regexp.MustCompile("[\\-]{2,}")
+		originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
 
 		filename := originalFileName + "." + file_ext
 		filename = CleanDirtyPath(filename)
