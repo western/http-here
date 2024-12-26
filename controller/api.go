@@ -143,7 +143,7 @@ func PostUpload(c *fiber.Ctx) error {
 				panic(err)
 			}
 			f.Close()
-			
+
 			LogPrefix(c, "200", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
 
 		} else {
@@ -159,7 +159,6 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 			defer out.Close()
 
-			
 			readerFile, _ := file.Open()
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
@@ -170,7 +169,7 @@ func PostUpload(c *fiber.Ctx) error {
 					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
 				}, "application/json")
 			}
-			
+
 			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
 
 		}
@@ -428,7 +427,7 @@ func PostMove(c *fiber.Ctx) error {
 				LogPrefix(c, "500", "name is empty")
 				continue
 			}
-			
+
 			src_file_path := filepath.Join(arg_fold, u_path, name)
 			target_file_path := filepath.Join(arg_fold, to, name)
 
@@ -437,12 +436,12 @@ func PostMove(c *fiber.Ctx) error {
 				LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
 				continue
 			}
-			
+
 			_, err = os.Stat(target_file_path)
 			if err == nil {
-				
+
 				LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
-				
+
 				if err := os.RemoveAll(target_file_path); err != nil {
 
 					LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
@@ -453,7 +452,7 @@ func PostMove(c *fiber.Ctx) error {
 			err = os.Rename(src_file_path, target_file_path)
 
 			if err != nil {
-				
+
 				LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
 
 			} else {
@@ -469,9 +468,6 @@ func PostMove(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-
-
 
 func PostCopy(c *fiber.Ctx) error {
 
@@ -540,7 +536,7 @@ func PostCopy(c *fiber.Ctx) error {
 				LogPrefix(c, "500", "name is empty")
 				continue
 			}
-			
+
 			src_file_path := filepath.Join(arg_fold, u_path, name)
 			target_file_path := filepath.Join(arg_fold, to, name)
 
@@ -549,12 +545,12 @@ func PostCopy(c *fiber.Ctx) error {
 				LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
 				continue
 			}
-			
+
 			_, err = os.Stat(target_file_path)
 			if err == nil {
-				
+
 				LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
-				
+
 				if err := os.RemoveAll(target_file_path); err != nil {
 
 					LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
@@ -562,61 +558,49 @@ func PostCopy(c *fiber.Ctx) error {
 				}
 			}
 
-            
-            
-            if src_stat.IsDir() {
-                err := CopyDir( src_file_path, target_file_path )
-                
-                if err != nil {
-    				LogPrefix(c, "500", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
-    				continue
-    			}
-    			
-    			LogPrefix(c, "200", "Copy dir '"+src_file_path+"' to "+target_file_path)
-                
-            }else{
-                err := CopyFile( src_file_path, target_file_path )
-                
-                if err != nil {
-    				LogPrefix(c, "500", "CopyFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
-    				continue
-    			}
-    			
-    			LogPrefix(c, "200", "Copy file '"+src_file_path+"' to "+target_file_path)
-            }
-            
-            
-            /*
-            out, err := os.Create(target_file_path)
-			if err != nil {
+			if src_stat.IsDir() {
+				err := CopyDir(src_file_path, target_file_path)
 
-				LogPrefix(c, "500", "Error create "+target_file_path+" "+err.Error())
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"msg":  "Error create " + target_file_path,
-				}, "application/json")
+				if err != nil {
+					LogPrefix(c, "500", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					continue
+				}
+
+				LogPrefix(c, "200", "Copy dir '"+src_file_path+"' to "+target_file_path)
+
+			} else {
+				err := CopyFile(src_file_path, target_file_path)
+
+				if err != nil {
+					LogPrefix(c, "500", "CopyFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					continue
+				}
+
+				LogPrefix(c, "200", "Copy file '"+src_file_path+"' to "+target_file_path)
 			}
-			defer out.Close()
 
-			readerFile, _ := os.Open(src_file_path)
+			/*
+			            out, err := os.Create(target_file_path)
+						if err != nil {
 
-			_, err = io.Copy(out, readerFile)
-			if err != nil {
-				panic(err)
-			}
-			out.Close()
-			readerFile.Close()
-            */
-            
-            
-            
-            
-            
-            
-            
-            
-			
-			
+							LogPrefix(c, "500", "Error create "+target_file_path+" "+err.Error())
+							return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+								"code": 500,
+								"msg":  "Error create " + target_file_path,
+							}, "application/json")
+						}
+						defer out.Close()
+
+						readerFile, _ := os.Open(src_file_path)
+
+						_, err = io.Copy(out, readerFile)
+						if err != nil {
+							panic(err)
+						}
+						out.Close()
+						readerFile.Close()
+			*/
+
 		}
 	}
 
@@ -625,10 +609,6 @@ func PostCopy(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-
-
-
 
 func PostRename(c *fiber.Ctx) error {
 
@@ -661,7 +641,6 @@ func PostRename(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-    
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err == nil {
 		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' already exists ")
@@ -671,9 +650,9 @@ func PostRename(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-    name := c.FormValue("name")
+	name := c.FormValue("name")
 	name = CleanDirtyPath(name)
-	
+
 	if len(name) == 0 {
 		LogPrefix(c, "500", "name is empty")
 		return c.JSON(fiber.Map{
@@ -681,7 +660,7 @@ func PostRename(c *fiber.Ctx) error {
 			"msg":  "name is empty",
 		}, "application/json")
 	}
-	
+
 	_, err = os.Stat(filepath.Join(arg_fold, u_path, name))
 	if err != nil {
 		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
@@ -690,15 +669,14 @@ func PostRename(c *fiber.Ctx) error {
 			"msg":  "'" + filepath.Join(arg_fold, u_path, name) + "' not exists",
 		}, "application/json")
 	}
-	
+
 	src_file_path := filepath.Join(arg_fold, u_path, name)
-    target_file_path := filepath.Join(arg_fold, u_path, to)
-	
-	
+	target_file_path := filepath.Join(arg_fold, u_path, to)
+
 	err = os.Rename(src_file_path, target_file_path)
 
 	if err != nil {
-		
+
 		LogPrefix(c, "500", "Rename error "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -709,19 +687,12 @@ func PostRename(c *fiber.Ctx) error {
 
 		LogPrefix(c, "200", "Rename '"+src_file_path+"' to "+target_file_path)
 	}
-	
-	
-	
-	
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
 
 }
-
-
-
 
 func PostZip(c *fiber.Ctx) error {
 

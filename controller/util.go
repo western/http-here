@@ -70,13 +70,13 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	pref := ""
-    
-    if status != "200" {
-        pref += red("| ")
-    }else{
-        pref += green("| ")
-    }
-    
+
+	if status != "200" {
+		pref += red("| ")
+	} else {
+		pref += green("| ")
+	}
+
 	pid := strconv.Itoa(os.Getpid())
 
 	pref += "[" + pid + "] "
@@ -135,7 +135,6 @@ func GetFileName(path string) string {
 	return filename
 }
 
-
 func CopyFile(src, dst string) error {
 	var err error
 	var srcfd *os.File
@@ -161,7 +160,6 @@ func CopyFile(src, dst string) error {
 	return os.Chmod(dst, srcinfo.Mode())
 }
 
-
 func CopyDir(src string, dst string) error {
 	var err error
 	var fds []os.FileInfo
@@ -185,18 +183,17 @@ func CopyDir(src string, dst string) error {
 		if fd.IsDir() {
 			if err = CopyDir(srcfp, dstfp); err != nil {
 				fmt.Println(err)
-				
+
 			}
 		} else {
 			if err = CopyFile(srcfp, dstfp); err != nil {
 				fmt.Println(err)
-				
+
 			}
 		}
 	}
 	return nil
 }
-
 
 func PrettyByteSize(b int64) string {
 	bf := float64(b)
