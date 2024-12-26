@@ -4,16 +4,16 @@ Share folder via http with upload
 
 Multiple files upload to current showed folder
 
-In extended mode you can delete or download group of files
+In extended mode you can doing more
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen.png?raw=true&1" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top4.png?raw=true" />
 </p>
 
 ## Mobile screen
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile.png?raw=true&1" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile2.png?raw=true" />
 </p>
 
 ## If you switch --extend-mode
