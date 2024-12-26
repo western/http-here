@@ -1,217 +1,212 @@
-
-
-    <br>
-    <div class="container">
+<br>
+<div class="container">
 
 
 
-        <div class="row" style="padding:10px 0;">
+    <div class="row" style="padding:10px 0;">
 
-            <div class="col">
-                
-                {{if .arg_upload_disable}}
-                {{else}}
+        <div class="col">
+
+            {{if .arg_upload_disable}}
+            {{else}}
                 <div class="input-group mb-3">
-                    <input class="form-control" type="file" id="upload_file" multiple >
+                    <input class="form-control" type="file" id="upload_file" multiple>
 
                     <span class="input-group-text blink_me visually-hidden" id="signal">
-                        <i class="bi bi-upload " ></i>
+                        <i class="bi bi-upload "></i>
                     </span>
                 </div>
                 {{end}}
 
-            </div>
+        </div>
 
-            <div class="col">
-                
-                {{if .arg_folder_make_disable}}
-                {{else}}
+        <div class="col">
+
+            {{if .arg_folder_make_disable}}
+            {{else}}
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="New folder name" aria-label="New folder name" id="make_folder_input" >
+                    <input type="text" class="form-control" placeholder="New folder name" aria-label="New folder name" id="make_folder_input">
                     <button class="btn btn-outline-secondary" type="button" id="make_folder_button">Do</button>
                 </div>
                 {{end}}
-                
-            </div>
 
         </div>
 
-
-        <div class="row" style="padding:0 0;">
-
-            <progress id="progress" max="100" value="0" >0</progress>
-
-        </div>
+    </div>
 
 
-        <div class="row" style="padding:10px 0;">
+    <div class="row" style="padding:0 0;">
+
+        <progress id="progress" max="100" value="0">0</progress>
+
+    </div>
+
+
+    <div class="row" style="padding:10px 0;">
 
 
 
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
 
-                    {{.Breadcrumb}}
-                </ol>
-            </nav>
+                {{.Breadcrumb}}
+            </ol>
+        </nav>
 
-        </div>
+    </div>
 
 
-        <div class="row" style="padding:10px 0 50px 0;">
-            
+    <div class="row" style="padding:10px 0 50px 0;">
 
-                
-                
-                
-                
-                
-                
-                    {{ if .mode_list }}
-                    
-                    
-                        <div class="container">
-                	    
-                	    
-                	        <div class="row " style="padding:10px 0;">
 
-                                
-                                <div class="col-4">
 
-                                    <div class="btn-group " role="group" aria-label="">
-                                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
-                                    </div>
 
-                                </div>
-                                
 
-                                <div class="col-8 text-end">
-                                    
-                                    <div class="btn-group btn-group-sm" role="group" aria-label="">
-                                        
-                                        <div class="btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                
-                                                
-                                                {{if .sort_name}}
-                                                By name
-                                                {{end}}
-                                                
-                                                {{if .sort_modified}}
-                                                By mod
-                                                {{end}}
-                                                
-                                                {{if .sort_size}}
-                                                By size
-                                                {{end}}
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="?sort=name">By name</a></li>
-                                                <li><a class="dropdown-item" href="?sort=modified">By modified</a></li>
-                                                <li><a class="dropdown-item" href="?sort=size">By size</a></li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <a  class="btn btn-outline-secondary " href="?mode=thumb" title="Folder and thumb"><i class="bi bi-image"></i></a>
-                                        <a  class="btn btn-outline-secondary active" href="?mode=list" title="List layout"><i class="bi bi-list"></i></a>
-                                    </div>
-                                    
-                                </div>
-                                
+        {{ if .mode_list }}
+
+
+        <div class="container">
+
+
+            <div class="row " style="padding:10px 0;">
+
+
+                <div class="col-4">
+
+                    <div class="btn-group " role="group" aria-label="">
+                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
+                    </div>
+
+                </div>
+
+
+                <div class="col-8 text-end">
+
+                    <div class="btn-group btn-group-sm" role="group" aria-label="">
+
+                        <div class="btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+
+                                {{if .sort_name}}
+                                By name
+                                {{end}}
+
+                                {{if .sort_modified}}
+                                By mod
+                                {{end}}
+
+                                {{if .sort_size}}
+                                By size
+                                {{end}}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?sort=name">By name</a></li>
+                                <li><a class="dropdown-item" href="?sort=modified">By modified</a></li>
+                                <li><a class="dropdown-item" href="?sort=size">By size</a></li>
+                            </ul>
+                        </div>
+
+                        <a class="btn btn-outline-secondary " href="?mode=thumb" title="Folder and thumb"><i class="bi bi-image"></i></a>
+                        <a class="btn btn-outline-secondary active" href="?mode=list" title="List layout"><i class="bi bi-list"></i></a>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <table class="table file-table table-hover ">
+                <thead>
+                    <tr>
+                        <th class="text-center"><input class="form-check-input head-chk" type="checkbox" value=""></th>
+                        <th>name</th>
+
+                        <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
+                        <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
+                        <th class="text-center">del</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+
+                    {{range .rows}}
+
+                    {{if .IsDir}}
+
+                    <tr>
+                        <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="fold" value="{{.Name}}"></th>
+                        <td><i class="bi bi-folder"></i> <a class="nodecor" href="{{.FullPath}}">{{.Name}}</a></td>
+
+                        <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
+                        <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
+                        <td class="text-center">
+                            <!--a class="del" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a-->
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm del" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+
+                                    <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
+                                    <!--li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item" href="#">Separated link</a></li-->
+                                </ul>
                             </div>
-                	    
-                	    
-                            <table class="table file-table table-hover ">
-                              <thead>
-                                <tr>
-                                  <th class="text-center"><input class="form-check-input head-chk" type="checkbox" value="" ></th>
-                                  <th >name</th>
-                                  
-                                  <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
-                                  <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
-                                  <th class="text-center">del</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                              
-                               
-                                    {{range .rows}}
-                                        
-                                        {{if .IsDir}}
-                                            
-                                            <tr>
-                                              <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="fold" value="{{.Name}}" ></th>
-                                              <td ><i class="bi bi-folder"></i> <a class="nodecor" href="{{.FullPath}}">{{.Name}}</a></td>
-                                              
-                                              <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
-                                              <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
-                                              <td class="text-center">
-                                                <!--a class="del" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a-->
-                                                
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm del" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></button>
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
-                                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
 
-                                                        <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
-                                                        <!--li><a class="dropdown-item" href="#">Something else here</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item" href="#">Separated link</a></li-->
-                                                    </ul>
-                                                </div>
-                                                
-                                                
-                                              </td>
-                                            </tr>
-                                            
-                                        {{else}}
-                                        
-                                            <tr>
-                                              <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="file" value="{{.Name}}" ></th>
-                                              <td ><a class="nodecor" href="{{.FullPath}}?{{.Rndm}}">{{.Name}}</a></td>
-                                              
-                                              <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.SizeHuman}}</td>
-                                              <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
-                                              <td class="text-center">
-                                                <!--a class="del" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a-->
-                                                
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm del" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></button>
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
-                                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        
-                                                        <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
-                                                        {{if .IsEditDoc}}
-                                                            <li><a class="dropdown-item edit" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}" ><i class="bi bi-pencil"></i> Edit</a></li>
-                                                        {{end}}
-                                                        <!--li><a class="dropdown-item" href="#">Something else here</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item" href="#">Separated link</a></li-->
-                                                    </ul>
-                                                </div>
-                                                
-                                                
-                                              </td>
-                                            </tr>
-                                        
+
+                        </td>
+                    </tr>
+
+                    {{else}}
+
+                        <tr>
+                            <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="file" value="{{.Name}}"></th>
+                            <td><a class="nodecor" href="{{.FullPath}}?{{.Rndm}}">{{.Name}}</a></td>
+
+                            <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.SizeHuman}}</td>
+                            <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
+                            <td class="text-center">
+                                <!--a class="del" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a-->
+
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm del" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+
+                                        <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
+                                        {{if .IsEditDoc}}
+                                        <li><a class="dropdown-item edit" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-pencil"></i> Edit</a></li>
                                         {{end}}
-                                        
-                                    {{end}}
-                                      
-                                
-                                
-                              </tbody>
-                            </table>
-                            
-                            <!--div class="d-grid gap-2 d-md-block">
+                                        <!--li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item" href="#">Separated link</a></li-->
+                                    </ul>
+                                </div>
+
+
+                            </td>
+                        </tr>
+
+                        {{end}}
+
+                        {{end}}
+
+
+
+                </tbody>
+            </table>
+
+            <!--div class="d-grid gap-2 d-md-block">
                                 <button type="button" class="btn btn-outline-danger btn-sm" id="group_del">Delete group</button>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="group_zip">Zip and download group</button>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="group_move">Move to</button>
@@ -219,24 +214,24 @@
                                 
                                 
                             </div-->
-                            
-                        </div>
-                    
-                    
-                    {{end}}
-                    
-                    
-                    
-                    
-                    
-                    {{ if .mode_thumb }}
-                    
-                    
-                        <div class="container">
-            
-                            <div class="row " style="padding:0 0 20px 0;">
 
-                                <!--div class="col-2" >
+        </div>
+
+
+        {{end}}
+
+
+
+
+
+        {{ if .mode_thumb }}
+
+
+        <div class="container">
+
+            <div class="row " style="padding:0 0 20px 0;">
+
+                <!--div class="col-2" >
                                     
                                     <div class="btn-group">
                                         
@@ -250,240 +245,200 @@
                                     
                                     
                                 </div-->
-                                
-                                
-                                
-                                
-                                <div class="col-4">
 
-                                    <div class="btn-group " role="group" aria-label="">
-                                        
-                                        <div class="input-group-text">
-                                            <input class="form-check-input mt-0 head-chk" type="checkbox"  >
-                                        </div>
-                                        
-                                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
-                                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
-                                    </div>
 
-                                </div>
-                                
-                                
-                                
 
-                                <div class="col-8 text-end">
-                                    
-                                    
-                                    <div class="btn-group btn-group-sm" role="group" aria-label="">
-                                        
-                                        <div class="btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                
-                                                
-                                                {{if .sort_name}}
-                                                By name
-                                                {{end}}
-                                                
-                                                {{if .sort_modified}}
-                                                By mod
-                                                {{end}}
-                                                
-                                                {{if .sort_size}}
-                                                By size
-                                                {{end}}
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="?sort=name">By name</a></li>
-                                                <li><a class="dropdown-item" href="?sort=modified">By modified</a></li>
-                                                <li><a class="dropdown-item" href="?sort=size">By size</a></li>
-                                            </ul>
-                                        </div>
-                                        
-                                        
-                                        <a  class="btn btn-outline-secondary active" href="?mode=thumb" title="Folder and thumb"><i class="bi bi-image"></i></a>
-                                        <a  class="btn btn-outline-secondary " href="?mode=list" title="List layout"><i class="bi bi-list"></i></a>
-                                    </div>
-                                    
-                                </div>
-                                
-                            </div>
-                            
-                            
-                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                                
-                                
-                                {{range .rows}}
-                                    
-                                    {{if .IsDir}}
-                                        
-                                        <div class="col">
-                                            <div class="card shadow-sm">
-                                                <a href="{{.FullPath}}">
-                                                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img"  preserveAspectRatio="xMidYMid slice" focusable="false">
-                                                    <title></title>
-                                                    <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Folder</text>
-                                                </svg>
-                                                </a>
-                                                <div class="card-body">
-                                                    <p class="card-text text-truncate">
-                                                        <b>{{.Name}}</b><br>
-                                                        <span class="fw-lighter">{{.ModTimeHuman}}</span>
-                                                    </p>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="btn-group">
-                                                            
-                                                            <div class="input-group-text">
-                                                                <input class="form-check-input mt-0" type="checkbox" name="fold" value="{{.Name}}" >
-                                                            </div>
-                                                            
-                                                            
-                                                            <!--a type="button" class="btn btn-sm btn-outline-secondary" href="{{.FullPath}}">View</a-->
-                                                            <!--a type="button" class="btn btn-sm btn-outline-danger">Del</a-->
-                                                        </div>
-                                                        <small class="text-body-secondary">
-                                                            <div class="btn-group">
-                                                                
-                                                                <a type="button" class="del btn btn-sm btn-outline-danger" href="javascript:void(0)" data-name="{{.Name}}" ><i class="bi bi-x-lg"></i></a>
-                                                                
-                                                                
-                                                                
-                                                            </div>
-                                                            
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                    {{else}}
-                                    
-                                        <div class="col">
-                                            <div class="card shadow-sm">
-                                                <a href="{{.FullPath}}?{{.Rndm}}">
-                                                        
-                                                        
-                                                        {{if .IsPreviewImg}}
-                                                            
-                                                            <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat top url('/__resize{{.FullPath}}'); background-size: cover;  " >
-    		                                                </div>
-                                                            
-                                                        {{else}}
-                                                        
-                                                            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img"  preserveAspectRatio="xMidYMid slice" focusable="false">
-                                                                <title></title>
-                                                                <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">File</text>
-                                                            </svg>
-                                                        
-                                                        {{end}}
-                                                        
-                                                        
-                                                </a>
-                                                <div class="card-body">
-                                                    <p class="card-text text-truncate" >
-                                                        <b>{{.Name}}</b><br>
-                                                        <span class="fw-lighter">{{.ModTimeHuman}}</span>
-                                                    </p>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="btn-group">
-                                                            
-                                                            
-                                                            <div class="input-group-text">
-                                                                <input class="form-check-input mt-0" type="checkbox" name="file" value="{{.Name}}" >
-                                                            </div>
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            <!--a type="button" class="btn btn-sm btn-outline-secondary" href="{{.FullPath}}">View</a-->
-                                                            <!--a type="button" class="btn btn-sm btn-outline-danger">Del</a-->
-                                                        </div>
-                                                        <small class="text-body-secondary">
-                                                            <div class="btn-group">
-                                                                
-                                                                {{if .IsPreviewImg}}
-                                                                    <a type="button" class="btn btn-sm btn-outline" href="/__resize{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}">
-                                                                        <i class="bi bi-zoom-in"></i>
-                                                                    </a>
-                                                                {{end}}
-                                                                
-                                                                <div class="input-group-text font-reset" >
-                                                                    {{.SizeHuman}}
-                                                                </div>
-                                                                
-                                                                
-                                                                <a type="button" class="del btn btn-sm btn-outline-danger" href="javascript:void(0)" data-name="{{.Name}}" ><i class="bi bi-x-lg"></i></a>
-                                                                
-                                                            </div>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    
-                                    {{end}}
-                                    
+
+                <div class="col-4">
+
+                    <div class="btn-group " role="group" aria-label="">
+
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0 head-chk" type="checkbox">
+                        </div>
+
+                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
+                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
+                    </div>
+
+                </div>
+
+
+
+
+                <div class="col-8 text-end">
+
+
+                    <div class="btn-group btn-group-sm" role="group" aria-label="">
+
+                        <div class="btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+
+                                {{if .sort_name}}
+                                By name
                                 {{end}}
-                                
 
-                                
+                                {{if .sort_modified}}
+                                By mod
+                                {{end}}
+
+                                {{if .sort_size}}
+                                By size
+                                {{end}}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?sort=name">By name</a></li>
+                                <li><a class="dropdown-item" href="?sort=modified">By modified</a></li>
+                                <li><a class="dropdown-item" href="?sort=size">By size</a></li>
+                            </ul>
+                        </div>
+
+
+                        <a class="btn btn-outline-secondary active" href="?mode=thumb" title="Folder and thumb"><i class="bi bi-image"></i></a>
+                        <a class="btn btn-outline-secondary " href="?mode=list" title="List layout"><i class="bi bi-list"></i></a>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+
+
+                {{range .rows}}
+
+                {{if .IsDir}}
+
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <a href="{{.FullPath}}">
+                            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid slice" focusable="false">
+                                <title></title>
+                                <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Folder</text>
+                            </svg>
+                        </a>
+                        <div class="card-body">
+                            <p class="card-text text-truncate">
+                                <b>{{.Name}}</b><br>
+                                <span class="fw-lighter">{{.ModTimeHuman}}</span>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="checkbox" name="fold" value="{{.Name}}">
+                                    </div>
+
+
+                                    <!--a type="button" class="btn btn-sm btn-outline-secondary" href="{{.FullPath}}">View</a-->
+                                    <!--a type="button" class="btn btn-sm btn-outline-danger">Del</a-->
+                                </div>
+                                <small class="text-body-secondary">
+                                    <div class="btn-group">
+
+                                        <a type="button" class="del btn btn-sm btn-outline-danger" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a>
+
+
+
+                                    </div>
+
+                                </small>
                             </div>
                         </div>
-                        
-                        <!--div class="d-grid gap-2 d-md-block" style="padding: 50px 0;">
+                    </div>
+                </div>
+
+                {{else}}
+
+                    <div class="col">
+                        <div class="card shadow-sm">
+                            <a href="{{.FullPath}}?{{.Rndm}}">
+
+
+                                {{if .IsPreviewImg}}
+
+                                <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat top url('/__resize{{.FullPath}}'); background-size: cover;  ">
+                                </div>
+
+                                {{else}}
+
+                                    <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid slice" focusable="false">
+                                        <title></title>
+                                        <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">File</text>
+                                    </svg>
+
+                                    {{end}}
+
+
+                            </a>
+                            <div class="card-body">
+                                <p class="card-text text-truncate">
+                                    <b>{{.Name}}</b><br>
+                                    <span class="fw-lighter">{{.ModTimeHuman}}</span>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+
+
+                                        <div class="input-group-text">
+                                            <input class="form-check-input mt-0" type="checkbox" name="file" value="{{.Name}}">
+                                        </div>
+
+
+
+
+                                        <!--a type="button" class="btn btn-sm btn-outline-secondary" href="{{.FullPath}}">View</a-->
+                                        <!--a type="button" class="btn btn-sm btn-outline-danger">Del</a-->
+                                    </div>
+                                    <small class="text-body-secondary">
+                                        <div class="btn-group">
+
+                                            {{if .IsPreviewImg}}
+                                            <a type="button" class="btn btn-sm btn-outline" href="/__resize{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}">
+                                                <i class="bi bi-zoom-in"></i>
+                                            </a>
+                                            {{end}}
+
+                                            <div class="input-group-text font-reset">
+                                                {{.SizeHuman}}
+                                            </div>
+
+
+                                            <a type="button" class="del btn btn-sm btn-outline-danger" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-x-lg"></i></a>
+
+                                        </div>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{end}}
+
+                    {{end}}
+
+
+
+            </div>
+        </div>
+
+        <!--div class="d-grid gap-2 d-md-block" style="padding: 50px 0;">
                             <button type="button" class="btn btn-outline-danger btn-sm" id="group_del">Delete group</button>
                             <button type="button" class="btn btn-outline-secondary btn-sm" id="group_zip">Zip and download group</button>
                             <button type="button" class="btn btn-outline-secondary btn-sm" id="group_move">Move to</button>
                             
                         </div-->
-                    
-                    
-                    {{end}}
-                    
-                    
-                    
-                    
-                
-                
-                
-                
-                
 
-            
-        </div>
-        
-        
-        
-        
-        
-        {{if .arg_crypt}}
-        <div class="row" style="padding:10px 0 50px 0;">
 
-            <div class="col">
-                
-                
-
-            </div>
-
-            <div class="col">
-                
-                
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Code to encrypt/decrypt" aria-label="Code to encrypt/decrypt" id="set_code_input" >
-                    <button class="btn btn-outline-secondary" type="button" id="set_code_button">Set</button>
-                </div>
-                
-                
-            </div>
-
-        </div>
         {{end}}
-        
-        
-        
-        
-        
+
+
+
+
 
     </div>
 
@@ -491,40 +446,72 @@
 
 
 
+    {{if .arg_crypt}}
+    <div class="row" style="padding:10px 0 50px 0;">
 
-<div class="offcanvas  offcanvas-start _w-40" tabindex="-1" id="offcanvasMove" _style="width:40%" >
+        <div class="col">
+
+
+
+        </div>
+
+        <div class="col">
+
+
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Code to encrypt/decrypt" aria-label="Code to encrypt/decrypt" id="set_code_input">
+                <button class="btn btn-outline-secondary" type="button" id="set_code_button">Set</button>
+            </div>
+
+
+        </div>
+
+    </div>
+    {{end}}
+
+
+
+
+
+</div>
+
+
+
+
+
+<div class="offcanvas  offcanvas-start _w-40" tabindex="-1" id="offcanvasMove" _style="width:40%">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" >Move to</h5>
+        <h5 class="offcanvas-title">Move to</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        
+
         <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="/" id="move_folder_input" disabled value="/" >
+            <input type="text" class="form-control" placeholder="/" id="move_folder_input" disabled value="/">
             <button class="btn btn-outline-secondary" type="button" id="move_folder_button">Do</button>
         </div>
-        
+
         <div id="folderTreeMove">
-            
+
         </div>
     </div>
 </div>
 
 
-<div class="offcanvas  offcanvas-start _w-40" tabindex="-1" id="offcanvasCopy" _style="width:40%" >
+<div class="offcanvas  offcanvas-start _w-40" tabindex="-1" id="offcanvasCopy" _style="width:40%">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" >Copy to</h5>
+        <h5 class="offcanvas-title">Copy to</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        
+
         <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="/" id="copy_folder_input" disabled value="/" >
+            <input type="text" class="form-control" placeholder="/" id="copy_folder_input" disabled value="/">
             <button class="btn btn-outline-secondary" type="button" id="copy_folder_button">Do</button>
         </div>
-        
+
         <div id="folderTreeCopy">
-            
+
         </div>
     </div>
 </div>
@@ -554,5 +541,3 @@
         </div>
     </div>
 </div>
-
-
