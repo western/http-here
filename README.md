@@ -16,9 +16,22 @@ In extended mode you can doing more
     <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile2.png?raw=true" />
 </p>
 
+
+
+
+
+
 ## If you switch --extend-mode
 
-App will change main list view to table.
+```console
+http-here --extend-mode /tmp
+```
+
+App will change main list view to table. And you can operate with files - delete, move, copy
+
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/panel_buttons.png?raw=true"  >
+</p>
 
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
 
@@ -26,6 +39,7 @@ Below you see display width more than 992 pix (1), less than (2) and mobile wind
     <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare5.png?raw=true"  >
     <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare6.png?raw=true"  >
 </p>
+
 
 ## Install from github
 ```console
@@ -55,6 +69,8 @@ or
 ```console
 http-here --port 7999 /path/to/folder
 ```
+
+
 
 ## Basic auth
 
