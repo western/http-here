@@ -36,8 +36,8 @@ App will change main list view to table. And you can operate with files - delete
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare5.png?raw=true"  >
-    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare6.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare8.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare9.png?raw=true"  >
 </p>
 
 
