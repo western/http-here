@@ -192,6 +192,12 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 
+### 1.7.0
+- [x] top buttons operations
+- [x] api/copy
+- [x] api/rename
+- [x] IsEditDoc, IsPreviewDoc
+
 ### 1.6.0
 - [x] add file crypt support
 
