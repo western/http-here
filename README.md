@@ -213,6 +213,8 @@ https://github.com/western/http-here/issues
 - [x] api/copy
 - [x] api/rename
 - [x] IsEditDoc, IsPreviewDoc
+- [ ] "edit" still planning
+- [ ] "share" still planning
 
 ### 1.6.0
 - [x] add file crypt support
