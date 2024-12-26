@@ -60,7 +60,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.6.3`,
+			`v1.7.0`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -134,7 +134,7 @@ func main() {
 	if !fiber.IsChild() {
 
 		controller.WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
-		go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
+		//go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
 	if *arg_prepare_thumbnails && !fiber.IsChild() {
@@ -353,6 +353,8 @@ func main() {
 	if *arg_extend_mode {
 		app.Post("/api/delete", controller.PostDelete)
 		app.Post("/api/move", controller.PostMove)
+		app.Post("/api/copy", controller.PostCopy)
+		app.Post("/api/rename", controller.PostRename)
 		app.Post("/api/zip", controller.PostZip)
 
 	}

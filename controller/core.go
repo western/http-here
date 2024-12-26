@@ -294,7 +294,9 @@ type FileRow struct {
 	ModTimeHuman string
 	Md5          string
 
-	IsPreview bool
+	IsPreviewImg bool
+	IsPreviewDoc bool
+	IsEditDoc bool
 	Rndm      string
 }
 
@@ -309,8 +311,10 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 		ext = strings.ToLower(ext)
 		ext = strings.Replace(ext, ".", "", -1)
 
-		//is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
-		is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
+		
+		is_preview_img, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
+		is_preview_doc, _ := regexp.MatchString("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
+		is_edit_doc, _ := regexp.MatchString("^(rtf|doc|docx|odt)$", ext)
 
 		if fileInfo2, err := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
@@ -333,7 +337,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					ModTimeHuman: modtime_human,
 
 					//Md5:   "",
-					IsPreview: false,
+					IsPreviewImg: false,
+					IsPreviewDoc: false,
+					IsEditDoc: false,
 					Rndm:      RandStringRunes(2),
 				})
 			} else {
@@ -349,7 +355,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					ModTimeHuman: modtime_human,
 
 					//Md5:       GetMd5File( filepath.Join(arg_fold, c_path, e.Name()) ),
-					IsPreview: is_preview_match,
+					IsPreviewImg: is_preview_img,
+					IsPreviewDoc: is_preview_doc,
+					IsEditDoc: is_edit_doc,
 					Rndm:      RandStringRunes(2),
 				})
 			}

@@ -8,8 +8,36 @@ $(document).ready(function(){
     
     
     if( typeof(folderTree) != 'undefined' ){
-    
-        $('#folderTree').bstreeview({
+        
+        // --------------------------------------------------------------------------------------------------------------------------------------
+        
+        $('#group_move').click((ev) => {
+            
+            let checked = [];
+            
+            $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+                
+                
+                if( $(el).prop('checked') ){
+                    checked.push( $(el).val() );
+                }
+            });
+            
+            
+            
+            if( checked.length == 0 ){
+                alert('You need select something')
+            }
+            
+            if( checked.length > 0  ){
+                
+                
+                new bootstrap.Offcanvas('#offcanvasMove').show()
+            }
+        
+        });
+        
+        $('#folderTreeMove').bstreeview({
             data: folderTree,
             expandIcon: 'bi bi-caret-down',
             collapseIcon: 'bi bi-caret-right',
@@ -22,14 +50,14 @@ $(document).ready(function(){
             
             
             let path = $(ev.target).data('path');
-            //console.log('path=', path);
+            
             
             $('#move_folder_input').val(path);
         });
         
         $('#move_folder_button').click((ev) => {
             
-            //console.log('button');
+            
             
             
             let val = $('#move_folder_input').val();
@@ -58,7 +86,6 @@ $(document).ready(function(){
             
             if( checked.length > 0  ){
                 
-                //console.log('del=', checked);
                 
                 
                 let formData = new FormData();
@@ -66,14 +93,8 @@ $(document).ready(function(){
                 formData.append('to', val);
                 
                 $.each(checked, function(indx, val){
-                    //let i = indx+1;
-                    //formData.append('name['+i+']', val);
                     formData.append('name', val);
                 });
-                
-                //console.log('formData=', formData);
-                
-                
                 
                 
                 $.ajax({
@@ -97,13 +118,133 @@ $(document).ready(function(){
             
             
         });
+        
+        // --------------------------------------------------------------------------------------------------------------------------------------
+        
+        // --------------------------------------------------------------------------------------------------------------------------------------
+        
+        $('#group_copy').click((ev) => {
+            
+            let checked = [];
+            
+            $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+                
+                
+                if( $(el).prop('checked') ){
+                    checked.push( $(el).val() );
+                }
+            });
+            
+            
+            
+            if( checked.length == 0 ){
+                alert('You need select something')
+            }
+            
+            if( checked.length > 0  ){
+                
+                
+                new bootstrap.Offcanvas('#offcanvasCopy').show()
+            }
+        
+        });
+        
+        
+        $('#folderTreeCopy').bstreeview({
+            data: folderTree,
+            expandIcon: 'bi bi-caret-down',
+            collapseIcon: 'bi bi-caret-right',
+            indent: 1.25,
+            parentsMarginLeft: '1.25rem',
+            openNodeLinkOnNewTab: true
+        });
+        
+        $('div.list-group-item').click((ev) => {
+            
+            
+            let path = $(ev.target).data('path');
+            
+            
+            $('#copy_folder_input').val(path);
+        });
+        
+        $('#copy_folder_button').click((ev) => {
+            
+            
+            
+            
+            let val = $('#copy_folder_input').val();
+
+            if ( val.length == 0 ){
+                alert('Please choose folder');
+                return;
+            }
+            
+            
+            let checked = [];
+            
+            $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
+                
+                
+                if( $(el).prop('checked') ){
+                    checked.push( $(el).val() );
+                }
+            });
+            
+            
+            
+            if( checked.length == 0 ){
+                alert('Please select some file')
+            }
+            
+            if( checked.length > 0  ){
+                
+                
+                let formData = new FormData();
+                
+                formData.append('to', val);
+                
+                $.each(checked, function(indx, val){
+                    formData.append('name', val);
+                });
+                
+                
+                
+                $.ajax({
+                    url: '/api/copy',
+                    data: formData,
+                    type: 'POST',
+                    contentType: false,
+                    processData: false,
+                }).done(function( data ) {
+                    
+                    
+                    if( data.code == 200 ){
+                        location.href = location.href;
+                    }else{
+                        alert(data.msg);
+                    }
+                });
+                
+                
+            }
+            
+            
+        });
+        
+        
+        
+        
+        
+        
+        // --------------------------------------------------------------------------------------------------------------------------------------
     
     }
     
     
     
     
-    
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
 
     let make_new_folder = function(ev){
@@ -148,8 +289,84 @@ $(document).ready(function(){
     });
     
     
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
-    $('a.del').click((ev) => {
+    $(':checkbox.head-chk').click((ev) => {
+        
+        //let checkboxes = $(':checkbox[name=fold]');
+        //console.log('ev.target=', ev.target);
+        
+        let chk = $(ev.target).prop("checked") ? true : false;
+        
+        
+        $(':checkbox[name=fold]').prop("checked", chk);
+        $(':checkbox[name=file]').prop("checked", chk);
+    })
+    
+    
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    
+    $('a.rename').click((ev) => {
+        let el = ev.target;
+        
+        //console.log('a.rename', el);
+        
+        if(el.tagName == 'I'){
+            el = el.parentNode;
+        }
+        
+        //console.log('a.rename', el);
+        
+        $('#set_rename_orig').val( $(el).data('name') );
+        $('#set_rename_input').val( $(el).data('name') );
+
+        const renameModal = new bootstrap.Modal(document.getElementById('rename_modal'), {});
+        renameModal.show();
+    });
+    
+    let rename_form_submit = () => {
+        
+        let orig = $('#set_rename_orig').val();
+        let name = $('#set_rename_input').val();
+        
+        let formData = new FormData();
+        formData.append('name', orig);
+        formData.append('to', name);
+
+        $.ajax({
+            url: '/api/rename',
+            data: formData,
+            type: 'POST',
+            contentType: false,
+            processData: false,
+        }).done(function (data) {
+            if (data.code == 200) {
+                location.href = location.href;
+            }
+        }).fail(function(data) {
+            if (data.responseJSON.msg) {
+                alert(data.responseJSON.msg);
+            }
+        });
+        
+    };
+    
+    $('#set_rename_button').click((ev) => {
+        
+        rename_form_submit();
+    });
+
+    $('#set_rename_input').on('keypress', (ev) => {
+        if (ev.which == 13) {
+            
+            rename_form_submit();
+        }
+    });
+    
+    
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    
+    $('a.del, button.del').click((ev) => {
         let el = ev.target;
         
         //console.log('el=', el);
@@ -187,17 +404,7 @@ $(document).ready(function(){
     })
     
     
-    $(':checkbox.head-chk').click((ev) => {
-        
-        //let checkboxes = $(':checkbox[name=fold]');
-        //console.log('ev.target=', ev.target);
-        
-        let chk = $(ev.target).prop("checked") ? true : false;
-        
-        
-        $(':checkbox[name=fold]').prop("checked", chk);
-        $(':checkbox[name=file]').prop("checked", chk);
-    })
+    
     
     
     $('#group_del').click((ev) => {
@@ -257,6 +464,7 @@ $(document).ready(function(){
         
     })
     
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
     $('#group_zip').click((ev) => {
         
@@ -318,41 +526,12 @@ $(document).ready(function(){
         
     })
     
-    
-    $('#group_move').click((ev) => {
-        
-        let checked = [];
-        
-        $(':checkbox[name=fold],:checkbox[name=file]').each((indx, el) => {
-            
-            
-            if( $(el).prop('checked') ){
-                checked.push( $(el).val() );
-            }
-        });
-        
-        
-        
-        if( checked.length == 0 ){
-            alert('You need select something')
-        }
-        
-        if( checked.length > 0  ){
-            
-            
-            new bootstrap.Offcanvas('#offcanvasMove').show()
-        }
-    
-    })
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
     
     
     
-    
-    
-    
-    
-    
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
     
     $('#set_code_button').click(function(ev){
@@ -379,7 +558,7 @@ $(document).ready(function(){
         $('#set_code_input').val( getCookie('code') )
     }
     
-    
+    // --------------------------------------------------------------------------------------------------------------------------------------
     
     
     
@@ -399,6 +578,8 @@ $(document).ready(function(){
 
 });
 
+
+// --------------------------------------------------------------------------------------------------------------------------------------
 
 function ev_target_files(files){
     
@@ -488,7 +669,7 @@ function ev_target_files(files){
 
 
 
-
+// --------------------------------------------------------------------------------------------------------------------------------------
 
 
 function getCookie(name) {
