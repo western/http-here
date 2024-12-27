@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	_ "html/template"
 
 	"github.com/fatih/color"
 
@@ -60,7 +61,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.7.0`,
+			`v1.8.0`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -147,6 +148,14 @@ func main() {
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
+	
+	/*
+	engine.AddFunc(
+        "unescape", func(s string) template.HTML {
+            return template.HTML(s)
+        },
+    )
+    */
 
 	config := fiber.Config{
 		Prefork:               *arg_prefork,
@@ -339,6 +348,12 @@ func main() {
 	app.Options("/*", controller.OptionsAll)
 
 	if !*arg_index_disable {
+		
+		if *arg_extend_mode {
+		    app.Get("/__edit/*", controller.GetEdit)
+		    app.Post("/api/edit", controller.PostEdit)
+		}
+		
 		app.Get("/*", controller.GetAll)
 	}
 
@@ -356,7 +371,7 @@ func main() {
 		app.Post("/api/copy", controller.PostCopy)
 		app.Post("/api/rename", controller.PostRename)
 		app.Post("/api/zip", controller.PostZip)
-
+        
 	}
 
 	app.Use(func(c *fiber.Ctx) error {

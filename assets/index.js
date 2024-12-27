@@ -303,6 +303,26 @@ $(document).ready(function(){
         $(':checkbox[name=file]').prop("checked", chk);
     })
     
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    
+    $('a.edit').click((ev) => {
+        let el = ev.target;
+        
+        
+        
+        if(el.tagName == 'I'){
+            el = el.parentNode;
+        }
+        
+        //console.log('a.edit', el);
+        
+        let full_path = $(el).data('full-path');
+        if(full_path){
+            location.href = '/__edit' + full_path;
+        }
+        
+    });
+    
     
     // --------------------------------------------------------------------------------------------------------------------------------------
     
