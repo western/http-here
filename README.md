@@ -70,6 +70,15 @@ or
 http-here --port 7999 /path/to/folder
 ```
 
+## Preview doc button
+
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/preview_doc_button.png?raw=true"  >
+    
+</p>
+
+For [Thumbnails support](#thumbnails-support) read below
+
 
 
 ## Basic auth
@@ -195,6 +204,20 @@ http-here --tls .
 ## Magic file index.html inside any folder
 
 If you put inside folder file `index.html`, it will be return as context
+
+## Thumbnails support
+
+
+
+For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, docx, xls, xlsx, odt, ods`
+
+## Linux packages needs for full functional
+
+
+
+- `libreoffice` - for thumbnails, for doc files online edit
+- `easyrsa` - package for certs build
+- `openssl` - encrypt file support
 
 
 
