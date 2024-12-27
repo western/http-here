@@ -55,7 +55,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.8.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.8.1/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -211,6 +211,9 @@ https://github.com/western/http-here/issues
 - [ ] database?
 - [ ] every feature add their time to execute
 - [ ] tests
+
+### 1.8.1
+- [x] enable preview for `rtf|doc|docx|odt`
 
 ### 1.8.0
 - [x] online editor for `html|rtf|doc|docx|odt`
