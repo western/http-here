@@ -208,6 +208,8 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 - [ ] problem: how decide to run md5sum inside some folder
+- [ ] database?
+- [ ] every feature add their time to execute
 
 ### 1.7.0
 - [x] top buttons operations
