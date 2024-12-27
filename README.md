@@ -42,6 +42,15 @@ chmod +x http-here
 
 
 
+## Run
+```console
+http-here /tmp
+```
+or
+```console
+http-here --port 7999 /path/to/folder
+```
+
 
 ## If you switch --extend-mode
 
@@ -74,16 +83,6 @@ For [Thumbnails support](#thumbnails-support) read below
 
 
 
-
-
-## Run
-```console
-http-here /tmp
-```
-or
-```console
-http-here --port 7999 /path/to/folder
-```
 
 ## Basic auth
 
