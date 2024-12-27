@@ -41,6 +41,18 @@ Below you see display width more than 992 pix (1), less than (2) and mobile wind
 </p>
 
 
+## Preview doc button
+
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/preview_doc_button.png?raw=true"  >
+    
+</p>
+
+For [Thumbnails support](#thumbnails-support) read below
+
+
+
+
 ## Install from github
 ```console
 go install github.com/western/http-here
@@ -69,17 +81,6 @@ or
 ```console
 http-here --port 7999 /path/to/folder
 ```
-
-## Preview doc button
-
-<p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/preview_doc_button.png?raw=true"  >
-    
-</p>
-
-For [Thumbnails support](#thumbnails-support) read below
-
-
 
 ## Basic auth
 
