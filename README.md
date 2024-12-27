@@ -216,7 +216,6 @@ https://github.com/western/http-here/issues
 - [x] top buttons operations
 - [x] api/copy
 - [x] api/rename
-- [x] IsEditDoc, IsPreviewDoc
 - [ ] "edit" still planning
 - [ ] "share" still planning
 
