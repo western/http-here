@@ -20,6 +20,28 @@ In extended mode you can doing more
 
 
 
+## Install from github
+```console
+go install github.com/western/http-here
+```
+
+## Manual download
+
+linux / amd64
+
+```console
+# go to your home bin
+cd ~/bin
+
+# download and unpack
+wget https://github.com/western/http-here/releases/download/v1.8.1/http-here.gz
+gzip -d http-here.gz
+
+chmod +x http-here
+```
+
+
+
 
 ## If you switch --extend-mode
 
@@ -53,25 +75,6 @@ For [Thumbnails support](#thumbnails-support) read below
 
 
 
-## Install from github
-```console
-go install github.com/western/http-here
-```
-
-## Manual download
-
-linux / amd64
-
-```console
-# go to your home bin
-cd ~/bin
-
-# download and unpack
-wget https://github.com/western/http-here/releases/download/v1.8.1/http-here.gz
-gzip -d http-here.gz
-
-chmod +x http-here
-```
 
 ## Run
 ```console
