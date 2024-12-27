@@ -210,6 +210,7 @@ https://github.com/western/http-here/issues
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database?
 - [ ] every feature add their time to execute
+- [ ] tests
 
 ### 1.7.0
 - [x] top buttons operations
