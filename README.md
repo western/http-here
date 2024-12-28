@@ -22,7 +22,7 @@ In extended mode you can doing more
 
 ## Install from github
 ```console
-go install github.com/western/http-here
+go install github.com/western/http-here@v1.8.2
 ```
 
 ## Manual download
