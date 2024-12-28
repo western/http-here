@@ -134,6 +134,10 @@ You can online edit doc files `html|rtf|doc|docx|odt`.
 
 You need `libreoffice` package.
 
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor.png?raw=true" width="70%" />
+</p>
+
 ## File encrypt
 
 > [!IMPORTANT]  
