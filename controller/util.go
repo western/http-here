@@ -243,8 +243,25 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 				fmt.Println(err)
 			}
 
+			fileInfo, err := os.Stat(filepath.Join(basePath, file.Name()))
+			if err != nil {
+				fmt.Println(err)
+				//LogPrefix(c, "500", "'"+filepath.Join(basePath, file.Name())+"' not exists")
+				//continue
+			}
+
+			header, err := zip.FileInfoHeader(fileInfo)
+			if err != nil {
+				fmt.Println(err)
+				//LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+				//continue
+			}
+			header.Method = zip.Store
+			header.Name = filepath.Join(baseInZip, file.Name())
+
 			// Add some files to the archive.
-			f, err := w.Create(filepath.Join(baseInZip, file.Name()))
+			//f, err := w.Create(filepath.Join(baseInZip, file.Name()))
+			f, err := w.CreateHeader(header)
 			if err != nil {
 				fmt.Println(err)
 			}

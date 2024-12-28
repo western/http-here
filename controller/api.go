@@ -773,11 +773,18 @@ func PostZip(c *fiber.Ctx) error {
 		}
 
 		fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
-
 		if err != nil {
 			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 			continue
 		}
+
+		header, err := zip.FileInfoHeader(fileInfo)
+		if err != nil {
+
+			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			continue
+		}
+		header.Method = zip.Store
 
 		if fileInfo.IsDir() {
 
@@ -791,7 +798,8 @@ func PostZip(c *fiber.Ctx) error {
 			}
 			defer f1.Close()
 
-			w1, err := zipWriter.Create(name)
+			//w1, err := zipWriter.Create(name)
+			w1, err := zipWriter.CreateHeader(header)
 			if err != nil {
 				panic(err)
 			}
