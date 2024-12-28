@@ -128,6 +128,12 @@ If you run --prepare-thumbnails one time you maybe not need prefork
 http-here --prepare-thumbnails --extend-mode /tmp
 ```
 
+## Office doc online edit
+
+You can online edit doc files `html|rtf|doc|docx|odt`.
+
+You need `libreoffice` package.
+
 ## File encrypt
 
 > [!IMPORTANT]  
