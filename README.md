@@ -241,7 +241,7 @@ https://github.com/western/http-here/issues
 ## History
 
 ### backlog
-- [ ] add --log and --tee args for save output
+- [ ] add --log and --tee args for save output (or database?)
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database, seperate branch without?
