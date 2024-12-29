@@ -134,9 +134,9 @@ You can online edit doc files `html|rtf|doc|docx|odt` as office files.
 
 Or `html|txt|js|css|md` formats as source code.
 
-<p align="left">
-    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor.png?raw=true" width="45%" />
-    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_code2.png?raw=true" width="45%" />
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_cmp.png?raw=true"  />
+    
 </p>
 
 You need `libreoffice` package for office files.
