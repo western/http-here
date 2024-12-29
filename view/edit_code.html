@@ -1,8 +1,8 @@
 
 <br>
-<div class="container">
+<div class="container-fluid">
 
-    <div class="row " style="padding:50px 0;">
+    <div class="row " >
         
         <div class="col">
             <h2>
@@ -17,11 +17,6 @@
             </h2>
         </div>
         
-        
-        
-        
-        
-        <input type="hidden" id="full_path" value="{{.full_path}}">
         
         
         
@@ -48,31 +43,20 @@
         const initialState = cm6.createEditorState(val);
         view.setState(initialState);
 
-        /*
-        let button = document.querySelector("#search");
-        button.addEventListener("click", () => {
-            cm6.openSearchPanel(view);
-        })
-        */
         
+        let full_path = `{{.full_path}}`;
         
         
         
         $('#save_button').on('click', () => {
             
-            //let body = tinymce.get("textarea1").getContent();
+            
             let body = view.state.doc.toString();
             
-            //console.log('body=', body);
             
-            
-            //return;
-            
-            //let file_name = $('#file_name').val();
-            let full_path = $('#full_path').val();
             
             let formData = new FormData();
-            //formData.append('file_name', file_name);
+            
             formData.append('full_path', full_path);
             formData.append('body', body);
             formData.append('save_as_source', '1');
@@ -88,11 +72,8 @@
                     
                     
                     let arr = full_path.split('/');
-                    
-                    //arr.shift();
                     arr.pop();
                     
-                    console.log( arr.join('/') );
                     
                     location.href = arr.join('/');
                     
@@ -108,11 +89,8 @@
         
         $('#cancel_button').on('click', () => {
             
-            let full_path = $('#full_path').val();
             
             let arr = full_path.split('/');
-            
-            //arr.shift();
             arr.pop();
             
             location.href = arr.join('/');

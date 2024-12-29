@@ -2,7 +2,7 @@
 <br>
 <div class="container">
 
-    <div class="row " style="padding:50px 0;">
+    <div class="row " _style="padding:50px 0;">
         
         <div class="col">
             <h2>
@@ -21,10 +21,6 @@
         
         
         
-        <input type="hidden" id="full_path" value="{{.full_path}}">
-        
-        
-        
         <textarea id="textarea1">{{ .file_data }}</textarea>
         
         
@@ -34,8 +30,7 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
-<!--script src="/__assets/tinymce_7.6.0_dev/js/tinymce/tinymce.min.js" crossorigin="anonymous"></script-->
-<!--script src="/__assets/tinymce_7.6.0/tinymce.min.js" crossorigin="anonymous"></script-->
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.6.0/tinymce.min.js" crossorigin="anonymous"></script>
 
@@ -44,10 +39,14 @@
 <script>
     $(document).ready(() => {
         
+        
+        let full_path = `{{.full_path}}`;
+        
+        
         tinymce.init({
             selector: '#textarea1',
             
-            //forced_root_block : "",
+            
             height: 700,
             width: "100%",
             menubar: false,
@@ -59,25 +58,22 @@
             "undo redo | code  | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media  link anchor codesample | ltr rtl",
 
             toolbar_sticky: false,
-            //content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+            
             extended_valid_elements : 'script[src|async|defer|type|charset]',
             autosave_ask_before_unload: false,
 
-            //images_upload_handler: example_image_upload_handler,
+            
         });
         
         $('#save_button').on('click', () => {
             
             let body = tinymce.get("textarea1").getContent();
             
-            //console.log('content1=', content1);
             
             
-            //let file_name = $('#file_name').val();
-            let full_path = $('#full_path').val();
             
             let formData = new FormData();
-            //formData.append('file_name', file_name);
+            
             formData.append('full_path', full_path);
             formData.append('body', body);
 
@@ -90,13 +86,9 @@
             }).done(function (data) {
                 if (data.code == 200) {
                     
-                    
                     let arr = full_path.split('/');
-                    
-                    //arr.shift();
                     arr.pop();
                     
-                    console.log( arr.join('/') );
                     
                     location.href = arr.join('/');
                     
@@ -112,11 +104,7 @@
         
         $('#cancel_button').on('click', () => {
             
-            let full_path = $('#full_path').val();
-            
             let arr = full_path.split('/');
-            
-            //arr.shift();
             arr.pop();
             
             location.href = arr.join('/');
