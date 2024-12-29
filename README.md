@@ -22,7 +22,7 @@ In extended mode you can doing more
 
 ## Install from github
 ```console
-go install github.com/western/http-here@v1.8.2
+go install github.com/western/http-here@v1.9.0
 ```
 
 ## Manual download
@@ -34,7 +34,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.8.2/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.9.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -246,6 +246,9 @@ https://github.com/western/http-here/issues
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database, seperate branch without?
 - [ ] tests
+
+### 1.9.0
+- [x] add source code editor for `html|txt|js|css|md`
 
 ### 1.8.1
 - [x] enable preview for `rtf|doc|docx|odt`
