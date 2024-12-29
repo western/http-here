@@ -297,6 +297,7 @@ type FileRow struct {
 	IsPreviewImg bool
 	IsPreviewDoc bool
 	IsEditDoc    bool
+	IsEditCode   bool
 	Rndm         string
 }
 
@@ -313,7 +314,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 
 		is_preview_img, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
 		is_preview_doc, _ := regexp.MatchString("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
+		
 		is_edit_doc, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", ext)
+		is_edit_code, _ := regexp.MatchString("^(html|txt|js|css|md)$", ext)
 
 		if fileInfo2, err := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
 
@@ -339,6 +342,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					IsPreviewImg: false,
 					IsPreviewDoc: false,
 					IsEditDoc:    false,
+					IsEditCode:   false,
 					Rndm:         RandStringRunes(2),
 				})
 			} else {
@@ -357,6 +361,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					IsPreviewImg: is_preview_img,
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
+					IsEditCode:   is_edit_code,
 					Rndm:         RandStringRunes(2),
 				})
 			}

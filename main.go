@@ -61,7 +61,7 @@ func main() {
 
 		inf := []string{
 			``,
-			`v1.8.2`,
+			`v1.9.0`,
 			``,
 			`usage: http-here [options] [path]`,
 			``,
@@ -350,7 +350,8 @@ func main() {
 	if !*arg_index_disable {
 
 		if *arg_extend_mode {
-			app.Get("/__edit/*", controller.GetEdit)
+			app.Get("/__edit/*", controller.GetEditDoc)
+			app.Get("/__code/*", controller.GetEditCode)
 			app.Post("/api/edit", controller.PostEdit)
 		}
 

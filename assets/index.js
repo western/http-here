@@ -305,7 +305,7 @@ $(document).ready(function(){
     
     // --------------------------------------------------------------------------------------------------------------------------------------
     
-    $('a.edit').click((ev) => {
+    $('a.edit_doc').click((ev) => {
         let el = ev.target;
         
         
@@ -319,6 +319,24 @@ $(document).ready(function(){
         let full_path = $(el).data('full-path');
         if(full_path){
             location.href = '/__edit' + full_path;
+        }
+        
+    });
+    
+    $('a.edit_code').click((ev) => {
+        let el = ev.target;
+        
+        
+        
+        if(el.tagName == 'I'){
+            el = el.parentNode;
+        }
+        
+        //console.log('a.edit', el);
+        
+        let full_path = $(el).data('full-path');
+        if(full_path){
+            location.href = '/__code' + full_path;
         }
         
     });

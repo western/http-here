@@ -185,8 +185,14 @@
 
                                             <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
                                             {{if .IsEditDoc}}
-                                            <li><a class="dropdown-item edit" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-pencil"></i> Edit</a></li>
+                                            <li><a class="dropdown-item edit_doc" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-file-earmark-word"></i> Edit doc</a></li>
                                             {{end}}
+                                            
+                                            
+                                            {{if .IsEditCode}}
+                                            <li><a class="dropdown-item edit_code" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-pencil"></i> Edit source code</a></li>
+                                            {{end}}
+                                            
                                             <!--li><a class="dropdown-item" href="#">Something else here</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item" href="#">Separated link</a></li-->

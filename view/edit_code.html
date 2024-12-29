@@ -25,8 +25,8 @@
         
         
         
-        <textarea id="textarea1">{{ .file_data }}</textarea>
         
+        <div id="editor1"></div>
         
         
     </div>
@@ -34,44 +34,39 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
-<!--script src="/__assets/tinymce_7.6.0_dev/js/tinymce/tinymce.min.js" crossorigin="anonymous"></script-->
-<!--script src="/__assets/tinymce_7.6.0/tinymce.min.js" crossorigin="anonymous"></script-->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.6.0/tinymce.min.js" crossorigin="anonymous"></script>
 
+<script src="/__assets/assets/codemirror/cm6.bundle.js" crossorigin="anonymous"></script>
 
 
 <script>
     $(document).ready(() => {
         
-        tinymce.init({
-            selector: '#textarea1',
-            
-            //forced_root_block : "",
-            height: 700,
-            width: "100%",
-            menubar: false,
-            branding: false,
-            convert_urls: false,
-            plugins:
-            "preview importcss searchreplace autolink autosave save directionality code  visualblocks visualchars fullscreen image link media  codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons",
-            toolbar1:
-            "undo redo | code  | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media  link anchor codesample | ltr rtl",
+        let val = `{{ .file_data }}`;
+        
+        const view = cm6.createEditorView(undefined, document.getElementById("editor1"));
+        const initialState = cm6.createEditorState(val);
+        view.setState(initialState);
 
-            toolbar_sticky: false,
-            //content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-            extended_valid_elements : 'script[src|async|defer|type|charset]',
-            autosave_ask_before_unload: false,
-
-            //images_upload_handler: example_image_upload_handler,
-        });
+        /*
+        let button = document.querySelector("#search");
+        button.addEventListener("click", () => {
+            cm6.openSearchPanel(view);
+        })
+        */
+        
+        
+        
         
         $('#save_button').on('click', () => {
             
-            let body = tinymce.get("textarea1").getContent();
+            //let body = tinymce.get("textarea1").getContent();
+            let body = view.state.doc.toString();
             
-            //console.log('content1=', content1);
+            //console.log('body=', body);
             
+            
+            //return;
             
             //let file_name = $('#file_name').val();
             let full_path = $('#full_path').val();
@@ -80,6 +75,7 @@
             //formData.append('file_name', file_name);
             formData.append('full_path', full_path);
             formData.append('body', body);
+            formData.append('save_as_source', '1');
 
             $.ajax({
                 url: '/api/edit',

@@ -3,7 +3,7 @@ package controller
 import (
 	"bufio"
 	_ "errors"
-	_ "fmt"
+	"fmt"
 	"html/template"
 	"net/url"
 	"os"
@@ -16,7 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetEdit(c *fiber.Ctx) error {
+func GetEditDoc(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -89,7 +89,7 @@ func GetEdit(c *fiber.Ctx) error {
 
 		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
 
-		return c.Render("view/edit", fiber.Map{
+		return c.Render("view/edit_doc", fiber.Map{
 
 			"full_path": c_path,
 
@@ -98,12 +98,102 @@ func GetEdit(c *fiber.Ctx) error {
 		}, "view/layout")
 
 	}
+	
+	
 
-	LogPrefix(c, "500", "Error: format of file are not for edit")
+	LogPrefix(c, "500", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 
 }
+
+
+
+
+func GetEditCode(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+	
+	fmt.Println("GetEditCode")
+
+    
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+
+		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	}
+	
+
+	c_path, err := url.QueryUnescape(c.Path())
+	if err != nil {
+
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	}
+
+	c_path = CleanDirtyPath(c_path)
+
+	c_path = strings.ReplaceAll(c_path, "/__code", "")
+
+	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
+
+		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+	}
+
+	file_ext := GetExtNorm(c_path)
+	orig_filename := GetFileName(c_path)
+
+	is_code_match, _ := regexp.MatchString("^(html|txt|js|css|md)$", file_ext)
+
+	if is_code_match {
+
+        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		CopyFile(
+		    filepath.Join(arg_fold, c_path),
+		    filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
+		)
+
+		
+
+		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
+		if err != nil {
+
+			LogPrefix(c, "500", "Error open temp source file: "+err.Error())
+			panic(err)
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
+
+		return c.Render("view/edit_code", fiber.Map{
+
+			"full_path": c_path,
+
+			//"file_data": string(b),
+			"file_data": template.HTML(string(b)),
+		}, "view/layout")
+
+	}
+	
+	
+
+	LogPrefix(c, "500", "Error: format of file is not for edit")
+
+	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+
+}
+
+
+
+
+
 
 func PostEdit(c *fiber.Ctx) error {
 
@@ -133,30 +223,89 @@ func PostEdit(c *fiber.Ctx) error {
 	orig_filename := GetFileName(full_path)
 
 	body := c.FormValue("body")
+	
+	save_as_source := c.FormValue("save_as_source")
+	
+	// --------------------------------------------------------------------------------------------------------------------------------
+	
+	if save_as_source == "1" {
+	    
+	    // --------------------------------------------------------------------------------------------------------------------------------
+        
+        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+    	source_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
 
-	filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-	html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
+    	f, err := os.Create(source_temp_file)
+    	if err != nil {
+    		panic(err)
+    	}
 
-	f, err := os.Create(html_temp_file)
-	if err != nil {
-		panic(err)
+    	_, err = f.WriteString(body)
+    	if err != nil {
+    		panic(err)
+    	}
+    	f.Close()
+
+    	LogPrefix(c, "200", "Update "+source_temp_file)
+    	
+    	// --------------------------------------------------------------------------------------------------------------------------------
+    	
+    	
+    	target_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
+		target_file := filepath.Join(arg_fold, full_path)
+
+		err = os.Rename(target_temp_file, target_file)
+
+		if err != nil {
+
+			LogPrefix(c, "500", "Rename error "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Rename error ",
+			}, "application/json")
+
+		} else {
+
+			LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
+			return c.JSON(fiber.Map{
+				"code": 200,
+			}, "application/json")
+		}
+    	
+    	
+    	// --------------------------------------------------------------------------------------------------------------------------------
+    	
 	}
-
-	_, err = f.WriteString(body)
-	if err != nil {
-		panic(err)
-	}
-	f.Close()
-
-	LogPrefix(c, "200", "Update "+html_temp_file)
+	
+	
+	
+	// --------------------------------------------------------------------------------------------------------------------------------
 
 	is_office_match, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", file_ext)
 
 	if is_office_match {
+        
+        // --------------------------------------------------------------------------------------------------------------------------------
+        
+        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+    	html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
 
+    	f, err := os.Create(html_temp_file)
+    	if err != nil {
+    		panic(err)
+    	}
+
+    	_, err = f.WriteString(body)
+    	if err != nil {
+    		panic(err)
+    	}
+    	f.Close()
+
+    	LogPrefix(c, "200", "Update "+html_temp_file)
+        
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		_, err = exec.Command("bash", "-c", "libreoffice --help").Output()
 		if err != nil {
 
 			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
@@ -217,7 +366,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 		} else {
 
-			LogPrefix(c, "200", "Move "+target_temp_file+" to "+target_file)
+			LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
 			return c.JSON(fiber.Map{
 				"code": 200,
 			}, "application/json")
@@ -227,11 +376,11 @@ func PostEdit(c *fiber.Ctx) error {
 
 	}
 
-	LogPrefix(c, "500", "Error: format of file are not for edit")
+	LogPrefix(c, "500", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,
-		"msg":  "Error: format of file are not for edit",
+		"msg":  "Error: format of file is not for edit",
 	}, "application/json")
 
 }
