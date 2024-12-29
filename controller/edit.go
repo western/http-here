@@ -90,7 +90,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
 
 		return c.Render("view/edit_doc", fiber.Map{
-
+            "file_name": orig_filename+"."+file_ext,
 			"full_path": c_path,
 
 			//"file_data": string(b),
@@ -173,7 +173,7 @@ func GetEditCode(c *fiber.Ctx) error {
 		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
 
 		return c.Render("view/edit_code", fiber.Map{
-
+            "file_name": orig_filename+"."+file_ext,
 			"full_path": c_path,
 
 			//"file_data": string(b),
