@@ -128,15 +128,20 @@ If you run --prepare-thumbnails one time you maybe not need prefork
 http-here --prepare-thumbnails --extend-mode /tmp
 ```
 
-## Office doc online edit
+## Online editor
 
-You can online edit doc files `html|rtf|doc|docx|odt`.
+You can online edit doc files `html|rtf|doc|docx|odt` as office files.
 
-You need `libreoffice` package.
+Or `html|txt|js|css|md` formats as source code.
 
-<p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor.png?raw=true" width="70%" />
+<p align="left">
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor.png?raw=true" width="45%" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_code.png?raw=true" width="45%" />
 </p>
+
+You need `libreoffice` package for office files.
+
+Office files follow this flow: `file.doc => file.html, edit => file.doc`
 
 ## File encrypt
 
