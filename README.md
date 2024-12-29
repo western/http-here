@@ -136,7 +136,7 @@ Or `html|txt|js|css|md` formats as source code.
 
 <p align="left">
     <img src="https://github.com/western/http-here/blob/dev/doc/online_editor.png?raw=true" width="45%" />
-    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_code.png?raw=true" width="45%" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_code2.png?raw=true" width="45%" />
 </p>
 
 You need `libreoffice` package for office files.
