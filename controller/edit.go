@@ -3,7 +3,7 @@ package controller
 import (
 	"bufio"
 	_ "errors"
-	"fmt"
+	_ "fmt"
 	"html/template"
 	"net/url"
 	"os"
@@ -115,7 +115,7 @@ func GetEditCode(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 	
-	fmt.Println("GetEditCode")
+	
 
     
 	homepath, err := os.UserHomeDir()
