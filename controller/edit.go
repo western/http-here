@@ -90,7 +90,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
 
 		return c.Render("view/edit_doc", fiber.Map{
-            "file_name": orig_filename+"."+file_ext,
+			"file_name": orig_filename + "." + file_ext,
 			"full_path": c_path,
 
 			//"file_data": string(b),
@@ -98,8 +98,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 		}, "view/layout")
 
 	}
-	
-	
 
 	LogPrefix(c, "500", "Error: format of file is not for edit")
 
@@ -107,24 +105,17 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 }
 
-
-
-
 func GetEditCode(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
-	
-	
 
-    
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
 		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 	}
-	
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -150,16 +141,14 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	if is_code_match {
 
-        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		CopyFile(
-		    filepath.Join(arg_fold, c_path),
-		    filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
+			filepath.Join(arg_fold, c_path),
+			filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
 		)
-
-		
 
 		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
@@ -173,7 +162,7 @@ func GetEditCode(c *fiber.Ctx) error {
 		LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
 
 		return c.Render("view/edit_code", fiber.Map{
-            "file_name": orig_filename+"."+file_ext,
+			"file_name": orig_filename + "." + file_ext,
 			"full_path": c_path,
 
 			//"file_data": string(b),
@@ -181,19 +170,12 @@ func GetEditCode(c *fiber.Ctx) error {
 		}, "view/layout")
 
 	}
-	
-	
 
 	LogPrefix(c, "500", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 
 }
-
-
-
-
-
 
 func PostEdit(c *fiber.Ctx) error {
 
@@ -223,35 +205,34 @@ func PostEdit(c *fiber.Ctx) error {
 	orig_filename := GetFileName(full_path)
 
 	body := c.FormValue("body")
-	
+
 	save_as_source := c.FormValue("save_as_source")
-	
+
 	// --------------------------------------------------------------------------------------------------------------------------------
-	
+
 	if save_as_source == "1" {
-	    
-	    // --------------------------------------------------------------------------------------------------------------------------------
-        
-        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-    	source_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
 
-    	f, err := os.Create(source_temp_file)
-    	if err != nil {
-    		panic(err)
-    	}
+		// --------------------------------------------------------------------------------------------------------------------------------
 
-    	_, err = f.WriteString(body)
-    	if err != nil {
-    		panic(err)
-    	}
-    	f.Close()
+		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		source_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
 
-    	LogPrefix(c, "200", "Update "+source_temp_file)
-    	
-    	// --------------------------------------------------------------------------------------------------------------------------------
-    	
-    	
-    	target_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
+		f, err := os.Create(source_temp_file)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = f.WriteString(body)
+		if err != nil {
+			panic(err)
+		}
+		f.Close()
+
+		LogPrefix(c, "200", "Update "+source_temp_file)
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		target_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
 		target_file := filepath.Join(arg_fold, full_path)
 
 		err = os.Rename(target_temp_file, target_file)
@@ -271,38 +252,35 @@ func PostEdit(c *fiber.Ctx) error {
 				"code": 200,
 			}, "application/json")
 		}
-    	
-    	
-    	// --------------------------------------------------------------------------------------------------------------------------------
-    	
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
 	}
-	
-	
-	
+
 	// --------------------------------------------------------------------------------------------------------------------------------
 
 	is_office_match, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", file_ext)
 
 	if is_office_match {
-        
-        // --------------------------------------------------------------------------------------------------------------------------------
-        
-        filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-    	html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
 
-    	f, err := os.Create(html_temp_file)
-    	if err != nil {
-    		panic(err)
-    	}
+		// --------------------------------------------------------------------------------------------------------------------------------
 
-    	_, err = f.WriteString(body)
-    	if err != nil {
-    		panic(err)
-    	}
-    	f.Close()
+		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
 
-    	LogPrefix(c, "200", "Update "+html_temp_file)
-        
+		f, err := os.Create(html_temp_file)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = f.WriteString(body)
+		if err != nil {
+			panic(err)
+		}
+		f.Close()
+
+		LogPrefix(c, "200", "Update "+html_temp_file)
+
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		_, err = exec.Command("bash", "-c", "libreoffice --help").Output()

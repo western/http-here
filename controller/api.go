@@ -580,25 +580,25 @@ func PostCopy(c *fiber.Ctx) error {
 			}
 
 			/*
-			            out, err := os.Create(target_file_path)
-						if err != nil {
+				            out, err := os.Create(target_file_path)
+							if err != nil {
 
-							LogPrefix(c, "500", "Error create "+target_file_path+" "+err.Error())
-							return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-								"code": 500,
-								"msg":  "Error create " + target_file_path,
-							}, "application/json")
-						}
-						defer out.Close()
+								LogPrefix(c, "500", "Error create "+target_file_path+" "+err.Error())
+								return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+									"code": 500,
+									"msg":  "Error create " + target_file_path,
+								}, "application/json")
+							}
+							defer out.Close()
 
-						readerFile, _ := os.Open(src_file_path)
+							readerFile, _ := os.Open(src_file_path)
 
-						_, err = io.Copy(out, readerFile)
-						if err != nil {
-							panic(err)
-						}
-						out.Close()
-						readerFile.Close()
+							_, err = io.Copy(out, readerFile)
+							if err != nil {
+								panic(err)
+							}
+							out.Close()
+							readerFile.Close()
 			*/
 
 		}
@@ -825,4 +825,3 @@ func PostZip(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-

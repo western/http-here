@@ -1,5 +1,3 @@
-
-
 package controller
 
 import (
@@ -34,8 +32,6 @@ import (
 	"image/png"
 	"math"
 )
-
-
 
 func GetResize(c *fiber.Ctx) error {
 
@@ -378,5 +374,3 @@ func GetResize(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-
