@@ -22,7 +22,7 @@ In extended mode you can doing more
 
 ## Install from github
 ```console
-go install github.com/western/http-here@v1.9.1
+go install github.com/western/http-here@v1.9.2
 ```
 
 ## Manual download
@@ -34,7 +34,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.9.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.9.2/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
