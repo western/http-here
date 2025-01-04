@@ -71,6 +71,8 @@ Below you see display width more than 992 pix (1), less than (2) and mobile wind
     <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare9.png?raw=true"  >
 </p>
 
+> [!IMPORTANT]  
+> During group operations COPY or MOVE all target files/folders will be rewrite
 
 ## Preview doc button
 
@@ -248,7 +250,6 @@ https://github.com/western/http-here/issues
 ### backlog
 - [ ] add --log and --tee args for save output (or database?)
 - [ ] change background actions for FS drivers (i need one abstraction layer)
-- [ ] still has problem with FS drivers lockers
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database, seperate branch without?
 - [ ] tests
