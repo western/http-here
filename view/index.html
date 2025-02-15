@@ -5,7 +5,7 @@
 
 
 
-        <div class="row" style="padding:10px 0;">
+        <!--div class="row" style="padding:10px 0;">
 
             <div class="col">
                 
@@ -34,7 +34,7 @@
                 
             </div>
 
-        </div>
+        </div-->
 
 
         <div class="row" style="padding:0 0;">
@@ -42,9 +42,90 @@
             <progress id="progress" max="100" value="0" >0</progress>
 
         </div>
+        
+        
+        
+        <div class="row" style="padding:10px 0 0 0;">
+
+            <div class="col-6">
+                
+                
+                
+            </div>
+            
+            <div class=" d-block d-sm-block d-md-block    d-lg-none d-xl-none     col-lg-6 col-xl-6 text-end">
+                
+                <div class="input-group input-group-lg mb-3">
+                    
+                    {{if .arg_upload_disable}}
+                    {{else}}
+                    <input class="form-control" type="file" id="upload_file2" multiple>
+                    {{end}}
+                    
+                    
+                    
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg2" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    
+                    {{end}}
+                    
+                    
+                    
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+        
+        
+        
+        
+        <div class="row" style="padding:10px 0 0 0;">
+
+            <div class="col-6">
+                
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
+
+                        
+                        {{.Breadcrumb}}
+
+                    </ol>
+                </nav>
+                
+            </div>
+            
+            <div class=" d-none d-sm-none d-md-none d-lg-block d-xl-block     col-lg-6 col-xl-6 text-end">
+                
+                <div class="input-group input-group-lg mb-3">
+                    
+                    {{if .arg_upload_disable}}
+                    {{else}}
+                    <input class="form-control" type="file" id="upload_file" multiple>
+                    {{end}}
+                    
+                    
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    
+                    {{end}}
+                    
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+        
+        
+        
 
 
-        <div class="row" style="padding:10px 0;">
+        <!--div class="row" style="padding:10px 0;">
 
 
 
@@ -56,7 +137,7 @@
                 </ol>
             </nav>
 
-        </div>
+        </div-->
 
 
         <div class="row" style="padding:10px 0 100px 0;">
@@ -112,5 +193,24 @@
 
             
 
+<div class="modal" tabindex="-1" id="make_folder_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
 
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="make_folder_input">
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_button">Do</button>
+                </div>
+
+
+            </div>
+            
+        </div>
+    </div>
+</div>
             
