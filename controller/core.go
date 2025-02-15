@@ -204,14 +204,17 @@ func GetAll(c *fiber.Ctx) error {
 				sort_size = true
 			}
 
-			//folderTree := WalkAndTreeBuild( filepath.Join(arg_fold, c_path), "/", 1 )
-			folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
+			var folderTree_js []byte
 
-			folderTree_js, err := json.Marshal(folderTree)
-			if err != nil {
-				//fmt.Println(err)
-				panic(err)
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+			if arg_extend_mode == "1" {
+				folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
+
+				folderTree_js, err = json.Marshal(folderTree)
+				if err != nil {
+
+					panic(err)
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+				}
 			}
 
 			return c.Render("view/"+template_file, fiber.Map{
