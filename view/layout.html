@@ -29,8 +29,12 @@
     
     <script>
         
-        let folderTree = JSON.parse(  {{.folderTree_js}}  );
+        let folderTree_src = {{.folderTree_js}};
+        let folderTree = [];
         
+        if( folderTree_src.length > 0 ){
+            folderTree = JSON.parse(  folderTree_src  );
+        }
         
     </script>
 
