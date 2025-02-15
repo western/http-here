@@ -25,9 +25,9 @@ In extended mode you can doing more
 go install github.com/western/http-here@latest
 ```
 
-Install v3.0.0
+Install v1.11.0
 ```console
-go install github.com/western/http-here@v3.0.0
+go install github.com/western/http-here@v1.11.0
 ```
 
 Install v1.9.2 (last version without database)
@@ -44,7 +44,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v3.0.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.11.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -261,7 +261,7 @@ https://github.com/western/http-here/issues
 - [ ] database, seperate branch without?
 - [ ] tests
 
-### 3.0.0
+### 1.11.0
 - [x] database support
 - [x] "make new file" button and API
 - [x] search button and API
