@@ -53,7 +53,7 @@ func main() {
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
-	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
+	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very careful. It disabled by default.")
 	arg_crypt := flag.Bool("crypt", false, "Enable file crypt support.")
 	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
@@ -122,7 +122,7 @@ func main() {
 			`     Only share`,
 			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
 			``,
-			`     Powerfull`,
+			`     Powerful`,
 			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+controller.RandStringRunes(2)) + ` --password ` + white_clr(controller.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
 		}
