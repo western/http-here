@@ -20,9 +20,19 @@ In extended mode you can doing more
 
 
 
-## Install from github
+## Install latest from github
 ```console
 go install github.com/western/http-here@latest
+```
+
+Install v3.0.0
+```console
+go install github.com/western/http-here@v3.0.0
+```
+
+Install v1.9.2 (last version without database)
+```console
+go install github.com/western/http-here@v1.9.2
 ```
 
 ## Manual download
@@ -34,7 +44,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.9.2/http-here.gz
+wget https://github.com/western/http-here/releases/download/v3.0.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -250,6 +260,17 @@ https://github.com/western/http-here/issues
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database, seperate branch without?
 - [ ] tests
+
+### 3.0.0
+- [x] database support
+- [x] "make new file" button and API
+- [x] search button and API
+- [x] first TLS key files generate without verbosity
+- [x] body limit up to 14 GB
+- [x] max upload files up to 100
+- [x] add SPA version
+- [x] new API:  /api/list  /__convert/filename.docx  /api/search
+- [x] use clipboard for SPA client group operations
 
 ### 1.9.0
 - [x] add source code editor for `html|txt|js|css|md`
