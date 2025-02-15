@@ -272,6 +272,8 @@ https://github.com/western/http-here/issues
 - [x] new API:  /api/list  /__convert/filename.docx  /api/search
 - [x] use clipboard for SPA client group operations
 
+<hr>
+
 ### 1.9.0
 - [x] add source code editor for `html|txt|js|css|md`
 
