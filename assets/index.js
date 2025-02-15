@@ -729,7 +729,7 @@ $(document).ready(function(){
     
     
     
-    $('#upload_file').on('change', function(ev){
+    $('#upload_file, #upload_file2').on('change', function(ev){
         
         $('#signal').removeClass('visually-hidden');
         $(ev.target).prop('disabled', true);
