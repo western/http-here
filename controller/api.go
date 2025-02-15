@@ -1,28 +1,28 @@
 package controller
 
 import (
+	"archive/zip"
+	"bufio"
+	_ "crypto/md5"
+	_ "encoding/hex"
 	_ "errors"
 	"fmt"
-
-	"archive/zip"
+	"io"
+	_ "log"
+	"net/url"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	_ "strconv"
 	"strings"
-
-	"github.com/gofiber/fiber/v2"
-
-	_ "bufio"
-	"os"
-	_ "os/exec"
-
-	"io"
-	_ "log"
-	"net/url"
 	"time"
 
-	_ "crypto/md5"
-	_ "encoding/hex"
+	"html/template"
+
+	"github.com/western/http-here/model"
+
+	"github.com/gofiber/fiber/v2"
 
 	_ "github.com/edwvee/exiffix"
 	_ "golang.org/x/image/draw"
@@ -43,6 +43,14 @@ func PostUpload(c *fiber.Ctx) error {
 		arg_crypt = c.Locals("arg_crypt").(string)
 	}
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+	//defer db.Close()
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
 	referer := c.Get("Referer")
 
 	// already decoded
@@ -50,6 +58,7 @@ func PostUpload(c *fiber.Ctx) error {
 	if err != nil {
 
 		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogMsg(db, c, "500", "PostUpload", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -57,6 +66,14 @@ func PostUpload(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -83,6 +100,7 @@ func PostUpload(c *fiber.Ctx) error {
 
 			if !fileInfo.IsDir() {
 				LogPrefix(c, "200", "'"+filepath.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
+				model.EventLogMsg(db, c, "200", "PostUpload", "'"+filepath.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
 			}
 		}
 
@@ -119,6 +137,7 @@ func PostUpload(c *fiber.Ctx) error {
 			if !isOk {
 
 				LogPrefix(c, "500", "Error CryptFile "+err.Error())
+				model.EventLogMsg(db, c, "500", "PostUpload", "Error CryptFile "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
 					"msg":  "Error CryptFile",
@@ -129,6 +148,7 @@ func PostUpload(c *fiber.Ctx) error {
 			if err != nil {
 
 				LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
 					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename+".crypt"),
@@ -145,6 +165,7 @@ func PostUpload(c *fiber.Ctx) error {
 			f.Close()
 
 			LogPrefix(c, "200", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
+			model.EventLogMsg(db, c, "200", "PostUpload", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
 
 		} else {
 
@@ -152,6 +173,7 @@ func PostUpload(c *fiber.Ctx) error {
 			if err != nil {
 
 				LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
 					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
@@ -164,6 +186,7 @@ func PostUpload(c *fiber.Ctx) error {
 			if err != nil {
 
 				LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogMsg(db, c, "500", "PostUpload", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
 					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
@@ -171,6 +194,7 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 
 			LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
+			model.EventLogMsg(db, c, "200", "PostUpload", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
 
 		}
 
@@ -227,6 +251,16 @@ func PostFolder(c *fiber.Ctx) error {
 
 	u_path := CleanDirtyPath(u.Path)
 
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
 	name := c.FormValue("name")
 
 	name = strings.ReplaceAll(name, "/", "")
@@ -270,6 +304,159 @@ func PostFolder(c *fiber.Ctx) error {
 	}, "application/json")
 }
 
+func PostFile(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
+	if err != nil {
+
+		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Error url parse " + referer,
+		}, "application/json")
+	}
+
+	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	name := c.FormValue("name")
+
+	name = strings.ReplaceAll(name, "/", "")
+	re := regexp.MustCompile("\\s+")
+	name = re.ReplaceAllLiteralString(name, " ")
+
+	name = CleanDirtyPath(name)
+
+	if len(name) == 0 {
+		LogPrefix(c, "500", "name is empty")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "name is empty",
+		}, "application/json")
+	}
+
+	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
+
+		if fileInfo.IsDir() {
+			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  filepath.Join(u_path, name) + " already exists",
+			}, "application/json")
+		}
+	}
+
+	myfile, err := os.Create(filepath.Join(arg_fold, u_path, name))
+	if err != nil {
+
+		LogPrefix(c, "500", "Error file create "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Error file create " + filepath.Join(arg_fold, u_path, name),
+		}, "application/json")
+	}
+	myfile.WriteString("\n")
+	myfile.Close()
+
+	LogPrefix(c, "200", "Create file '"+filepath.Join(arg_fold, u_path, name)+"'")
+
+	return c.JSON(fiber.Map{
+		"code": 200,
+	}, "application/json")
+}
+
+func GetList(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	/*
+		referer := c.Get("Referer")
+
+		// already decoded
+		u, err := url.Parse(referer)
+		if err != nil {
+
+			LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error url parse " + referer,
+			}, "application/json")
+		}
+	*/
+
+	//u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	u_path := c.FormValue("path")
+
+	u_path = CleanDirtyPath(u_path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	/*
+		name := c.FormValue("name")
+
+		name = strings.ReplaceAll(name, "/", "")
+		re := regexp.MustCompile("\\s+")
+		name = re.ReplaceAllLiteralString(name, " ")
+
+		name = CleanDirtyPath(name)
+	*/
+
+	if _, err := os.Stat(filepath.Join(arg_fold, u_path)); err != nil {
+
+		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path)+"' not exists")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  filepath.Join(u_path) + " not exists",
+		}, "application/json")
+	}
+
+	entries, err := os.ReadDir(filepath.Join(arg_fold, u_path))
+	if err != nil {
+
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, u_path)+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  filepath.Join(u_path) + " readdir error",
+		}, "application/json")
+	}
+
+	var s_sort string = "name"
+
+	s_sort = c.Cookies("sort")
+	if len(s_sort) == 0 {
+		s_sort = "name"
+	}
+
+	rows := listGenerateView(arg_fold, u_path, entries, s_sort)
+
+	LogPrefix(c, "200", "Get list '"+filepath.Join(arg_fold, u_path)+"'")
+
+	return c.JSON(fiber.Map{
+		"code": 200,
+		"rows": rows,
+	}, "application/json")
+
+}
+
 func PostDelete(c *fiber.Ctx) error {
 
 	arg_fold := ""
@@ -289,6 +476,16 @@ func PostDelete(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	form, _ := c.MultipartForm()
 	names := form.Value["name"]
@@ -354,6 +551,13 @@ func PostDelete(c *fiber.Ctx) error {
 		}
 	}
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	go model.FileChkAsync(db)
+
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
@@ -379,6 +583,13 @@ func PostMove(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	from_path := c.FormValue("from_path")
+	from_path = CleanDirtyPath(from_path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	to := c.FormValue("to")
 	to = CleanDirtyPath(to)
@@ -429,6 +640,10 @@ func PostMove(c *fiber.Ctx) error {
 			}
 
 			src_file_path := filepath.Join(arg_fold, u_path, name)
+			if len(from_path) > 0 {
+				src_file_path = filepath.Join(arg_fold, from_path, name)
+			}
+
 			target_file_path := filepath.Join(arg_fold, to, name)
 
 			_, err := os.Stat(src_file_path)
@@ -463,6 +678,13 @@ func PostMove(c *fiber.Ctx) error {
 		}
 	}
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	go model.FileChkAsync(db)
+
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
@@ -488,6 +710,13 @@ func PostCopy(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	from_path := c.FormValue("from_path")
+	from_path = CleanDirtyPath(from_path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	to := c.FormValue("to")
 	to = CleanDirtyPath(to)
@@ -538,6 +767,10 @@ func PostCopy(c *fiber.Ctx) error {
 			}
 
 			src_file_path := filepath.Join(arg_fold, u_path, name)
+			if len(from_path) > 0 {
+				src_file_path = filepath.Join(arg_fold, from_path, name)
+			}
+
 			target_file_path := filepath.Join(arg_fold, to, name)
 
 			src_stat, err := os.Stat(src_file_path)
@@ -579,30 +812,15 @@ func PostCopy(c *fiber.Ctx) error {
 				LogPrefix(c, "200", "Copy file '"+src_file_path+"' to "+target_file_path)
 			}
 
-			/*
-				            out, err := os.Create(target_file_path)
-							if err != nil {
-
-								LogPrefix(c, "500", "Error create "+target_file_path+" "+err.Error())
-								return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-									"code": 500,
-									"msg":  "Error create " + target_file_path,
-								}, "application/json")
-							}
-							defer out.Close()
-
-							readerFile, _ := os.Open(src_file_path)
-
-							_, err = io.Copy(out, readerFile)
-							if err != nil {
-								panic(err)
-							}
-							out.Close()
-							readerFile.Close()
-			*/
-
 		}
 	}
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	go model.FileChkAsync(db)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
@@ -629,6 +847,16 @@ func PostRename(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	to := c.FormValue("to")
 	to = CleanDirtyPath(to)
@@ -685,8 +913,15 @@ func PostRename(c *fiber.Ctx) error {
 
 	} else {
 
-		LogPrefix(c, "200", "Rename '"+src_file_path+"' to "+target_file_path)
+		LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	go model.FileChkAsync(db)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
@@ -733,6 +968,16 @@ func PostZip(c *fiber.Ctx) error {
 	}
 
 	u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		u_path = form_path
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
@@ -822,6 +1067,201 @@ func PostZip(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"code": 200,
 		"file": filepath.Join("/__temp/", archive_name),
+	}, "application/json")
+
+}
+
+func GetConvert(c *fiber.Ctx) error {
+
+	//fmt.Println("GetEditDoc run")
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+
+		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	}
+
+	c_path, err := url.QueryUnescape(c.Path())
+	if err != nil {
+
+		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	}
+
+	c_path = CleanDirtyPath(c_path)
+
+	c_path = strings.ReplaceAll(c_path, "/__convert", "")
+
+	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
+
+		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+	}
+
+	file_ext := GetExtNorm(c_path)
+	orig_filename := GetFileName(c_path)
+
+	is_office_match, _ := regexp.MatchString("^(rtf|doc|docx|odt)$", file_ext)
+
+	if is_office_match {
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		if err != nil {
+
+			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+
+		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
+		cmd.Dir = arg_fold
+
+		stderr, _ := cmd.StderrPipe()
+		if err := cmd.Start(); err != nil {
+			panic(err)
+		}
+
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			//fmt.Println("libreoffice:", scanner.Text())
+		}
+
+		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
+		if err != nil {
+
+			LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
+			panic(err)
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		LogPrefix(c, "200", "Convert file to html "+filepath.Join(arg_fold, c_path))
+
+		/*
+			return c.Render("view/edit_doc", fiber.Map{
+				"file_name": orig_filename + "." + file_ext,
+				"full_path": c_path,
+
+				//"file_data": string(b),
+				"file_data": template.HTML(string(b)),
+			}, "view/layout")
+		*/
+		return c.JSON(fiber.Map{
+			"code":      200,
+			"file_data": template.HTML(string(b)),
+		}, "application/json")
+
+	}
+
+	is_code_match, _ := regexp.MatchString("^(html|txt|js|css|md)$", file_ext)
+
+	if is_code_match {
+
+		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		CopyFile(
+			filepath.Join(arg_fold, c_path),
+			filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
+		)
+
+		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
+		if err != nil {
+
+			LogPrefix(c, "500", "Error open temp source file: "+err.Error())
+			panic(err)
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		LogPrefix(c, "200", "Convert for edit "+filepath.Join(arg_fold, c_path))
+
+		/*
+			return c.Render("view/edit_code", fiber.Map{
+				"file_name": orig_filename + "." + file_ext,
+				"full_path": c_path,
+
+				//"file_data": string(b),
+				"file_data": template.HTML(string(b)),
+			}, "view/layout")
+		*/
+		return c.JSON(fiber.Map{
+			"code":      200,
+			"file_data": template.HTML(string(b)),
+		}, "application/json")
+
+	}
+
+	LogPrefix(c, "500", "Error: format of file is not for edit")
+
+	//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		"code": 500,
+		"msg":  "Error: format of file is not for edit",
+	}, "application/json")
+
+}
+
+func GetApiSearch(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	/*
+		referer := c.Get("Referer")
+
+		// already decoded
+		u, err := url.Parse(referer)
+		if err != nil {
+
+			LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error url parse " + referer,
+			}, "application/json")
+		}
+	*/
+
+	//u_path := CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	s := c.Query("s")
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	/*
+		name := c.FormValue("name")
+
+		name = strings.ReplaceAll(name, "/", "")
+		re := regexp.MustCompile("\\s+")
+		name = re.ReplaceAllLiteralString(name, " ")
+
+		name = CleanDirtyPath(name)
+	*/
+
+	result_list := model.FileSearchResult(db, arg_fold, s)
+
+	LogPrefix(c, "200", "Get api search '"+s+"'")
+
+	return c.JSON(fiber.Map{
+		"code":        200,
+		"result_list": result_list,
 	}, "application/json")
 
 }

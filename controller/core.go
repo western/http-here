@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/western/http-here/model"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -52,6 +54,17 @@ func GetAll(c *fiber.Ctx) error {
 		arg_crypt = c.Locals("arg_crypt").(string)
 	}
 
+	arg_spa := ""
+	if c.Locals("arg_spa") != nil {
+		arg_spa = c.Locals("arg_spa").(string)
+	}
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+	//defer db.Close()
+
 	//arg_fold := "/tmp"
 	//arg_upload_disable := ""
 	//arg_folder_make_disable := ""
@@ -60,6 +73,7 @@ func GetAll(c *fiber.Ctx) error {
 	if err != nil {
 
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
@@ -69,14 +83,27 @@ func GetAll(c *fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 
+			if arg_spa == "1" {
+
+				LogPrefix(c, "500", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
+				model.EventLogMsg(db, c, "500", "CORE", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error: SPA application, restrict folder read " + c_path,
+				}, "application/json")
+			}
+
 			// check index.html inside
 			if _, err := os.Stat(filepath.Join(arg_fold, c_path, "index.html")); err == nil {
 
 				LogPrefix(c, "200", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+				model.EventLogMsg(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
 				return c.SendFile(filepath.Join(arg_fold, c_path, "index.html"), false)
 			}
 
 			LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
+			model.EventLogMsg(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
 
 			breadcrumb := ""
 
@@ -94,6 +121,7 @@ func GetAll(c *fiber.Ctx) error {
 			if err != nil {
 
 				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+				model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 			}
 
@@ -203,9 +231,9 @@ func GetAll(c *fiber.Ctx) error {
 				"sort_modified": sort_modified,
 				"sort_size":     sort_size,
 
-				"files_count_max":     20,
-				"fieldSize_max":       7 * 1024 * 1024 * 1024,
-				"fieldSize_max_human": "7 Gb",
+				"files_count_max":     100,
+				"fieldSize_max":       14 * 1024 * 1024 * 1024,
+				"fieldSize_max_human": "14 Gb",
 
 				"arg_upload_disable":      arg_upload_disable,
 				"arg_folder_make_disable": arg_folder_make_disable,
@@ -249,10 +277,12 @@ func GetAll(c *fiber.Ctx) error {
 				if !isOk {
 
 					LogPrefix(c, "500", "Error DecryptFile "+err.Error())
+					model.EventLogMsg(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
 					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 				}
 
 				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				model.EventLogMsg(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
 
 				fname := filepath.Base(c_path)
 				fname = strings.Replace(fname, ".crypt", "", 1)
@@ -263,6 +293,7 @@ func GetAll(c *fiber.Ctx) error {
 			} else {
 
 				LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
+				model.EventLogMsg(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
 
 				return c.SendFile(filepath.Join(arg_fold, c_path), false)
 			}
@@ -272,6 +303,7 @@ func GetAll(c *fiber.Ctx) error {
 	} else if errors.Is(err, os.ErrNotExist) {
 
 		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		model.EventLogMsg(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -302,6 +334,11 @@ type FileRow struct {
 }
 
 func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
 
 	var rows_dir []FileRow
 	var rows_file []FileRow
@@ -364,6 +401,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					IsEditCode:   is_edit_code,
 					Rndm:         RandStringRunes(2),
 				})
+
+				//fmt.Println("model.FileAddAsync",filepath.Join(arg_fold, c_path, e.Name()))
+				go model.FileAddAsync(db, filepath.Join(arg_fold, c_path, e.Name()))
 			}
 
 		}

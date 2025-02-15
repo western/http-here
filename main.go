@@ -18,12 +18,15 @@ import (
 
 	"github.com/fatih/color"
 
+	"github.com/western/http-here/conf"
 	"github.com/western/http-here/controller"
+	"github.com/western/http-here/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
 )
@@ -38,8 +41,9 @@ func main() {
 
 	arg_help := flag.Bool("help", false, "Show help")
 
-	arg_port := flag.Int("port", 8000, "Change default listen port")
+	arg_port := flag.Int("port", 8000, "Port to use")
 	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
+	arg_tls_debug := flag.Bool("tls-debug", false, "Start HTTPS with verbosity")
 
 	arg_user := flag.String("user", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
@@ -51,39 +55,76 @@ func main() {
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very carefull. It disabled by default.")
 	arg_crypt := flag.Bool("crypt", false, "Enable file crypt support.")
+	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
-	arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
+	//arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
 
 	flag.Parse()
+
+	if *arg_tls_debug {
+		*arg_tls = *arg_tls_debug
+	}
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+	//defer db.Close()
+
+	model.EventLogAdd(db, "INIT", "run")
+
+	go model.FileChkAsync(db)
+
+	green_clr := color.New(color.FgGreen).SprintFunc()
+	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
 
 	if *arg_help {
 
 		inf := []string{
 			``,
-			`v1.9.2`,
+			conf.Version,
 			``,
-			`usage: http-here [options] [path]`,
+			`usage: ` + green_clr(`http-here`) + ` [options] [path]`,
 			``,
 			`options:`,
+			``,
 			`     --port                    Port to use [8000]`,
-			`     --tls                     Start HTTPS (need easyrsa linux package).`,
+			`     --tls                     Start HTTPS (need easy-rsa linux package).`,
+			`     --tls-debug               Start HTTPS with verbosity`,
+			``,
 			``,
 			`     --user                    Login for basic authorization.`,
 			`     --password                Password for basic authorization.`,
 			``,
 			`     --basic                   Set basic auth and generate several accounts every time.`,
 			``,
+			``,
 			`     --upload-disable          Disable upload API and form controller.`,
 			`     --folder-make-disable     Disable make folder API and form controller.`,
 			`     --index-disable           Disable current folder read.`,
 			``,
+			``,
 			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
 			``,
-			`     --prefork                 Enable spawn multiple processes`,
-			`     --prepare-thumbnails      Run and make thumbnails for target folders.`,
+			`     --prefork                 Enable spawn multiple processes.`,
 			``,
 			`     --crypt                   Enable file crypt support.`,
+			``,
+			`     --spa                     Enable frontend SPA (Single Page Application).`,
+			``,
+			``,
+			`examples:`,
+			``,
+			`     The safest run`,
+			`                        ` + green_clr(`http-here`) + ` --tls --basic ` + white_clr(`/some/path`),
+			``,
+			`     Only share`,
+			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
+			``,
+			`     Powerfull`,
+			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+controller.RandStringRunes(2)) + ` --password ` + white_clr(controller.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
+			``,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
@@ -138,23 +179,25 @@ func main() {
 		//go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
-	if *arg_prepare_thumbnails && !fiber.IsChild() {
+	/*
+		if *arg_prepare_thumbnails && !fiber.IsChild() {
 
-		fmt.Println()
-		fmt.Println("  Run and make thumbnails for target folders")
+			fmt.Println()
+			fmt.Println("  Run and make thumbnails for target folders")
 
-		go controller.WalkAndMakeThumbnail(arg_fold, 0)
-	}
+			go controller.WalkAndMakeThumbnail(arg_fold, 0)
+		}
+	*/
 
 	//engine := html.New("./view", ".html")
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
 	/*
-		engine.AddFunc(
-	        "unescape", func(s string) template.HTML {
-	            return template.HTML(s)
-	        },
-	    )
+			engine.AddFunc(
+		        "unescape", func(s string) template.HTML {
+		            return template.HTML(s)
+		        },
+		    )
 	*/
 
 	config := fiber.Config{
@@ -162,7 +205,7 @@ func main() {
 		DisableStartupMessage: true,
 		ServerHeader:          "",
 		Views:                 engine,
-		BodyLimit:             7 * 1024 * 1024 * 1024,
+		BodyLimit:             14 * 1024 * 1024 * 1024,
 	}
 
 	app := fiber.New(config)
@@ -187,9 +230,15 @@ func main() {
 
 			c.Locals("arg_crypt", "1")
 		}
+		if *arg_spa {
+
+			c.Locals("arg_spa", "1")
+		}
 
 		return c.Next()
 	})
+
+	app.Use(favicon.New())
 
 	app.Use(cors.New(cors.Config{
 		//AllowOrigins: "*",
@@ -206,8 +255,8 @@ func main() {
 		Level: compress.LevelBestSpeed, // 1
 	}))
 
-	cian := color.New(color.FgCyan).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
+	cian_clr := color.New(color.FgCyan).SprintFunc()
+	yellow_clr := color.New(color.FgYellow).SprintFunc()
 
 	if *arg_basic && *arg_prefork {
 
@@ -270,7 +319,7 @@ func main() {
 
 		if !fiber.IsChild() {
 			fmt.Println("")
-			fmt.Println("  Basic auth set: " + cian(*arg_user) + " " + cian(*arg_password))
+			fmt.Println("  Basic auth set: " + cian_clr(*arg_user) + " " + cian_clr(*arg_password))
 		}
 	}
 
@@ -285,7 +334,7 @@ func main() {
 		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
 
 			fmt.Println("")
-			fmt.Println("  Make temp folder")
+			//fmt.Println("  Make temp folder")
 
 			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 				fmt.Println(err4)
@@ -294,7 +343,7 @@ func main() {
 		} else {
 
 			fmt.Println("")
-			fmt.Println(yellow("  Clear temp folder"))
+			//fmt.Println(yellow("  Clear temp folder"))
 
 			if err := os.RemoveAll(filepath.Join(homepath, ".httphere", "temp")); err != nil {
 				fmt.Println(err)
@@ -350,12 +399,13 @@ func main() {
 	if !*arg_index_disable {
 
 		if *arg_extend_mode {
-			app.Get("/__edit/*", controller.GetEditDoc)
+			app.Get("/__doc/*", controller.GetEditDoc)
 			app.Get("/__code/*", controller.GetEditCode)
+			app.Get("/__search/", controller.GetSearch)
+			app.Get("/__convert/*", controller.GetConvert)
 			app.Post("/api/edit", controller.PostEdit)
+			app.Get("/api/list", controller.GetList)
 		}
-
-		app.Get("/*", controller.GetAll)
 	}
 
 	if !*arg_upload_disable {
@@ -364,6 +414,7 @@ func main() {
 
 	if !*arg_folder_make_disable {
 		app.Post("/api/folder", controller.PostFolder)
+		app.Post("/api/file", controller.PostFile)
 	}
 
 	if *arg_extend_mode {
@@ -373,6 +424,17 @@ func main() {
 		app.Post("/api/rename", controller.PostRename)
 		app.Post("/api/zip", controller.PostZip)
 
+		app.Get("/api/search", controller.GetApiSearch)
+	}
+
+	if !*arg_index_disable {
+
+		if *arg_spa {
+			app.Get("/", controller.GetSpa)
+			app.Get("/*", controller.GetAll)
+		} else {
+			app.Get("/*", controller.GetAll)
+		}
 	}
 
 	app.Use(func(c *fiber.Ctx) error {
@@ -397,22 +459,19 @@ func main() {
 	if *arg_tls && crt_is_exists && !fiber.IsChild() {
 
 		fmt.Println("")
-		fmt.Println("  Crt: " + yellow(crt_filename))
-		fmt.Println("  Key: " + yellow(key_filename))
+		fmt.Println("  Crt: " + yellow_clr(crt_filename))
+		fmt.Println("  Key: " + yellow_clr(key_filename))
 		fmt.Println("")
 	}
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		//log.Fatal(crt_is_exists)
-
-		_, err1 := exec.Command("bash", "-c", "easyrsa --help").Output()
+		_, err1 := exec.Command("bash", "-c", "easyrsa  ").Output()
 		if err1 != nil {
 
-			fmt.Println(err1)
+			fmt.Println("easyrsa error: " + err1.Error())
 			return
 		}
-		//fmt.Printf("The date is %s\n", out)
 
 		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
 
@@ -427,14 +486,15 @@ func main() {
 			fmt.Println(err5)
 			return
 		}
-		//fmt.Printf("The date is %s\n", out)
 
 		cmd := exec.Command("bash", "-c", "easyrsa init-pki")
 		cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
 		out3, _ := cmd.Output()
 
-		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-		fmt.Printf(" %s\n", out3)
+		if *arg_tls_debug {
+			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+			fmt.Printf(" %s\n", out3)
+		}
 
 		var_data := `
 set_var EASYRSA_DN "cn_only"
@@ -459,29 +519,36 @@ set_var EASYRSA_CERT_EXPIRE 3650
 		cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
 		out4, _ := cmd2.Output()
 
-		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-		fmt.Printf(" %s\n", out4)
+		if *arg_tls_debug {
+			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+			fmt.Printf(" %s\n", out4)
+		}
 
 		cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
 		cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
 		out5, _ := cmd3.Output()
 
-		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
-		fmt.Printf(" %s\n", out5)
+		if *arg_tls_debug {
+			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+			fmt.Printf(" %s\n", out5)
 
-		fmt.Println(yellow("--------------------------------------------------------------------------------------------------"))
+			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+			fmt.Println("")
+		}
+
+		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")
-		fmt.Println("  Crt: " + yellow(crt_filename))
-		fmt.Println("  Key: " + yellow(key_filename))
+		fmt.Println("  Crt: " + yellow_clr(crt_filename))
+		fmt.Println("  Key: " + yellow_clr(key_filename))
 		fmt.Println("")
 	}
 
 	if !fiber.IsChild() {
 		fmt.Println("")
 		if *arg_tls {
-			fmt.Println(yellow("  TLS Server port " + strconv.Itoa(*arg_port)))
+			fmt.Println(yellow_clr("  TLS Server port " + strconv.Itoa(*arg_port)))
 		} else {
-			fmt.Println("  Server port " + cian(strconv.Itoa(*arg_port)))
+			fmt.Println("  Server port " + cian_clr(strconv.Itoa(*arg_port)))
 		}
 
 		fmt.Println("")
@@ -504,9 +571,9 @@ set_var EASYRSA_CERT_EXPIRE 3650
 					if v.IP.To4() != nil {
 
 						if *arg_tls {
-							fmt.Println("     https://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+							fmt.Println("     https://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
 						} else {
-							fmt.Println("     http://" + v.IP.String() + ":" + cian(strconv.Itoa(*arg_port)))
+							fmt.Println("     http://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
 						}
 					}
 				}
@@ -516,9 +583,9 @@ set_var EASYRSA_CERT_EXPIRE 3650
 
 		fmt.Println("")
 
-		fmt.Println("  Serve folder: " + cian(arg_fold))
+		fmt.Println("  Serve folder: " + cian_clr(arg_fold))
 		fmt.Println("")
-		fmt.Println(cian("  [ Control + C ] ") + "Break Server")
+		fmt.Println(cian_clr("  [ Control + C ] ") + "Break Server")
 		fmt.Println("")
 	}
 

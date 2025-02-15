@@ -13,10 +13,14 @@ import (
 	_ "strconv"
 	"strings"
 
+	"github.com/western/http-here/model"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func GetEditDoc(c *fiber.Ctx) error {
+
+	//fmt.Println("GetEditDoc run")
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -37,7 +41,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 	c_path = CleanDirtyPath(c_path)
 
-	c_path = strings.ReplaceAll(c_path, "/__edit", "")
+	c_path = strings.ReplaceAll(c_path, "/__doc", "")
 
 	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
 
@@ -182,10 +186,16 @@ func PostEdit(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
+		LogPrefix(c, "500", "Error homepath detect "+err.Error())
+		model.EventLogMsg(db, c, "500", "EDIT", "Error homepath detect "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
 	}
 
@@ -194,6 +204,7 @@ func PostEdit(c *fiber.Ctx) error {
 	if _, err := os.Stat(filepath.Join(arg_fold, full_path)); err != nil {
 
 		LogPrefix(c, "500", filepath.Join(arg_fold, full_path))
+		model.EventLogMsg(db, c, "500", "EDIT", filepath.Join(arg_fold, full_path))
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -229,6 +240,7 @@ func PostEdit(c *fiber.Ctx) error {
 		f.Close()
 
 		LogPrefix(c, "200", "Update "+source_temp_file)
+		model.EventLogMsg(db, c, "200", "EDIT", "Update "+source_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -240,6 +252,7 @@ func PostEdit(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Rename error "+err.Error())
+			model.EventLogMsg(db, c, "500", "EDIT", "Rename error "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Rename error ",
@@ -247,7 +260,10 @@ func PostEdit(c *fiber.Ctx) error {
 
 		} else {
 
+			go model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
+
 			LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
+			model.EventLogMsg(db, c, "200", "EDIT", "Move "+target_temp_file+" => "+target_file)
 			return c.JSON(fiber.Map{
 				"code": 200,
 			}, "application/json")
@@ -280,6 +296,7 @@ func PostEdit(c *fiber.Ctx) error {
 		f.Close()
 
 		LogPrefix(c, "200", "Update "+html_temp_file)
+		model.EventLogMsg(db, c, "200", "EDIT", "Update "+html_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -287,6 +304,7 @@ func PostEdit(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+			model.EventLogMsg(db, c, "500", "EDIT", "Error libreoffice not found "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -337,6 +355,7 @@ func PostEdit(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Rename error "+err.Error())
+			model.EventLogMsg(db, c, "500", "EDIT", "Rename error "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Rename error ",
@@ -344,7 +363,10 @@ func PostEdit(c *fiber.Ctx) error {
 
 		} else {
 
+			go model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
+
 			LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
+			model.EventLogMsg(db, c, "200", "EDIT", "Move "+target_temp_file+" => "+target_file)
 			return c.JSON(fiber.Map{
 				"code": 200,
 			}, "application/json")
@@ -355,6 +377,7 @@ func PostEdit(c *fiber.Ctx) error {
 	}
 
 	LogPrefix(c, "500", "Error: format of file is not for edit")
+	model.EventLogMsg(db, c, "500", "EDIT", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,

@@ -1,16 +1,14 @@
 package controller
 
 import (
+	_ "archive/zip"
 	"errors"
 	"fmt"
-
-	_ "archive/zip"
 	"path/filepath"
+	_ "reflect"
 	"regexp"
 	_ "strconv"
 	"strings"
-
-	"github.com/gofiber/fiber/v2"
 
 	"bufio"
 	"os"
@@ -21,8 +19,12 @@ import (
 	"net/url"
 	"time"
 
-	"crypto/md5"
-	"encoding/hex"
+	_ "crypto/md5"
+	_ "encoding/hex"
+
+	"github.com/western/http-here/model"
+
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
@@ -72,19 +74,19 @@ func GetResize(c *fiber.Ctx) error {
 	c_path = CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
-	c_width := "600"
+	//c_width := "600"
 	i_width := 600
 
-	modtime_human := ""
-	size_human := ""
+	//modtime_human := ""
+	//size_human := ""
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
 
-		modtime := fileInfo.ModTime()
-		modtime_human = modtime.Format("2006-01-02 15:04:05")
+		//modtime := fileInfo.ModTime()
+		//modtime_human = modtime.Format("2006-01-02 15:04:05")
 
-		size := fileInfo.Size()
-		size_human = PrettyByteSize(size)
+		//size := fileInfo.Size()
+		//size_human = PrettyByteSize(size)
 
 		if fileInfo.IsDir() {
 
@@ -122,8 +124,31 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
-	hex_name := hex.EncodeToString(hash_name[:])
+	//hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
+	//hex_name := hex.EncodeToString(hash_name[:])
+	hex_name := ""
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+	//defer db.Close()
+
+	var row model.File
+
+	if result := db.Where("full_path = ?", filepath.Join(arg_fold, c_path)).First(&row); result.Error == nil {
+
+		hex_name = row.MD5
+
+		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+
+			LogPrefix(c, "200", "SendFile db thumb/cache "+filepath.Join(c_path))
+			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+		}
+	} else {
+
+		hex_name = GetMd5File(filepath.Join(arg_fold, c_path))
+	}
 
 	is_img_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 

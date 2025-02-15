@@ -40,7 +40,7 @@ func init() {
 }
 
 func RandStringRunes(n int) string {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
@@ -63,18 +63,18 @@ func CleanDirtyPath(p string) string {
 
 func LogPrefix(c *fiber.Ctx, status string, addition string) {
 
-	green := color.New(color.FgGreen).SprintFunc()
-	//magenta := color.New(color.FgMagenta).SprintFunc()
-	//cian := color.New(color.FgCyan).SprintFunc()
-	//yellow := color.New(color.FgYellow).SprintFunc()
-	red := color.New(color.FgRed).SprintFunc()
+	green_clr := color.New(color.FgGreen).SprintFunc()
+	//magenta_clr := color.New(color.FgMagenta).SprintFunc()
+	//cian_clr := color.New(color.FgCyan).SprintFunc()
+	//yellow_clr := color.New(color.FgYellow).SprintFunc()
+	red_clr := color.New(color.FgRed).SprintFunc()
 
 	pref := ""
 
 	if status != "200" {
-		pref += red("| ")
+		pref += red_clr("| ")
 	} else {
-		pref += green("| ")
+		pref += green_clr("| ")
 	}
 
 	pid := strconv.Itoa(os.Getpid())
@@ -87,7 +87,7 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 
 	_user := ""
 	if c.Locals("username") != nil {
-		_user = green(c.Locals("username").(string))
+		_user = green_clr(c.Locals("username").(string))
 	}
 
 	if len(_user) > 0 {
@@ -97,9 +97,9 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 	}
 
 	if status != "200" {
-		pref += "[" + red(status) + "] "
+		pref += "[" + red_clr(status) + "] "
 	} else {
-		pref += "[" + green(status) + "] "
+		pref += "[" + green_clr(status) + "] "
 	}
 
 	//pref += cian(addition)

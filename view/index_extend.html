@@ -3,7 +3,7 @@
 
 
 
-    <div class="row" style="padding:10px 0;">
+    <!--div class="row" style="padding:10px 0;">
 
         <div class="col">
 
@@ -32,17 +32,67 @@
 
         </div>
 
-    </div>
-
-
+    </div-->
+    
+    
+    
     <div class="row" style="padding:0 0;">
 
         <progress id="progress" max="100" value="0">0</progress>
 
     </div>
+    
+    
+    
+    <div class="row" style="padding:10px 0 0 0;">
+
+        <div class="col-6">
+            
+            
+            
+        </div>
+        
+        <div class=" d-block d-sm-block d-md-block    d-lg-none d-xl-none     col-lg-6 col-xl-6 text-end">
+            
+            <div class="input-group input-group-lg mb-3">
+                
+                {{if .arg_upload_disable}}
+                {{else}}
+                <input class="form-control" type="file" id="upload_file2" multiple>
+                {{end}}
+                
+                
+                {{if .arg_extend_mode}}
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg2" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    <button class="btn btn-outline-secondary" type="button" id="new_file_dlg2" title="New file" ><i class="bi bi-file-earmark"></i></button>
+                    {{end}}
+                    
+                    <button class="btn btn-outline-secondary" type="button" id="search_dlg2" title="Search" ><i class="bi bi-search"></i></button>
+                {{else}}
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg2" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    
+                    {{end}}
+                {{end}}
+                
+                
+                
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    
 
 
-    <div class="row" style="padding:10px 0;">
+    
+
+
+    <!--div class="row" style="padding:10px 0;">
 
 
 
@@ -54,7 +104,57 @@
             </ol>
         </nav>
 
+    </div-->
+
+
+
+    <div class="row" style="padding:10px 0 0 0;">
+
+        <div class="col-6">
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
+
+                    {{.Breadcrumb}}
+
+                </ol>
+            </nav>
+            
+        </div>
+        
+        <div class=" d-none d-sm-none d-md-none d-lg-block d-xl-block     col-lg-6 col-xl-6 text-end">
+            
+            <div class="input-group input-group-lg mb-3">
+                
+                {{if .arg_upload_disable}}
+                {{else}}
+                <input class="form-control" type="file" id="upload_file" multiple>
+                {{end}}
+                
+                {{if .arg_extend_mode}}
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    <button class="btn btn-outline-secondary" type="button" id="new_file_dlg" title="New file" ><i class="bi bi-file-earmark"></i></button>
+                    {{end}}
+                    
+                    <button class="btn btn-outline-secondary" type="button" id="search_dlg" title="Search" ><i class="bi bi-search"></i></button>
+                {{else}}
+                    {{if .arg_folder_make_disable}}
+                    {{else}}
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg" title="New folder" ><i class="bi bi-folder-plus"></i></button>
+                    
+                    {{end}}
+                {{end}}
+                
+            </div>
+            
+        </div>
+        
     </div>
+
+
 
 
     <div class="row" style="padding:10px 0 50px 0;">
@@ -75,6 +175,12 @@
                 <div class="col-4">
 
                     <div class="btn-group " role="group" aria-label="">
+                        
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0 head-chk" type="checkbox">
+                        </div>
+                        
+                        
                         <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
                         <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
                         <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
@@ -123,12 +229,12 @@
             <table class="table file-table table-hover ">
                 <thead>
                     <tr>
-                        <th class="text-center"><input class="form-check-input head-chk" type="checkbox" value=""></th>
-                        <th>name</th>
+                        <th class="text-center"><!--input class="form-check-input head-chk" type="checkbox" value=""--></th>
+                        <th><!--name--></th>
 
                         <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
                         <th class="col d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></th>
-                        <th class="text-center">del</th>
+                        <th class="text-center"><!--del--></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,7 +246,16 @@
 
                             <tr>
                                 <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="fold" value="{{.Name}}"></th>
-                                <td><i class="bi bi-folder"></i> <a class="nodecor" href="{{.FullPath}}">{{.Name}}</a></td>
+                                <td>
+                                    <i class="bi bi-folder"></i>
+                                    <a class="nodecor" href="{{.FullPath}}">{{.Name}}</a>
+                                    
+                                    <div class="text-body-secondary   d-block d-sm-block d-md-block    d-lg-none d-xl-none">
+                                        <small>{{.ModTimeHuman}}</small>&nbsp;
+                                        
+                                    </div>
+                                    
+                                </td>
 
                                 <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell"></td>
                                 <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
@@ -169,7 +284,15 @@
 
                             <tr>
                                 <th scope="row" class="text-center"><input class="form-check-input" type="checkbox" name="file" value="{{.Name}}"></th>
-                                <td><a class="nodecor" href="{{.FullPath}}?{{.Rndm}}">{{.Name}}</a></td>
+                                <td>
+                                    <a class="nodecor" href="{{.FullPath}}?{{.Rndm}}">{{.Name}}</a>
+                                    
+                                    <div class="text-body-secondary   d-block d-sm-block d-md-block    d-lg-none d-xl-none">
+                                        <small>{{.ModTimeHuman}}</small>&nbsp;
+                                        <span class="badge text-bg-secondary">{{.SizeHuman}}</span>
+                                    </div>
+                                    
+                                </td>
 
                                 <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.SizeHuman}}</td>
                                 <td class="d-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell">{{.ModTimeHuman}}</td>
@@ -360,12 +483,12 @@
 
                                     {{if .IsPreviewImg}}
                                     
-                                        <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat center/80% url('/__resize{{.FullPath}}'); background-size: cover;  ">
+                                        <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat center/80% url('/__resize{{.FullPath}}?{{.Rndm}}'); background-size: cover;  ">
                                         </div>
                                         
                                     {{else if .IsPreviewDoc}}
                                         
-                                        <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat top url('/__resize{{.FullPath}}'); background-size: cover;  ">
+                                        <div class="bd-placeholder-img card-img-top" width="100%" height="225" style="height:225px; background: no-repeat top url('/__resize{{.FullPath}}?{{.Rndm}}'); background-size: cover;  ">
                                         </div>
                                         
 
@@ -546,6 +669,101 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary">Save changes</button>
             </div-->
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="share_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div id="share_modal_href"></div>
+
+
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="make_folder_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="make_folder_input">
+                    <button class="btn btn-outline-secondary" type="button" id="make_folder_button">Do</button>
+                </div>
+
+
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="modal" tabindex="-1" id="make_file_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New file</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="make_file_input">
+                    <button class="btn btn-outline-secondary" type="button" id="make_file_button">Do</button>
+                </div>
+                
+                <p>
+                    If you set extension for file as <span class="badge text-bg-secondary">rtf, doc, docx, odt</span> after create you can edit it with online WYSIWYG.
+                </p>
+                
+                <p>
+                    If you set extension <span class="badge text-bg-secondary">html, txt, js, css, md</span> you will edit it with code editor.
+                </p>
+
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="search_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Search</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="search_input">
+                    <button class="btn btn-outline-secondary" type="button" id="search_button">Do</button>
+                </div>
+
+
+            </div>
+            
         </div>
     </div>
 </div>

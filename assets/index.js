@@ -289,6 +289,131 @@ $(document).ready(function(){
     });
     
     
+    $('#make_folder_dlg, #make_folder_dlg2').click(function (ev) {
+        
+        const mkfolderModal = new bootstrap.Modal(document.getElementById('make_folder_modal'), {});
+        mkfolderModal.show();
+    });
+    
+    
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+    let make_new_file = function (ev) {
+        let val = $('input[type=text]', ev.target.parentNode).val();
+        console.log('val=', val);
+
+        if (val.length == 0) {
+            alert('Please fill file name');
+            return;
+        }
+
+        
+        let formData = new FormData();
+        formData.append('name', val);
+
+        $.ajax({
+            url: '/api/file',
+            data: formData,
+            type: 'POST',
+            contentType: false,
+            processData: false,
+        }).done(function (data) {
+            if (data.code == 200) {
+                //location.href = location.href;
+                //location.href = '';
+                
+                /*
+                let ext = path.parse(val).ext;
+                ext = ext.replace(/\./g, '');
+                ext = ext.toLowerCase();
+                */
+                
+                let regx = /\.(.+?)$/.exec(val);
+                
+                //console.log('regx=', regx);
+                
+                if( !regx ){
+                    location.href = location.href;
+                    return;
+                }
+                
+                let ext = regx.slice(1)[0];
+                //console.log('ext=', ext);
+                
+                let is_edit_doc = ext.match(/^(rtf|doc|docx|odt)$/i);
+                let is_edit_code = ext.match(/^(html|txt|js|css|md)$/i);
+                
+                if ( is_edit_doc ){
+                    location.href = '/__doc' + location.pathname + '/' + val;
+                }
+                if ( is_edit_code ){
+                    location.href = '/__code' + location.pathname + '/' + val;
+                }
+                
+            }
+        }).fail(function(data) {
+            if (data.responseJSON.msg) {
+                alert(data.responseJSON.msg);
+            }
+        });
+        
+    };
+
+    $('#make_file_button').click(function (ev) {
+        make_new_file(ev);
+    });
+
+    $('#make_file_input').on('keypress', function (ev) {
+        if (ev.which == 13) {
+            make_new_file(ev);
+        }
+    });
+    
+    
+    $('#new_file_dlg, #new_file_dlg2').click(function (ev) {
+        
+        const mkfileModal = new bootstrap.Modal(document.getElementById('make_file_modal'), {});
+        mkfileModal.show();
+    });
+    
+    
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    
+    let search_submit = function (ev) {
+        let val = $('input[type=text]', ev.target.parentNode).val();
+        console.log('val=', val);
+
+        if (val.length == 0) {
+            alert('Please fill search field');
+            return;
+        }
+
+        
+        location.href = '/__search/?s=' + val;
+        
+    };
+    
+
+    $('#search_button').click(function (ev) {
+        
+        search_submit(ev);
+    });
+
+    $('#search_input').on('keypress', function (ev) {
+        if (ev.which == 13) {
+            search_submit(ev);
+        }
+    });
+    
+    
+    $('#search_dlg, #search_dlg2').click(function (ev) {
+        
+        const searchModal = new bootstrap.Modal(document.getElementById('search_modal'), {});
+        searchModal.show();
+    });
+    
+    
     // --------------------------------------------------------------------------------------------------------------------------------------
     
     $(':checkbox.head-chk').click((ev) => {
@@ -318,7 +443,7 @@ $(document).ready(function(){
         
         let full_path = $(el).data('full-path');
         if(full_path){
-            location.href = '/__edit' + full_path;
+            location.href = '/__doc' + full_path;
         }
         
     });

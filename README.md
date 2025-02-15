@@ -125,11 +125,7 @@ Prefork help to handle with multiple heavy query (big image gallery as example)
 http-here --prefork --extend-mode /tmp
 ```
 
-If you run --prepare-thumbnails one time you maybe not need prefork
 
-```console
-http-here --prepare-thumbnails --extend-mode /tmp
-```
 
 ## Online editor
 
@@ -236,8 +232,8 @@ For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, doc
 
 
 
-- `libreoffice` - for thumbnails, for doc files online edit
-- `easyrsa` - package for certs build
+- `libreoffice` - for doc thumbnails, for doc files online edit
+- `easyrsa` (easy-rsa) - package for certs build
 - `openssl` - encrypt file support
 
 
