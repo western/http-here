@@ -1,3 +1,3 @@
 package conf
 
-var Version = "v1.11.1"
+var Version = "v1.11.2"
