@@ -1,4 +1,4 @@
-module github.com/western/http-here
+module github.com/western/http-here/v3
 
 go 1.22.5
 
