@@ -7,13 +7,13 @@ Multiple files upload to current showed folder
 In extended mode you can doing more
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top4.png?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top6.png?raw=true" />
 </p>
 
 ## Mobile screen
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile2.png?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile4.png?raw=true" />
 </p>
 
 
@@ -77,8 +77,8 @@ App will change main list view to table. And you can operate with files - delete
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare8.png?raw=true"  >
-    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare9.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare10.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare11.png?raw=true"  >
 </p>
 
 > [!IMPORTANT]  
