@@ -24,33 +24,33 @@ import (
 func GetSpa(c *fiber.Ctx) error {
 
 	/*
-		arg_fold := ""
-		arg_fold = c.Locals("arg_fold").(string)
+			arg_fold := ""
+			arg_fold = c.Locals("arg_fold").(string)
 
-		arg_upload_disable := ""
-		if c.Locals("arg_upload_disable") != nil {
-			arg_upload_disable = c.Locals("arg_upload_disable").(string)
-		}
+			arg_upload_disable := ""
+			if c.Locals("arg_upload_disable") != nil {
+				arg_upload_disable = c.Locals("arg_upload_disable").(string)
+			}
 
-		arg_folder_make_disable := ""
-		if c.Locals("arg_folder_make_disable") != nil {
-			arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
-		}
+			arg_folder_make_disable := ""
+			if c.Locals("arg_folder_make_disable") != nil {
+				arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
+			}
 
-		arg_extend_mode := ""
-		if c.Locals("arg_extend_mode") != nil {
-			arg_extend_mode = c.Locals("arg_extend_mode").(string)
-		}
+			arg_extend_mode := ""
+			if c.Locals("arg_extend_mode") != nil {
+				arg_extend_mode = c.Locals("arg_extend_mode").(string)
+			}
 
-		arg_crypt := ""
-		if c.Locals("arg_crypt") != nil {
-			arg_crypt = c.Locals("arg_crypt").(string)
-		}
+			arg_crypt := ""
+			if c.Locals("arg_crypt") != nil {
+				arg_crypt = c.Locals("arg_crypt").(string)
+			}
 
-		db, err := model.ConnectToSQLite()
-	    if err != nil {
-	        panic(err)
-	    }
+			db, err := model.ConnectToSQLite()
+		    if err != nil {
+		        panic(err)
+		    }
 	*/
 
 	return c.Render("view/spa", fiber.Map{
