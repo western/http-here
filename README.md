@@ -269,7 +269,7 @@ https://github.com/western/http-here/issues
 - [x] body limit up to 14 GB
 - [x] max upload files up to 100
 - [x] add SPA version
-- [x] new API:  /api/list  /__convert/filename.docx  /api/search
+- [x] new API:  `/api/list`  `/__convert/filename.docx`  `/api/search`
 - [x] use clipboard for SPA client group operations
 
 <hr>
