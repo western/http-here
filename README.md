@@ -174,7 +174,7 @@ Then, set your passcode to the form. The passcode store on the form between requ
 
 During the process of uploading, your files will be encrypt and their EXT change to `.crypt`
 
-When files lying on your server, their data is crypted.
+When files lying on your server, their data is encrypted.
 
 If you need decrypt any `.crypt` flles, set your passcode, and click on file. During download this file, it will be decrypt on the fly.
 
@@ -258,7 +258,7 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output (or database?)
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 - [ ] problem: how decide to run md5sum inside some folder
-- [ ] database, seperate branch without?
+- [ ] database, separate branch without?
 - [ ] tests
 
 ### 1.11.0
