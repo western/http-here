@@ -274,6 +274,11 @@ https://github.com/western/http-here/issues
 
 <hr>
 
+### 1.9.2
+- [x] show file_name while file edit
+- [x] change online edit templates
+- [x] change codemirror
+
 ### 1.9.0
 - [x] add source code editor for `html|txt|js|css|md`
 
