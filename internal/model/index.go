@@ -6,7 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/western/http-here/conf"
+	
+	"github.com/western/http-here/internal/conf"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

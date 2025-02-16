@@ -1,4 +1,5 @@
-package controller
+
+package api
 
 import (
 	"archive/zip"

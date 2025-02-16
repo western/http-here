@@ -1,4 +1,5 @@
-package controller
+
+package app
 
 import (
 	_ "archive/zip"
@@ -22,7 +23,7 @@ import (
 	_ "crypto/md5"
 	_ "encoding/hex"
 
-	"github.com/western/http-here/model"
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 

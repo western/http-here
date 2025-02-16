@@ -1,4 +1,5 @@
-package controller
+
+package app
 
 import (
 	"bufio"
@@ -13,7 +14,8 @@ import (
 	_ "strconv"
 	"strings"
 
-	"github.com/western/http-here/model"
+	
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -29,14 +31,14 @@ func GetEditDoc(c *fiber.Ctx) error {
 	if err != nil {
 
 		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = CleanDirtyPath(c_path)
@@ -46,7 +48,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
 
 		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
 
 	file_ext := GetExtNorm(c_path)
@@ -62,7 +64,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -99,13 +101,13 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 			//"file_data": string(b),
 			"file_data": template.HTML(string(b)),
-		}, "view/layout")
+		}, "view/layout/default")
 
 	}
 
 	LogPrefix(c, "500", "Error: format of file is not for edit")
 
-	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 
 }
 
@@ -118,14 +120,14 @@ func GetEditCode(c *fiber.Ctx) error {
 	if err != nil {
 
 		LogPrefix(c, "500", "Error hmepath detect "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = CleanDirtyPath(c_path)
@@ -135,7 +137,7 @@ func GetEditCode(c *fiber.Ctx) error {
 	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
 
 		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
 
 	file_ext := GetExtNorm(c_path)
@@ -171,13 +173,13 @@ func GetEditCode(c *fiber.Ctx) error {
 
 			//"file_data": string(b),
 			"file_data": template.HTML(string(b)),
-		}, "view/layout")
+		}, "view/layout/default")
 
 	}
 
 	LogPrefix(c, "500", "Error: format of file is not for edit")
 
-	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 
 }
 
@@ -196,7 +198,10 @@ func PostEdit(c *fiber.Ctx) error {
 
 		LogPrefix(c, "500", "Error homepath detect "+err.Error())
 		model.EventLogMsg(db, c, "500", "EDIT", "Error homepath detect "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+		}, "application/json")
 	}
 
 	full_path := c.FormValue("full_path")

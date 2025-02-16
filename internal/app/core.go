@@ -1,4 +1,5 @@
-package main
+
+package app
 
 import (
 	"embed"
@@ -18,9 +19,9 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/western/http-here/conf"
-	"github.com/western/http-here/controller"
-	"github.com/western/http-here/model"
+	"github.com/western/http-here/internal/conf"
+	"github.com/western/http-here/internal/api"
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
@@ -37,7 +38,7 @@ var view_fs embed.FS
 //go:embed assets/*
 var embedDirStatic embed.FS
 
-func main() {
+func Core() {
 
 	arg_help := flag.Bool("help", false, "Show help")
 
@@ -123,7 +124,7 @@ func main() {
 			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
 			``,
 			`     Powerful`,
-			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+controller.RandStringRunes(2)) + ` --password ` + white_clr(controller.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
+			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+RandStringRunes(2)) + ` --password ` + white_clr(RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
 		}
 
@@ -175,7 +176,7 @@ func main() {
 
 	if !fiber.IsChild() {
 
-		controller.WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
+		WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
 		//go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
@@ -274,8 +275,8 @@ func main() {
 
 		for i := range 10 {
 
-			login := "login" + strconv.Itoa(i) + controller.RandStringRunes(2)
-			password := controller.RandStringRunes(16)
+			login := "login" + strconv.Itoa(i) + RandStringRunes(2)
+			password := RandStringRunes(16)
 
 			password_list[login] = password
 
@@ -288,10 +289,10 @@ func main() {
 
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
-				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
+				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
 			},
 		}))
 
@@ -310,10 +311,10 @@ func main() {
 			},
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				controller.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
-				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout")
+				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
 			},
 		}))
 
@@ -361,7 +362,7 @@ func main() {
 
 	if *arg_extend_mode {
 		//app.Get("/__resize/:width/:height/*", controller.GetResize)
-		app.Get("/__resize/*", controller.GetResize)
+		app.Get("/__resize/*", GetResize)
 	}
 
 	app.Get("/__temp/*", func(c *fiber.Ctx) error {
@@ -370,17 +371,17 @@ func main() {
 		c_path = strings.TrimLeft(c_path, "/__temp")
 		if err != nil {
 
-			controller.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+			LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		c_path = controller.CleanDirtyPath(c_path)
+		c_path = CleanDirtyPath(c_path)
 		//fmt.Println("c_path=" + c_path)
 
 		_, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
 
 		if err != nil {
-			controller.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
 
 			return c.JSON(fiber.Map{
 				"code": 404,
@@ -389,59 +390,59 @@ func main() {
 
 		}
 
-		controller.LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
+		LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
 
 		return c.SendFile(filepath.Join(homepath, ".httphere", "temp", c_path))
 	})
 
-	app.Options("/*", controller.OptionsAll)
+	app.Options("/*", api.OptionsAll)
 
 	if !*arg_index_disable {
 
 		if *arg_extend_mode {
-			app.Get("/__doc/*", controller.GetEditDoc)
-			app.Get("/__code/*", controller.GetEditCode)
-			app.Get("/__search/", controller.GetSearch)
-			app.Get("/__convert/*", controller.GetConvert)
-			app.Post("/api/edit", controller.PostEdit)
-			app.Get("/api/list", controller.GetList)
+			app.Get("/__doc/*", GetEditDoc)
+			app.Get("/__code/*", GetEditCode)
+			app.Get("/__search/", GetSearch)
+			app.Get("/__convert/*", api.GetConvert)
+			app.Post("/api/edit", PostEdit)
+			app.Get("/api/list", api.GetList)
 		}
 	}
 
 	if !*arg_upload_disable {
-		app.Post("/api/upload", controller.PostUpload)
+		app.Post("/api/upload", api.PostUpload)
 	}
 
 	if !*arg_folder_make_disable {
-		app.Post("/api/folder", controller.PostFolder)
-		app.Post("/api/file", controller.PostFile)
+		app.Post("/api/folder", api.PostFolder)
+		app.Post("/api/file", api.PostFile)
 	}
 
 	if *arg_extend_mode {
-		app.Post("/api/delete", controller.PostDelete)
-		app.Post("/api/move", controller.PostMove)
-		app.Post("/api/copy", controller.PostCopy)
-		app.Post("/api/rename", controller.PostRename)
-		app.Post("/api/zip", controller.PostZip)
+		app.Post("/api/delete", api.PostDelete)
+		app.Post("/api/move", api.PostMove)
+		app.Post("/api/copy", api.PostCopy)
+		app.Post("/api/rename", api.PostRename)
+		app.Post("/api/zip", api.PostZip)
 
-		app.Get("/api/search", controller.GetApiSearch)
+		app.Get("/api/search", api.GetSearch)
 	}
 
 	if !*arg_index_disable {
 
 		if *arg_spa {
-			app.Get("/", controller.GetSpa)
-			app.Get("/*", controller.GetAll)
+			app.Get("/", GetSpa)
+			app.Get("/*", api.GetAll)
 		} else {
-			app.Get("/*", controller.GetAll)
+			app.Get("/*", api.GetAll)
 		}
 	}
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		controller.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
+		LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
 
-		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
 
 	// /home/andrew/.httphere/easyrsa/pki/issued/server1.crt

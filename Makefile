@@ -7,3 +7,9 @@ fmt:
 tidy:
 	go mod tidy
 
+run:
+	go run cmd/app/main.go
+
+build:
+	go build -o http-here cmd/app/main.go
+

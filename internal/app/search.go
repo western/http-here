@@ -1,4 +1,5 @@
-package controller
+
+package app
 
 import (
 	_ "encoding/json"
@@ -16,7 +17,7 @@ import (
 	_ "strings"
 	_ "time"
 
-	"github.com/western/http-here/model"
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -42,5 +43,5 @@ func GetSearch(c *fiber.Ctx) error {
 
 		"s":           s,
 		"result_list": result_list,
-	}, "view/layout")
+	}, "view/layout/default")
 }

@@ -1,4 +1,5 @@
-package controller
+
+package api
 
 import (
 	"encoding/json"
@@ -16,18 +17,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/western/http-here/model"
+    
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func OptionsAll(c *fiber.Ctx) error {
 
-	return c.JSON(fiber.Map{
-		"code":   200,
-		"method": "OPTIONS",
-	}, "application/json")
-}
 
 func GetAll(c *fiber.Ctx) error {
 
@@ -65,16 +61,15 @@ func GetAll(c *fiber.Ctx) error {
 	}
 	//defer db.Close()
 
-	//arg_fold := "/tmp"
-	//arg_upload_disable := ""
-	//arg_folder_make_disable := ""
+	
+	
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 		model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = CleanDirtyPath(c_path)
@@ -122,23 +117,19 @@ func GetAll(c *fiber.Ctx) error {
 
 				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 				model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 
-			//folderlist := ""
-			//filelist := ""
-
-			//fl := template.HTML("")
-			//var fl template.HTML
-
-			//fmt.Println(reflect.TypeOf(fl))
-			//fmt.Println(reflect.TypeOf(entries))
+			
+			
+			
+			
 			template_file := "index"
 
 			var rows []FileRow
 			var mode string
 			var s_sort string
-			//s_sort := "name"
+			
 
 			if arg_extend_mode == "1" {
 
@@ -188,7 +179,7 @@ func GetAll(c *fiber.Ctx) error {
 				mode_list = true
 			}
 
-			//fmt.Println("s_sort=", s_sort)
+			
 			sort_name := false
 			if s_sort == "name" {
 				sort_name = true
@@ -213,15 +204,13 @@ func GetAll(c *fiber.Ctx) error {
 				if err != nil {
 
 					panic(err)
-					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 				}
 			}
 
 			return c.Render("view/"+template_file, fiber.Map{
 
 				"Breadcrumb": template.HTML(breadcrumb),
-				//"Filelist":   fl,
-				//"folderTree_js": string(folderTree_js),
 				"folderTree_js": template.HTML(folderTree_js),
 
 				"rows":            rows,
@@ -240,7 +229,7 @@ func GetAll(c *fiber.Ctx) error {
 
 				"arg_upload_disable":      arg_upload_disable,
 				"arg_folder_make_disable": arg_folder_make_disable,
-			}, "view/layout")
+			}, "view/layout/default")
 
 		} else {
 
@@ -281,7 +270,7 @@ func GetAll(c *fiber.Ctx) error {
 
 					LogPrefix(c, "500", "Error DecryptFile "+err.Error())
 					model.EventLogMsg(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
-					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout")
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 				}
 
 				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
@@ -310,10 +299,10 @@ func GetAll(c *fiber.Ctx) error {
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
-		}, "view/layout")
+		}, "view/layout/error")
 	}
 
-	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout")
+	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 
 }
 
