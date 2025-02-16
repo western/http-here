@@ -1,4 +1,3 @@
-
 package api
 
 import (
@@ -8,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	_ "fmt"
+	_ "html/template"
 	"io"
 	_ "log"
 	"net/url"
@@ -18,7 +18,6 @@ import (
 	_ "strconv"
 	"strings"
 	_ "time"
-	_ "html/template"
 
 	"github.com/western/http-here/internal/model"
 
@@ -198,12 +197,9 @@ func PostUpload(c *fiber.Ctx) error {
 
 		}
 
-		
-
 	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 	}, "application/json")
 }
-

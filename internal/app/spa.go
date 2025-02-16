@@ -1,4 +1,3 @@
-
 package app
 
 import (
@@ -23,8 +22,6 @@ import (
 )
 
 func GetSpa(c *fiber.Ctx) error {
-
-	
 
 	return c.Render("view/spa", fiber.Map{
 

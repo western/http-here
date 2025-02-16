@@ -1,4 +1,3 @@
-
 package app
 
 import (
@@ -14,7 +13,6 @@ import (
 	_ "strconv"
 	"strings"
 
-	
 	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"

@@ -1,4 +1,3 @@
-
 package api
 
 import (
@@ -17,13 +16,10 @@ import (
 	"strings"
 	"time"
 
-    
 	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-
 
 func GetAll(c *fiber.Ctx) error {
 
@@ -60,9 +56,6 @@ func GetAll(c *fiber.Ctx) error {
 		panic(err)
 	}
 	//defer db.Close()
-
-	
-	
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -120,16 +113,11 @@ func GetAll(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 
-			
-			
-			
-			
 			template_file := "index"
 
 			var rows []FileRow
 			var mode string
 			var s_sort string
-			
 
 			if arg_extend_mode == "1" {
 
@@ -179,7 +167,6 @@ func GetAll(c *fiber.Ctx) error {
 				mode_list = true
 			}
 
-			
 			sort_name := false
 			if s_sort == "name" {
 				sort_name = true
@@ -210,7 +197,7 @@ func GetAll(c *fiber.Ctx) error {
 
 			return c.Render("view/"+template_file, fiber.Map{
 
-				"Breadcrumb": template.HTML(breadcrumb),
+				"Breadcrumb":    template.HTML(breadcrumb),
 				"folderTree_js": template.HTML(folderTree_js),
 
 				"rows":            rows,

@@ -1,5 +1,3 @@
-
-
 package api
 
 import (
@@ -18,7 +16,6 @@ import (
 	_ "strings"
 	_ "time"
 
-	
 	_ "github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
@@ -31,4 +28,3 @@ func OptionsAll(c *fiber.Ctx) error {
 		"method": "OPTIONS",
 	}, "application/json")
 }
-

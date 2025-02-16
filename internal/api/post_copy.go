@@ -1,5 +1,3 @@
-
-
 package api
 
 import (
@@ -9,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	_ "fmt"
+	_ "html/template"
 	_ "io"
 	_ "log"
 	"net/url"
@@ -19,9 +18,7 @@ import (
 	_ "strconv"
 	"strings"
 	_ "time"
-	_ "html/template"
 
-	
 	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
@@ -34,8 +31,6 @@ import (
 	_ "image/png"
 	_ "math"
 )
-
-
 
 func PostCopy(c *fiber.Ctx) error {
 
@@ -173,5 +168,3 @@ func PostCopy(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-

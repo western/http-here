@@ -1,6 +1,3 @@
-
-
-
 package api
 
 import (
@@ -10,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	"fmt"
+	_ "html/template"
 	"io"
 	_ "log"
 	"net/url"
@@ -20,7 +18,6 @@ import (
 	_ "strconv"
 	"strings"
 	"time"
-	_ "html/template"
 
 	_ "github.com/western/http-here/internal/model"
 
@@ -34,10 +31,6 @@ import (
 	_ "image/png"
 	_ "math"
 )
-
-
-
-
 
 func PostZip(c *fiber.Ctx) error {
 
@@ -180,5 +173,3 @@ func PostZip(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-

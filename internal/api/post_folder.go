@@ -1,5 +1,3 @@
-
-
 package api
 
 import (
@@ -9,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	_ "fmt"
+	_ "html/template"
 	_ "io"
 	_ "log"
 	"net/url"
@@ -19,7 +18,6 @@ import (
 	_ "strconv"
 	"strings"
 	_ "time"
-	_ "html/template"
 
 	_ "github.com/western/http-here/internal/model"
 
@@ -33,8 +31,6 @@ import (
 	_ "image/png"
 	_ "math"
 )
-
-
 
 func PostFolder(c *fiber.Ctx) error {
 
@@ -108,4 +104,3 @@ func PostFolder(c *fiber.Ctx) error {
 		"code": 200,
 	}, "application/json")
 }
-

@@ -1,6 +1,3 @@
-
-
-
 package api
 
 import (
@@ -10,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	_ "fmt"
+	"html/template"
 	_ "io"
 	_ "log"
 	"net/url"
@@ -20,12 +18,9 @@ import (
 	_ "strconv"
 	"strings"
 	_ "time"
-	"html/template"
 
-	
 	_ "github.com/western/http-here/internal/model"
-    
-    
+
 	"github.com/gofiber/fiber/v2"
 
 	_ "github.com/edwvee/exiffix"
@@ -36,10 +31,6 @@ import (
 	_ "image/png"
 	_ "math"
 )
-
-
-
-
 
 func GetConvert(c *fiber.Ctx) error {
 
@@ -54,8 +45,8 @@ func GetConvert(c *fiber.Ctx) error {
 		LogPrefix(c, "500", "Error homepath detect "+err.Error())
 		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-    		"code": 500,
-    	}, "application/json")
+			"code": 500,
+		}, "application/json")
 	}
 
 	c_path, err := url.QueryUnescape(c.Path())
@@ -64,8 +55,8 @@ func GetConvert(c *fiber.Ctx) error {
 		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-    		"code": 500,
-    	}, "application/json")
+			"code": 500,
+		}, "application/json")
 	}
 
 	c_path = CleanDirtyPath(c_path)
@@ -77,8 +68,8 @@ func GetConvert(c *fiber.Ctx) error {
 		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
 		//return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-    		"code": 404,
-    	}, "application/json")
+			"code": 404,
+		}, "application/json")
 	}
 
 	file_ext := GetExtNorm(c_path)
@@ -96,8 +87,8 @@ func GetConvert(c *fiber.Ctx) error {
 			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
 			//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-        		"code": 500,
-        	}, "application/json")
+				"code": 500,
+			}, "application/json")
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -193,5 +184,3 @@ func GetConvert(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
-

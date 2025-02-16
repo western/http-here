@@ -1,4 +1,3 @@
-
 package app
 
 import (
@@ -19,8 +18,8 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/western/http-here/internal/conf"
 	"github.com/western/http-here/internal/api"
+	"github.com/western/http-here/internal/conf"
 	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"

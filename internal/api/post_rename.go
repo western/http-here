@@ -1,5 +1,3 @@
-
-
 package api
 
 import (
@@ -9,6 +7,7 @@ import (
 	_ "encoding/hex"
 	_ "errors"
 	_ "fmt"
+	_ "html/template"
 	_ "io"
 	_ "log"
 	"net/url"
@@ -19,7 +18,6 @@ import (
 	_ "strconv"
 	_ "strings"
 	_ "time"
-	_ "html/template"
 
 	"github.com/western/http-here/internal/model"
 
@@ -33,8 +31,6 @@ import (
 	_ "image/png"
 	_ "math"
 )
-
-
 
 func PostRename(c *fiber.Ctx) error {
 
@@ -136,4 +132,3 @@ func PostRename(c *fiber.Ctx) error {
 	}, "application/json")
 
 }
-
