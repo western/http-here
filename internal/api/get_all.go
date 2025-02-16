@@ -72,7 +72,8 @@ func GetAll(c *fiber.Ctx) error {
 		if fileInfo.IsDir() {
 
 			if arg_spa == "1" {
-
+                
+                /*
 				LogPrefix(c, "500", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
 				model.EventLogMsg(db, c, "500", "CORE", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
 
@@ -80,6 +81,12 @@ func GetAll(c *fiber.Ctx) error {
 					"code": 500,
 					"msg":  "Error: SPA application, restrict folder read " + c_path,
 				}, "application/json")
+				*/
+				
+				LogPrefix(c, "302", "SPA application, redirect to /#!"+c_path)
+				model.EventLogMsg(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
+				
+				return c.Redirect("/#!"+c_path, 302)
 			}
 
 			// check index.html inside
