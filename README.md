@@ -261,6 +261,11 @@ https://github.com/western/http-here/issues
 - [ ] database, separate branch without?
 - [ ] tests
 
+### 1.11.3
+- [x] run WalkAndTreeBuild only for extend mode
+- [x] change view for default mode
+- [x] fix for mobile upload
+
 ### 1.11.0
 - [x] database support
 - [x] "make new file" button and API
