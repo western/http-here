@@ -2,7 +2,7 @@
 
 
 fmt:
-	go fmt . && go fmt controller/* && go fmt model/* && go fmt conf/*
+	go fmt . && go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/model/*
 
 tidy:
 	go mod tidy
