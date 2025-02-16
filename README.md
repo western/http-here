@@ -25,9 +25,9 @@ In extended mode you can doing more
 go install github.com/western/http-here@latest
 ```
 
-Install v1.11.3
+Install v1.11.4
 ```console
-go install github.com/western/http-here@v1.11.3
+go install github.com/western/http-here@v1.11.4
 ```
 
 Install v1.9.2 (last version without database)
@@ -44,7 +44,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.11.3/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.11.4/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
