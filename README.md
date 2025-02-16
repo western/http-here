@@ -7,13 +7,13 @@ Multiple files upload to current showed folder
 In extended mode you can doing more
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/screen-top6.png?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top6.png?raw=true" />
 </p>
 
 ## Mobile screen
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/screen_mobile4.png?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen_mobile4.png?raw=true" />
 </p>
 
 
@@ -71,14 +71,14 @@ http-here --extend-mode /tmp
 App will change main list view to table. And you can operate with files - delete, move, copy
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/panel_buttons.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/panel_buttons.png?raw=true"  >
 </p>
 
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/width_screen_compare10.png?raw=true"  >
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/width_screen_compare11.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare10.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/width_screen_compare11.png?raw=true"  >
 </p>
 
 > [!IMPORTANT]  
@@ -87,7 +87,7 @@ Below you see display width more than 992 pix (1), less than (2) and mobile wind
 ## Preview doc button
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/preview_doc_button.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/preview_doc_button.png?raw=true"  >
     
 </p>
 
@@ -144,7 +144,7 @@ You can online edit doc files `html|rtf|doc|docx|odt` as office files.
 Or `html|txt|js|css|md` formats as source code.
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/online_editor_cmp.png?raw=true"  />
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_cmp.png?raw=true"  />
     
 </p>
 
@@ -160,7 +160,7 @@ Office files follow this flow: `file.doc => file.html, edit => file.doc`
 <br>
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/code_to_encrypt5.png?raw=true" width="60%" >
+    <img src="https://github.com/western/http-here/blob/dev/doc/code_to_encrypt5.png?raw=true" width="60%" >
     
 </p>
 
@@ -224,8 +224,8 @@ http-here --tls .
 - Server use self signed certs, generated at first time. Thus you need approve this connection on your clients.
 
 <p float="left">
-  <img src="https://github.com/western/http-here/blob/dev/doc/img/chrome_self_signed_cert.png?raw=true" width="45%" >
-  <img src="https://github.com/western/http-here/blob/dev/doc/img/firefox_self_signed_cert.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-here/blob/dev/doc/chrome_self_signed_cert.png?raw=true" width="45%" >
+  <img src="https://github.com/western/http-here/blob/dev/doc/firefox_self_signed_cert.png?raw=true" width="45%" >
 </p>
 
 ## Magic file index.html inside any folder
@@ -315,7 +315,7 @@ you need libreoffice package
 ## Pirates hiding their http
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/img/pirates_hiding_their_http.jpg?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/pirates_hiding_their_http.jpg?raw=true" />
 </p>
 
 
