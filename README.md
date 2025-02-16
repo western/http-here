@@ -300,15 +300,7 @@ https://github.com/western/http-here/issues
 - [ ] "edit" still planning
 - [ ] "share" still planning
 
-### 1.6.0
-- [x] add file crypt support
 
-need openssl package
-
-### 1.5.7
-- [x] add experimental preview office files
-
-you need libreoffice package 
 
 ### [other history here](HISTORY.md)
 
