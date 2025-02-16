@@ -1,6 +1,16 @@
 
 ## History
 
+### 1.6.0
+- [x] add file crypt support
+
+need openssl package
+
+### 1.5.7
+- [x] add experimental preview office files
+
+you need libreoffice package 
+
 
 ### 1.5.6
 - [x] fix zero size thumbnail file
