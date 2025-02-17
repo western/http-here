@@ -20,10 +20,7 @@ In extended mode you can doing more
 
 
 
-## Install latest from github
-```console
-go install github.com/western/http-here@latest
-```
+## Install from github
 
 Install v1.11.3
 ```console
