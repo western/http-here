@@ -3,12 +3,12 @@ package main
 
 import (
 	
-	"github.com/western/http-here/internal/app"
+	http_here "github.com/western/http-here/internal/http-here"
 )
 
 
 
 func main() {
 
-	app.Core()
+	http_here.Core()
 }

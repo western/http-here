@@ -1,0 +1,149 @@
+
+
+/* index.css */
+
+a.nodecor {
+    text-decoration: none;
+}
+
+/*
+ul.list-group {
+    padding: 0 12px;
+}
+
+li.breadcrumb-item {
+    font-size: 18px;
+
+}
+li.breadcrumb-item i{
+
+    margin-right: 10px;
+}
+
+li.list-group-item{
+    font-size: 18px;
+}
+li.list-group-item i{
+    margin-right: 10px;
+}
+*/
+
+
+
+div.list-group {
+    padding: 0 12px;
+}
+
+div.list-group a {
+    font-size: 16px;
+    overflow: hidden;
+}
+
+div.list-group a i{
+    margin-right: 10px;
+}
+
+div.list-group a.file {
+    background-color: #efefef;
+}
+
+
+
+
+#progress {
+    display: none;
+    width: 95%;
+    margin:0 auto;
+}
+
+.blink_me {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+
+
+.file-table {
+    margin-bottom: 50px;
+}
+
+
+/*
+.table th:nth-child(1) {
+    padding-left: 20px;
+}
+*/
+
+
+/*
+.table>:not(caption)>*>* {
+    padding: .5rem .5rem;
+    color: var(--bs-table-color-state, var(--bs-table-color-type, var(--bs-table-color)));
+    background-color: var(--bs-table-bg);
+    border-bottom-width: var(--bs-border-width);
+    box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+    
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.table_td{
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+*/
+
+
+.table.table-ellipsis tbody td {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.table.table-ellipsis tbody td:hover {
+    text-overflow: clip;
+    white-space: normal;
+    word-break: break-all;
+}
+
+
+
+
+
+
+
+
+
+
+.bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+@media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+    }
+}
+
+
+.input-group-text.font-reset{
+
+    font-size: unset !important;
+
+}
+
