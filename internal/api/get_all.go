@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/conf"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -217,9 +218,9 @@ func GetAll(c *fiber.Ctx) error {
 				"sort_modified": sort_modified,
 				"sort_size":     sort_size,
 
-				"files_count_max":     100,
-				"fieldSize_max":       14 * 1024 * 1024 * 1024,
-				"fieldSize_max_human": "14 Gb",
+				"files_count_max":     conf.Files_count_max,
+				"fieldSize_max":       conf.FieldSize_max,
+				"fieldSize_max_human": conf.FieldSize_max_human,
 
 				"arg_upload_disable":      arg_upload_disable,
 				"arg_folder_make_disable": arg_folder_make_disable,

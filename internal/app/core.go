@@ -426,6 +426,13 @@ func Core() {
 
 		app.Get("/api/search", api.GetSearch)
 	}
+	
+	if *arg_spa && !*arg_extend_mode {
+
+		fmt.Println("")
+		fmt.Println("You can not run --spa without --extend-mode")
+		return
+	}
 
 	if !*arg_index_disable {
 
