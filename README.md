@@ -259,6 +259,12 @@ https://github.com/western/http-here/issues
 - [ ] database, separate branch without?
 - [ ] tests
 
+### 1.11.4
+- [x] redirect if you try open folder during SPA application mode
+- [x] fix refresh doc thumbnails after edit
+- [x] change layouts for errors
+- [x] project code restructuring
+
 ### 1.11.3
 - [x] run WalkAndTreeBuild only for extend mode
 - [x] change view for default mode
