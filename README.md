@@ -258,6 +258,7 @@ https://github.com/western/http-here/issues
 - [ ] problem: how decide to run md5sum inside some folder
 - [ ] database, separate branch without?
 - [ ] tests
+- [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 
 ### 1.11.4
 - [x] redirect if you try open folder during SPA application mode
