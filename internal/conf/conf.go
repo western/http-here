@@ -1,6 +1,6 @@
 package conf
 
-var Version = "v1.11.5"
+var Version = "v1.11.6"
 
 var Files_count_max = 100
 var FieldSize_max = 14 * 1024 * 1024 * 1024
