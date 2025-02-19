@@ -54,7 +54,7 @@ func Core() {
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very careful. It disabled by default.")
-	arg_crypt := flag.Bool("crypt", false, "Enable file crypt support.")
+	arg_crypt := flag.Bool("crypt", false, "Enable encrypt file support.")
 	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
@@ -90,28 +90,28 @@ func Core() {
 			`options:`,
 			``,
 			`     --port                    Port to use [8000]`,
-			`     --tls                     Start HTTPS (need easy-rsa linux package).`,
+			`     --tls                     Start HTTPS (need easy-rsa linux package)`,
 			`     --tls-debug               Start HTTPS with verbosity`,
 			``,
 			``,
-			`     --user                    Login for basic authorization.`,
-			`     --password                Password for basic authorization.`,
+			`     --user                    Login for basic authorization`,
+			`     --password                Password for basic authorization`,
 			``,
-			`     --basic                   Set basic auth and generate several accounts every time.`,
+			`     --basic                   Set basic auth and generate several accounts every time`,
 			``,
 			``,
-			`     --upload-disable          Disable upload API and form controller.`,
-			`     --folder-make-disable     Disable make folder API and form controller.`,
-			`     --index-disable           Disable current folder read.`,
+			`     --upload-disable          Disable upload API and form controller`,
+			`     --folder-make-disable     Disable make folder API and form controller`,
+			`     --index-disable           Disable current folder read`,
 			``,
 			``,
 			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
 			``,
-			`     --prefork                 Enable spawn multiple processes.`,
+			`     --prefork                 Enable spawn multiple processes`,
 			``,
-			`     --crypt                   Enable file crypt support.`,
+			`     --crypt                   Enable encrypt file support`,
 			``,
-			`     --spa                     Enable frontend SPA (Single Page Application).`,
+			`     --spa                     Enable frontend SPA (Single Page Application)`,
 			``,
 			``,
 			`examples:`,
