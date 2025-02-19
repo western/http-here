@@ -8,8 +8,8 @@ tidy:
 	go mod tidy
 
 run:
-	go run cmd/app/main.go
+	go run cmd/http-here/main.go
 
 build:
-	go build -o http-here cmd/app/main.go
+	go build -o http-here cmd/http-here/main.go
 
