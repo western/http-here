@@ -1,10 +1,12 @@
 # http-here
 
-Share folder via http with upload
+Simple zero-configuration command line http server with lightweight interface to work with files
 
-Multiple files upload to current showed folder
+> Share folder via http with upload
 
-In extended mode you can doing more
+> Multiple files upload to current showed folder
+
+> In extended mode you can doing more
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/screen-top6.png?raw=true" />
