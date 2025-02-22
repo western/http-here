@@ -72,9 +72,12 @@ func Core() {
 	}
 	//defer db.Close()
 
-	model.EventLogAdd(db, "INIT", "run")
+	if !fiber.IsChild() {
 
-	go model.FileChkAsync(db)
+		model.EventLogAdd(db, "INIT", "run")
+
+		go model.FileChkAsync(db)
+	}
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
@@ -426,7 +429,7 @@ func Core() {
 
 		app.Get("/api/search", api.GetSearch)
 	}
-	
+
 	if *arg_spa && !*arg_extend_mode {
 
 		fmt.Println("")

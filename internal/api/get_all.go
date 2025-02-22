@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/conf"
+	"github.com/western/http-here/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -36,6 +36,12 @@ func GetAll(c *fiber.Ctx) error {
 	if c.Locals("arg_folder_make_disable") != nil {
 		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
 	}
+
+	// for interface button hide
+	/*
+		if arg_upload_disable == "1" {
+		    arg_folder_make_disable = "1"
+		}*/
 
 	arg_extend_mode := ""
 	if c.Locals("arg_extend_mode") != nil {
@@ -73,20 +79,20 @@ func GetAll(c *fiber.Ctx) error {
 		if fileInfo.IsDir() {
 
 			if arg_spa == "1" {
-                
-                /*
-				LogPrefix(c, "500", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
-				model.EventLogMsg(db, c, "500", "CORE", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
 
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"msg":  "Error: SPA application, restrict folder read " + c_path,
-				}, "application/json")
+				/*
+					LogPrefix(c, "500", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
+					model.EventLogMsg(db, c, "500", "CORE", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
+
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"code": 500,
+						"msg":  "Error: SPA application, restrict folder read " + c_path,
+					}, "application/json")
 				*/
-				
+
 				LogPrefix(c, "302", "SPA application, redirect to /#!"+c_path)
 				model.EventLogMsg(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
-				
+
 				return c.Redirect("/#!"+c_path, 302)
 			}
 

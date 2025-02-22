@@ -98,6 +98,9 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 func FileChkAsync(db *gorm.DB) {
 
+	// -----------------------------------------------------------------------------------------------------------------------------
+	// check from db
+
 	var rows []File
 
 	if result := db.Find(&rows); result.Error == nil {
@@ -113,6 +116,65 @@ func FileChkAsync(db *gorm.DB) {
 
 		}
 
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------------
+	// check from folder
+
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("User homepath detect error: ", err)
+		return
+	}
+
+	filepath_thumb := filepath.Join(homepath, ".httphere", "thumb")
+
+	files, err := os.ReadDir(filepath_thumb)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for _, file := range files {
+
+		full_name := filepath.Join(filepath_thumb, file.Name())
+
+		var rows []File
+
+		if result := db.Where("md5 = ?", file.Name()).Find(&rows); result.Error == nil {
+
+			if result.RowsAffected == 0 {
+
+				os.Remove(full_name)
+			}
+		}
+
+	}
+
+}
+
+// remove hash_thumb file if exist
+// physically
+func FileDelMd5Async(db *gorm.DB, FullPath string) {
+
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("User homepath detect error: ", err)
+		return
+	}
+
+	filepath_thumb := filepath.Join(homepath, ".httphere", "thumb")
+
+	var rows []File
+
+	if result := db.Where("full_path = ?", FullPath).Find(&rows); result.Error == nil {
+
+		for _, file := range rows {
+
+			if _, err := os.Stat(filepath.Join(filepath_thumb, file.MD5)); err == nil {
+
+				os.Remove(filepath.Join(filepath_thumb, file.MD5))
+			}
+		}
 	}
 
 }

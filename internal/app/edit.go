@@ -366,7 +366,15 @@ func PostEdit(c *fiber.Ctx) error {
 
 		} else {
 
-			go model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
+			// remove temporary html
+			if _, err := os.Stat(filepath.Join(filepath_tmp, orig_filename+".html")); err == nil {
+
+				os.Remove(filepath.Join(filepath_tmp, orig_filename+".html"))
+			}
+
+			model.FileDelMd5Async(db, filepath.Join(arg_fold, full_path))
+
+			model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
 
 			LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
 			model.EventLogMsg(db, c, "200", "EDIT", "Move "+target_temp_file+" => "+target_file)

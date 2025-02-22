@@ -376,15 +376,20 @@ func GetResize(c *fiber.Ctx) error {
 			read_err_cnt++
 		}
 
-		defer os.Remove( filepath.Join(filepath_tmp, orig_filename+".png") )
-		defer readerFile.Close()
+		//defer readerFile.Close()
 
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
 			panic(err)
 		}
 		output.Close()
-		
+		readerFile.Close()
+
+		if _, err = os.Stat(filepath.Join(filepath_tmp, orig_filename+".png")); err == nil {
+
+			//defer os.Remove( filepath.Join(filepath_tmp, orig_filename+".png") )
+			os.Remove(filepath.Join(filepath_tmp, orig_filename+".png"))
+		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
