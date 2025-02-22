@@ -262,6 +262,7 @@ https://github.com/western/http-here/issues
 - [ ] tests
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
+- [ ] REST restructure
 
 ### 1.11.4
 - [x] redirect if you try open folder during SPA application mode
