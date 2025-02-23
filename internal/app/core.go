@@ -181,7 +181,7 @@ func Core() {
 	if !fiber.IsChild() {
 
 		WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
-		//go controller.WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
+		//go WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
 	/*

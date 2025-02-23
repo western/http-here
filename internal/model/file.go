@@ -120,7 +120,8 @@ func FileChkAsync(db *gorm.DB) {
 
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// check from folder
-
+    
+    /*
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("User homepath detect error: ", err)
@@ -149,6 +150,7 @@ func FileChkAsync(db *gorm.DB) {
 		}
 
 	}
+	*/
 
 }
 
