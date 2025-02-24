@@ -19,11 +19,18 @@ func PostDelete(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostDelete", "Error url parse "+referer+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -47,7 +54,9 @@ func PostDelete(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		util.LogPrefix(c, "500", "form is empty")
+		//util.LogPrefix(c, "500", "form is empty")
+		model.EventLogAdd(db, c, "500", "PostDelete", "form is empty")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -66,14 +75,16 @@ func PostDelete(c *fiber.Ctx) error {
 			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				util.LogPrefix(c, "500", "name is empty")
+				//util.LogPrefix(c, "500", "name is empty")
+				model.EventLogAdd(db, c, "500", "PostDelete", "name is empty")
 				continue
 			}
 
 			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 
 			if err != nil {
-				util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 				continue
 			}
 
@@ -83,11 +94,13 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				util.LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+				//util.LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 			} else {
 
@@ -95,20 +108,17 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				util.LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+				//util.LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 			}
 
 		}
-	}
-
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
 	}
 
 	go model.FileChkAsync(db)

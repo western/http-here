@@ -18,11 +18,18 @@ func PostRename(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostRename", "Error url parse "+referer+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -45,7 +52,9 @@ func PostRename(c *fiber.Ctx) error {
 	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		util.LogPrefix(c, "500", "to is empty")
+		//util.LogPrefix(c, "500", "to is empty")
+		model.EventLogAdd(db, c, "500", "PostRename", "to is empty")
+
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to is empty",
@@ -54,7 +63,9 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err == nil {
-		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' already exists ")
+		//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' already exists ")
+		model.EventLogAdd(db, c, "500", "PostRename", "'"+filepath.Join(arg_fold, to)+"' already exists ")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, to) + "' already exists",
@@ -65,7 +76,9 @@ func PostRename(c *fiber.Ctx) error {
 	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		util.LogPrefix(c, "500", "name is empty")
+		//util.LogPrefix(c, "500", "name is empty")
+		model.EventLogAdd(db, c, "500", "PostRename", "name is empty")
+
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
@@ -74,7 +87,9 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, u_path, name))
 	if err != nil {
-		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
+		//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostRename", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, u_path, name) + "' not exists",
@@ -88,7 +103,9 @@ func PostRename(c *fiber.Ctx) error {
 
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Rename error "+err.Error())
+		//util.LogPrefix(c, "500", "Rename error "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostRename", "Rename error "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Rename error",
@@ -96,12 +113,8 @@ func PostRename(c *fiber.Ctx) error {
 
 	} else {
 
-		util.LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
-	}
-
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
+		//util.LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
+		model.EventLogAdd(db, c, "200", "PostRename", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
 
 	go model.FileChkAsync(db)

@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,16 +18,20 @@ import (
 
 func GetConvert(c *fiber.Ctx) error {
 
-	//fmt.Println("GetEditDoc run")
-
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
+
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error homepath detect "+err.Error())
-		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		//util.LogPrefix(c, "500", "Error homepath detect "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetConvert", "Error homepath detect "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 		}, "application/json")
@@ -36,8 +40,9 @@ func GetConvert(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetConvert", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 		}, "application/json")
@@ -49,8 +54,9 @@ func GetConvert(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
 
-		util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		//return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
+		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetConvert", filepath.Join(arg_fold, c_path))
+
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
 		}, "application/json")
@@ -68,8 +74,9 @@ func GetConvert(c *fiber.Ctx) error {
 		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 		if err != nil {
 
-			util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-			//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 			}, "application/json")
@@ -95,23 +102,17 @@ func GetConvert(c *fiber.Ctx) error {
 		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
-			util.LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
+			//util.LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
+
 			panic(err)
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		util.LogPrefix(c, "200", "Convert file to html "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Convert file to html "+filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+filepath.Join(arg_fold, c_path))
 
-		/*
-			return c.Render("view/edit_doc", fiber.Map{
-				"file_name": orig_filename + "." + file_ext,
-				"full_path": c_path,
-
-				//"file_data": string(b),
-				"file_data": template.HTML(string(b)),
-			}, "view/layout/default")
-		*/
 		return c.JSON(fiber.Map{
 			"code":      200,
 			"file_data": template.HTML(string(b)),
@@ -135,23 +136,17 @@ func GetConvert(c *fiber.Ctx) error {
 		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
 
-			util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
+			//util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetConvert", "Error open temp source file: "+err.Error())
+
 			panic(err)
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		util.LogPrefix(c, "200", "Convert for edit "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Convert for edit "+filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetConvert", "Convert for edit "+filepath.Join(arg_fold, c_path))
 
-		/*
-			return c.Render("view/edit_code", fiber.Map{
-				"file_name": orig_filename + "." + file_ext,
-				"full_path": c_path,
-
-				//"file_data": string(b),
-				"file_data": template.HTML(string(b)),
-			}, "view/layout")
-		*/
 		return c.JSON(fiber.Map{
 			"code":      200,
 			"file_data": template.HTML(string(b)),
@@ -159,9 +154,9 @@ func GetConvert(c *fiber.Ctx) error {
 
 	}
 
-	util.LogPrefix(c, "500", "Error: format of file is not for edit")
+	//util.LogPrefix(c, "500", "Error: format of file is not for edit")
+	model.EventLogAdd(db, c, "500", "GetConvert", "Error: format of file is not for edit")
 
-	//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,
 		"msg":  "Error: format of file is not for edit",

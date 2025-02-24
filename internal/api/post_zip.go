@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,19 +21,29 @@ func PostZip(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	homepath, err2 := os.UserHomeDir()
-	if err2 != nil {
-		fmt.Println(err2)
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+		//fmt.Println(err2)
+		model.EventLogAdd(db, c, "500", "PostZip", "home detect error: "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error homedir detect",
 		}, "application/json")
 	}
 
-	if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
+	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err != nil {
 
-		if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
-			fmt.Println(err4)
+		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
+
+			//fmt.Println(err4)
+			model.EventLogAdd(db, c, "500", "PostZip", "mkdirall error: "+err.Error())
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error temp folder create",
@@ -47,7 +57,9 @@ func PostZip(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostZip", "Error url parse "+referer+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -71,7 +83,9 @@ func PostZip(c *fiber.Ctx) error {
 	archive, err := os.Create(filepath.Join(homepath, ".httphere", "temp", archive_name))
 
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		model.EventLogAdd(db, c, "500", "PostZip", "create error: "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Create file archive error",
@@ -86,7 +100,9 @@ func PostZip(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		util.LogPrefix(c, "500", "form is empty")
+		//util.LogPrefix(c, "500", "form is empty")
+		model.EventLogAdd(db, c, "500", "PostZip", "form is empty")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -100,20 +116,23 @@ func PostZip(c *fiber.Ctx) error {
 		name = util.CleanDirtyPath(name)
 
 		if len(name) == 0 {
-			util.LogPrefix(c, "500", "name is empty")
+			//util.LogPrefix(c, "500", "name is empty")
+			model.EventLogAdd(db, c, "500", "PostZip", "name is empty")
 			continue
 		}
 
 		fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 		if err != nil {
-			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
@@ -149,7 +168,8 @@ func PostZip(c *fiber.Ctx) error {
 	//return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
 	//return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
 
-	util.LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
+	//util.LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
+	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
 
 	return c.JSON(fiber.Map{
 		"code": 200,

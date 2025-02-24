@@ -86,15 +86,6 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 		fmt.Println(pref)
 	}
 
-	//fmt.Println(reflect.TypeOf(*db))
-	/*
-		if db == nil {
-		    fmt.Println("db == nil")
-		}else{
-		    fmt.Println("db != nil")
-		}
-	*/
-
 	if db != nil {
 
 		el := &EventLog{

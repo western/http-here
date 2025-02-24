@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	_ "github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,7 +21,8 @@ func GetSearch(c *fiber.Ctx) error {
 
 	result_list := model.FileSearchResult(db, arg_fold, s)
 
-	util.LogPrefix(c, "200", "Get search '"+s+"'")
+	//util.LogPrefix(c, "200", "Get search '"+s+"'")
+	model.EventLogAdd(db, c, "200", "GetSearch", "Get search '"+s+"'")
 
 	return c.Render("view/search", fiber.Map{
 

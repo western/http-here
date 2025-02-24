@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,11 +20,18 @@ func PostFolder(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFolder", "Error url parse "+referer+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -52,7 +59,9 @@ func PostFolder(c *fiber.Ctx) error {
 	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		util.LogPrefix(c, "500", "name is empty")
+		//util.LogPrefix(c, "500", "name is empty")
+		model.EventLogAdd(db, c, "500", "PostFolder", "name is empty")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
@@ -62,7 +71,9 @@ func PostFolder(c *fiber.Ctx) error {
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
 
 		if fileInfo.IsDir() {
-			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+			model.EventLogAdd(db, c, "500", "PostFolder", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  filepath.Join(u_path, name) + " already exists",
@@ -72,14 +83,17 @@ func PostFolder(c *fiber.Ctx) error {
 
 	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
 
-		util.LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error mkdir " + filepath.Join(arg_fold, u_path, name),
 		}, "application/json")
 	}
 
-	util.LogPrefix(c, "200", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
+	//util.LogPrefix(c, "200", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
+	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

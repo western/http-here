@@ -17,13 +17,20 @@ func PostCopy(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	referer := c.Get("Referer")
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostCopy", "Error url parse "+referer+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
@@ -43,7 +50,9 @@ func PostCopy(c *fiber.Ctx) error {
 	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		util.LogPrefix(c, "500", "to is empty")
+		//util.LogPrefix(c, "500", "to is empty")
+		model.EventLogAdd(db, c, "500", "PostCopy", "to is empty")
+
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to is empty",
@@ -52,7 +61,9 @@ func PostCopy(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err != nil {
-		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
+		//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostCopy", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, to) + "' not exists",
@@ -64,7 +75,9 @@ func PostCopy(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		util.LogPrefix(c, "500", "form is empty")
+		//util.LogPrefix(c, "500", "form is empty")
+		model.EventLogAdd(db, c, "500", "PostCopy", "form is empty")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -83,7 +96,8 @@ func PostCopy(c *fiber.Ctx) error {
 			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				util.LogPrefix(c, "500", "name is empty")
+				//util.LogPrefix(c, "500", "name is empty")
+				model.EventLogAdd(db, c, "500", "PostCopy", "name is empty")
 				continue
 			}
 
@@ -96,18 +110,21 @@ func PostCopy(c *fiber.Ctx) error {
 
 			src_stat, err := os.Stat(src_file_path)
 			if err != nil {
-				util.LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
+				//util.LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
+				model.EventLogAdd(db, c, "500", "PostCopy", "Source '"+src_file_path+"' not exists")
 				continue
 			}
 
 			_, err = os.Stat(target_file_path)
 			if err == nil {
 
-				util.LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
+				//util.LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
+				model.EventLogAdd(db, c, "200", "PostCopy", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
 				if err := os.RemoveAll(target_file_path); err != nil {
 
-					util.LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostCopy", "'"+target_file_path+"' err "+err.Error())
 					continue
 				}
 			}
@@ -116,29 +133,28 @@ func PostCopy(c *fiber.Ctx) error {
 				err := util.CopyDir(src_file_path, target_file_path)
 
 				if err != nil {
-					util.LogPrefix(c, "500", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostCopy", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 					continue
 				}
 
-				util.LogPrefix(c, "200", "Copy dir '"+src_file_path+"' to "+target_file_path)
+				//util.LogPrefix(c, "200", "Copy dir '"+src_file_path+"' to "+target_file_path)
+				model.EventLogAdd(db, c, "200", "PostCopy", "Copy dir '"+src_file_path+"' to "+target_file_path)
 
 			} else {
 				err := util.CopyFile(src_file_path, target_file_path)
 
 				if err != nil {
-					util.LogPrefix(c, "500", "CopyFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "CopyFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostCopy", "CopyFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 					continue
 				}
 
-				util.LogPrefix(c, "200", "Copy file '"+src_file_path+"' to "+target_file_path)
+				//util.LogPrefix(c, "200", "Copy file '"+src_file_path+"' to "+target_file_path)
+				model.EventLogAdd(db, c, "200", "PostCopy", "Copy file '"+src_file_path+"' to "+target_file_path)
 			}
 
 		}
-	}
-
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
 	}
 
 	go model.FileChkAsync(db)

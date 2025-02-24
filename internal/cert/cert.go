@@ -109,7 +109,6 @@ func encodePem(pemBuf *bytes.Buffer, certBytes []byte) error {
 }
 
 func createPemFile(certPath, certName string, b []byte) (*string, error) {
-	
 
 	path := filepath.Join(certPath, certName+".pem")
 
@@ -160,7 +159,6 @@ func readPemForKey(key interface{}) (*pem.Block, error) {
 }
 
 func createKeyFile(certPath, certName string, b []byte) (*string, error) {
-	
 
 	path := filepath.Join(certPath, certName+".key")
 

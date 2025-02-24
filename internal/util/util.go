@@ -14,13 +14,13 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"strconv"
+	_ "strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
-	"github.com/gofiber/fiber/v2"
+	_ "github.com/fatih/color"
+	_ "github.com/gofiber/fiber/v2"
 
 	"crypto/md5"
 	_ "encoding/hex"
@@ -52,6 +52,7 @@ func CleanDirtyPath(p string) string {
 	return p
 }
 
+/*
 func LogPrefix(c *fiber.Ctx, status, msg string) {
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
@@ -96,6 +97,7 @@ func LogPrefix(c *fiber.Ctx, status, msg string) {
 
 	fmt.Println(pref)
 }
+*/
 
 // get ext and normalize
 func GetExtNorm(path string) string {
@@ -583,10 +585,6 @@ func CryptFile(path, pass string) (bool, error) {
 		return false, errors.New("Pass is empty")
 	}
 
-	//panic("yyy")
-
-	//fmt.Println( filepath.Dir(path) )
-	//fmt.Println( filepath.Base(path) )
 	from_file := filepath.Base(path)
 	to_file := filepath.Base(path) + ".cr"
 
@@ -636,8 +634,6 @@ func DecryptFile(path, pass string) (bool, error) {
 		return false, errors.New("Pass is empty")
 	}
 
-	//fmt.Println( filepath.Dir(path) )
-	//fmt.Println( filepath.Base(path) )
 	from_file := filepath.Base(path)
 	to_file := filepath.Base(path)
 	to_file = strings.Replace(to_file, ".cr", "", 1)

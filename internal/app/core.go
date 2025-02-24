@@ -58,16 +58,12 @@ func Core() {
 	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
-	
-	
 
 	flag.Parse()
 
 	if *arg_tls_debug {
 		*arg_tls = *arg_tls_debug
 	}
-	
-	
 
 	db, err := model.ConnectToSQLite()
 	if err != nil {
@@ -77,7 +73,6 @@ func Core() {
 	if !fiber.IsChild() {
 
 		model.EventLogAdd(db, nil, "", "INIT", "run")
-		
 
 		go model.FileChkAsync(db)
 	}
@@ -194,13 +189,7 @@ func Core() {
 		//go WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
-	
-	
-
-	
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
-
-	
 
 	config := fiber.Config{
 		Prefork:               *arg_prefork,
@@ -376,17 +365,16 @@ func Core() {
 
 			//util.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
 			model.EventLogAdd(db, c, "500", "__temp", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
-			
+
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		c_path = util.CleanDirtyPath(c_path)
-		
 
 		_, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
 
 		if err != nil {
-			
+
 			//util.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
 			model.EventLogAdd(db, c, "404", "__temp", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
 
