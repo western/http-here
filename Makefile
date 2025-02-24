@@ -2,7 +2,7 @@
 
 
 fmt:
-	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/model/*
+	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/cert/* && go fmt internal/model/* && go fmt internal/util/*
 
 tidy:
 	go mod tidy
