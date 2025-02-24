@@ -11,6 +11,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	
+	
+	
+	
 
 	_ "github.com/fatih/color"
 	_ "github.com/gofiber/fiber/v2"
@@ -110,7 +114,7 @@ func FileChkAsync(db *gorm.DB) {
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// chk from db
 
-	//model.EventLogAdd(db, "200", "FileChkAsync", "start")
+	//EventLogAdd(db, nil, "", "FileChkAsync", "start")
 
 	var rows []File
 
@@ -132,7 +136,7 @@ func FileChkAsync(db *gorm.DB) {
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// chk from folder
 
-	//model.EventLogAdd(db, "200", "FileChkAsync", "check from folder")
+	//EventLogAdd(db, nil, "", "FileChkAsync", "check from folder")
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -163,7 +167,8 @@ func FileChkAsync(db *gorm.DB) {
 
 	}
 
-	//model.EventLogAdd(db, "200", "FileChkAsync", "check end")
+	
+	//EventLogAdd(db, nil, "", "FileChkAsync", "check end")
 
 }
 

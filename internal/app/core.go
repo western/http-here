@@ -84,7 +84,7 @@ func Core() {
 
 		inf := []string{
 			``,
-			conf.Version,
+			green_clr( conf.Version ),
 			``,
 			`Simple zero-configuration command line http server with lightweight interface to work with files`,
 			``,
