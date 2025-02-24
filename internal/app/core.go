@@ -196,7 +196,7 @@ func Core() {
 		DisableStartupMessage: true,
 		ServerHeader:          "",
 		Views:                 engine,
-		BodyLimit:             14 * 1024 * 1024 * 1024,
+		BodyLimit:             conf.FieldSize_max,
 	}
 
 	app := fiber.New(config)
