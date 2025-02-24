@@ -86,7 +86,9 @@ func GetEditDoc(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
-			panic(err)
+			//panic(err)
+			
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -158,7 +160,9 @@ func GetEditCode(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error open temp source file: "+err.Error())
-			panic(err)
+			//panic(err)
+			
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
