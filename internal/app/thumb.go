@@ -376,18 +376,22 @@ func GetResize(c *fiber.Ctx) error {
 			read_err_cnt++
 		}
 
-		//defer readerFile.Close()
-
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
-			panic(err)
+
+			LogPrefix(c, "500", "Error copy after libreoffice convert: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error copy",
+			}, "application/json")
+
 		}
 		output.Close()
 		readerFile.Close()
 
 		if _, err = os.Stat(filepath.Join(filepath_tmp, orig_filename+".png")); err == nil {
 
-			//defer os.Remove( filepath.Join(filepath_tmp, orig_filename+".png") )
 			os.Remove(filepath.Join(filepath_tmp, orig_filename+".png"))
 		}
 

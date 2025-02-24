@@ -20,8 +20,6 @@ import (
 
 func GetEditDoc(c *fiber.Ctx) error {
 
-	//fmt.Println("GetEditDoc run")
-
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
@@ -86,8 +84,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
-			//panic(err)
-			
+
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
@@ -99,7 +96,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 			"file_name": orig_filename + "." + file_ext,
 			"full_path": c_path,
 
-			//"file_data": string(b),
 			"file_data": template.HTML(string(b)),
 		}, "view/layout/default")
 
@@ -160,8 +156,7 @@ func GetEditCode(c *fiber.Ctx) error {
 		if err != nil {
 
 			LogPrefix(c, "500", "Error open temp source file: "+err.Error())
-			//panic(err)
-			
+
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
@@ -173,7 +168,6 @@ func GetEditCode(c *fiber.Ctx) error {
 			"file_name": orig_filename + "." + file_ext,
 			"full_path": c_path,
 
-			//"file_data": string(b),
 			"file_data": template.HTML(string(b)),
 		}, "view/layout/default")
 
@@ -200,7 +194,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 		LogPrefix(c, "500", "Error homepath detect "+err.Error())
 		model.EventLogMsg(db, c, "500", "EDIT", "Error homepath detect "+err.Error())
-		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 		}, "application/json")
