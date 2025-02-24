@@ -2,34 +2,18 @@ package api
 
 import (
 	"archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
 	"fmt"
-	_ "html/template"
 	"io"
-	_ "log"
 	"net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
-	_ "regexp"
-	_ "strconv"
 	"strings"
 	"time"
 
 	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func PostZip(c *fiber.Ctx) error {
@@ -63,19 +47,19 @@ func PostZip(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
 	}
 
-	u_path := CleanDirtyPath(u.Path)
+	u_path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
-	form_path = CleanDirtyPath(form_path)
+	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
 		u_path = form_path
 	}
@@ -102,7 +86,7 @@ func PostZip(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		LogPrefix(c, "500", "form is empty")
+		util.LogPrefix(c, "500", "form is empty")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -113,23 +97,23 @@ func PostZip(c *fiber.Ctx) error {
 
 		name := strings.ReplaceAll(val, "/", "")
 
-		name = CleanDirtyPath(name)
+		name = util.CleanDirtyPath(name)
 
 		if len(name) == 0 {
-			LogPrefix(c, "500", "name is empty")
+			util.LogPrefix(c, "500", "name is empty")
 			continue
 		}
 
 		fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 		if err != nil {
-			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
@@ -165,11 +149,68 @@ func PostZip(c *fiber.Ctx) error {
 	//return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
 	//return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
 
-	LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
+	util.LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
 		"file": filepath.Join("/__temp/", archive_name),
 	}, "application/json")
 
+}
+
+func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
+	// Open the Directory
+	//files, err := ioutil.ReadDir(basePath)
+	files, err := os.ReadDir(basePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for _, file := range files {
+		//fmt.Println(  filepath.Join(basePath, file.Name())   )
+		if !file.IsDir() {
+			//dat, err := ioutil.ReadFile(basePath + file.Name())
+			dat, err := os.ReadFile(filepath.Join(basePath, file.Name()))
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			fileInfo, err := os.Stat(filepath.Join(basePath, file.Name()))
+			if err != nil {
+				fmt.Println(err)
+				//LogPrefix(c, "500", "'"+filepath.Join(basePath, file.Name())+"' not exists")
+				//continue
+			}
+
+			header, err := zip.FileInfoHeader(fileInfo)
+			if err != nil {
+				fmt.Println(err)
+				//LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+				//continue
+			}
+			header.Method = zip.Store
+			header.Name = filepath.Join(baseInZip, file.Name())
+
+			// Add some files to the archive.
+			//f, err := w.Create(filepath.Join(baseInZip, file.Name()))
+			f, err := w.CreateHeader(header)
+			if err != nil {
+				fmt.Println(err)
+			}
+			_, err = f.Write(dat)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else if file.IsDir() {
+
+			// Recurse
+			//newBase := basePath + file.Name() + "/"
+			newBase := filepath.Join(basePath, file.Name()) + "/"
+			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
+			//fmt.Println("Recursing and Adding SubDir: " + newBase)
+
+			//addFiles(w, newBase, baseInZip+file.Name()+"/")
+			addFilesToZip(w, newBase, filepath.Join(baseInZip, file.Name())+"/")
+		}
+	}
 }

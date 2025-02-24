@@ -1,35 +1,16 @@
 package api
 
 import (
-	_ "archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
-	_ "fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
 	"net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
 	"regexp"
-	_ "strconv"
 	"strings"
-	_ "time"
 
 	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func PostFile(c *fiber.Ctx) error {
@@ -43,19 +24,19 @@ func PostFile(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
 	}
 
-	u_path := CleanDirtyPath(u.Path)
+	u_path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
-	form_path = CleanDirtyPath(form_path)
+	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
 		u_path = form_path
 	}
@@ -68,10 +49,10 @@ func PostFile(c *fiber.Ctx) error {
 	re := regexp.MustCompile("\\s+")
 	name = re.ReplaceAllLiteralString(name, " ")
 
-	name = CleanDirtyPath(name)
+	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		LogPrefix(c, "500", "name is empty")
+		util.LogPrefix(c, "500", "name is empty")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
@@ -81,7 +62,7 @@ func PostFile(c *fiber.Ctx) error {
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
 
 		if fileInfo.IsDir() {
-			LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+			util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  filepath.Join(u_path, name) + " already exists",
@@ -92,7 +73,7 @@ func PostFile(c *fiber.Ctx) error {
 	myfile, err := os.Create(filepath.Join(arg_fold, u_path, name))
 	if err != nil {
 
-		LogPrefix(c, "500", "Error file create "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+		util.LogPrefix(c, "500", "Error file create "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error file create " + filepath.Join(arg_fold, u_path, name),
@@ -101,7 +82,7 @@ func PostFile(c *fiber.Ctx) error {
 	myfile.WriteString("\n")
 	myfile.Close()
 
-	LogPrefix(c, "200", "Create file '"+filepath.Join(arg_fold, u_path, name)+"'")
+	util.LogPrefix(c, "200", "Create file '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

@@ -3,14 +3,11 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	_ "fmt"
 	"html/template"
 	"io"
-	_ "log"
 	"net/url"
 	"os"
 	"path/filepath"
-	_ "reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -18,6 +15,7 @@ import (
 
 	"github.com/western/http-here/internal/conf"
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -36,12 +34,6 @@ func GetAll(c *fiber.Ctx) error {
 	if c.Locals("arg_folder_make_disable") != nil {
 		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
 	}
-
-	// for interface button hide
-	/*
-		if arg_upload_disable == "1" {
-		    arg_folder_make_disable = "1"
-		}*/
 
 	arg_extend_mode := ""
 	if c.Locals("arg_extend_mode") != nil {
@@ -62,17 +54,18 @@ func GetAll(c *fiber.Ctx) error {
 	if err != nil {
 		panic(err)
 	}
-	//defer db.Close()
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	c_path = CleanDirtyPath(c_path)
+	c_path = util.CleanDirtyPath(c_path)
 
 	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
 
@@ -80,18 +73,9 @@ func GetAll(c *fiber.Ctx) error {
 
 			if arg_spa == "1" {
 
-				/*
-					LogPrefix(c, "500", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
-					model.EventLogMsg(db, c, "500", "CORE", "Error: SPA application, restrict folder read "+filepath.Join(arg_fold, c_path))
-
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"code": 500,
-						"msg":  "Error: SPA application, restrict folder read " + c_path,
-					}, "application/json")
-				*/
-
-				LogPrefix(c, "302", "SPA application, redirect to /#!"+c_path)
-				model.EventLogMsg(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
+				//util.LogPrefix(c, "302", "SPA application, redirect to /#!"+c_path)
+				//model.EventLogMsg(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
+				model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
 
 				return c.Redirect("/#!"+c_path, 302)
 			}
@@ -99,13 +83,16 @@ func GetAll(c *fiber.Ctx) error {
 			// check index.html inside
 			if _, err := os.Stat(filepath.Join(arg_fold, c_path, "index.html")); err == nil {
 
-				LogPrefix(c, "200", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
-				model.EventLogMsg(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+				//util.LogPrefix(c, "200", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+				//model.EventLogMsg(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+				model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
+
 				return c.SendFile(filepath.Join(arg_fold, c_path, "index.html"), false)
 			}
 
-			LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
-			model.EventLogMsg(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
+			//util.LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
+			//model.EventLogMsg(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
+			model.EventLogAdd(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
 
 			breadcrumb := ""
 
@@ -122,8 +109,10 @@ func GetAll(c *fiber.Ctx) error {
 			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
 			if err != nil {
 
-				LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-				model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+				//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+				//model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 
@@ -199,7 +188,7 @@ func GetAll(c *fiber.Ctx) error {
 			var folderTree_js []byte
 
 			if arg_extend_mode == "1" {
-				folderTree := WalkAndTreeBuild(arg_fold, "/", 1)
+				folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
 
 				folderTree_js, err = json.Marshal(folderTree)
 				if err != nil {
@@ -266,16 +255,19 @@ func GetAll(c *fiber.Ctx) error {
 				}
 				f.Close()
 
-				isOk, err := DecryptFile(f.Name(), code)
+				isOk, err := util.DecryptFile(f.Name(), code)
 				if !isOk {
 
-					LogPrefix(c, "500", "Error DecryptFile "+err.Error())
-					model.EventLogMsg(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
+					//util.LogPrefix(c, "500", "Error DecryptFile "+err.Error())
+					//model.EventLogMsg(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
+					model.EventLogAdd(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
+
 					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 				}
 
-				LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
-				model.EventLogMsg(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				//util.LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				//model.EventLogMsg(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
 
 				fname := filepath.Base(c_path)
 				fname = strings.Replace(fname, ".crypt", "", 1)
@@ -285,8 +277,9 @@ func GetAll(c *fiber.Ctx) error {
 
 			} else {
 
-				LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
-				model.EventLogMsg(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
+				//util.LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
+				//model.EventLogMsg(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
 
 				return c.SendFile(filepath.Join(arg_fold, c_path), false)
 			}
@@ -295,8 +288,9 @@ func GetAll(c *fiber.Ctx) error {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		model.EventLogMsg(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		//model.EventLogMsg(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -354,7 +348,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 			modtime_human := modtime.Format("2006-01-02 15:04:05")
 
 			size := fileInfo2.Size()
-			size_human := PrettyByteSize(size)
+			size_human := util.PrettyByteSize(size)
 
 			if fileInfo2.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
@@ -373,7 +367,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					IsPreviewDoc: false,
 					IsEditDoc:    false,
 					IsEditCode:   false,
-					Rndm:         RandStringRunes(2),
+					Rndm:         util.RandStringRunes(2),
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
@@ -392,7 +386,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
 					IsEditCode:   is_edit_code,
-					Rndm:         RandStringRunes(2),
+					Rndm:         util.RandStringRunes(2),
 				})
 
 				//fmt.Println("model.FileAddAsync",filepath.Join(arg_fold, c_path, e.Name()))

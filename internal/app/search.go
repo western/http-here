@@ -1,22 +1,8 @@
 package app
 
 import (
-	_ "encoding/json"
-	_ "errors"
-	_ "fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
-	_ "net/url"
-	_ "os"
-	_ "path/filepath"
-	_ "reflect"
-	_ "regexp"
-	_ "sort"
-	_ "strings"
-	_ "time"
-
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -35,8 +21,7 @@ func GetSearch(c *fiber.Ctx) error {
 
 	result_list := model.FileSearchResult(db, arg_fold, s)
 
-	//fmt.Println("result_list=", result_list[0])
-	LogPrefix(c, "200", "Get search '"+s+"'")
+	util.LogPrefix(c, "200", "Get search '"+s+"'")
 
 	return c.Render("view/search", fiber.Map{
 

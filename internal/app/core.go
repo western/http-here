@@ -5,13 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	_ "html/template"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -19,8 +17,10 @@ import (
 	"github.com/fatih/color"
 
 	"github.com/western/http-here/internal/api"
+	"github.com/western/http-here/internal/cert"
 	"github.com/western/http-here/internal/conf"
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
@@ -58,23 +58,26 @@ func Core() {
 	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
-	//arg_prepare_thumbnails := flag.Bool("prepare-thumbnails", false, "Run and make thumbnails for target folders.")
+	
+	
 
 	flag.Parse()
 
 	if *arg_tls_debug {
 		*arg_tls = *arg_tls_debug
 	}
+	
+	
 
 	db, err := model.ConnectToSQLite()
 	if err != nil {
 		panic(err)
 	}
-	//defer db.Close()
 
 	if !fiber.IsChild() {
 
-		model.EventLogAdd(db, "INIT", "run")
+		model.EventLogAdd(db, nil, "", "INIT", "run")
+		
 
 		go model.FileChkAsync(db)
 	}
@@ -128,7 +131,7 @@ func Core() {
 			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
 			``,
 			`     Powerful`,
-			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+RandStringRunes(2)) + ` --password ` + white_clr(RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
+			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
 		}
 
@@ -170,40 +173,34 @@ func Core() {
 	}
 
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
+		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
 
-		if err2 := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err2 != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 
-			fmt.Println(err2)
+	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "tls")); os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "tls"), os.ModePerm); err != nil {
+
+			fmt.Println(err)
 			return
 		}
 	}
 
 	if !fiber.IsChild() {
 
-		WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
+		util.WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
 		//go WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
 	}
 
-	/*
-		if *arg_prepare_thumbnails && !fiber.IsChild() {
+	
+	
 
-			fmt.Println()
-			fmt.Println("  Run and make thumbnails for target folders")
-
-			go controller.WalkAndMakeThumbnail(arg_fold, 0)
-		}
-	*/
-
-	//engine := html.New("./view", ".html")
+	
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
-	/*
-			engine.AddFunc(
-		        "unescape", func(s string) template.HTML {
-		            return template.HTML(s)
-		        },
-		    )
-	*/
+	
 
 	config := fiber.Config{
 		Prefork:               *arg_prefork,
@@ -279,8 +276,8 @@ func Core() {
 
 		for i := range 10 {
 
-			login := "login" + strconv.Itoa(i) + RandStringRunes(2)
-			password := RandStringRunes(16)
+			login := "login" + strconv.Itoa(i) + util.RandStringRunes(2)
+			password := util.RandStringRunes(16)
 
 			password_list[login] = password
 
@@ -293,7 +290,8 @@ func Core() {
 
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				//util.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				model.EventLogAdd(db, c, "401", "basicauth", filepath.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -315,7 +313,8 @@ func Core() {
 			},
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				//util.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
+				model.EventLogAdd(db, c, "401", "basicauth", filepath.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -375,17 +374,21 @@ func Core() {
 		c_path = strings.TrimLeft(c_path, "/__temp")
 		if err != nil {
 
-			LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			//util.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			model.EventLogAdd(db, c, "500", "__temp", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		c_path = CleanDirtyPath(c_path)
-		//fmt.Println("c_path=" + c_path)
+		c_path = util.CleanDirtyPath(c_path)
+		
 
 		_, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
 
 		if err != nil {
-			LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			
+			//util.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			model.EventLogAdd(db, c, "404", "__temp", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
 
 			return c.JSON(fiber.Map{
 				"code": 404,
@@ -394,7 +397,8 @@ func Core() {
 
 		}
 
-		LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
+		//util.LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
+		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
 
 		return c.SendFile(filepath.Join(homepath, ".httphere", "temp", c_path))
 	})
@@ -451,16 +455,17 @@ func Core() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
+		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
+		model.EventLogAdd(db, c, "404", "last_handle", filepath.Join(arg_fold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
 
-	// /home/andrew/.httphere/easyrsa/pki/issued/server1.crt
-	// /home/andrew/.httphere/easyrsa/pki/private/server1.key
+	//crt_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
+	//key_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
 
-	crt_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
-	key_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
+	crt_filename := filepath.Join(homepath, ".httphere", "tls", "server.pem")
+	key_filename := filepath.Join(homepath, ".httphere", "tls", "server.key")
 
 	crt_is_exists := false
 
@@ -478,75 +483,7 @@ func Core() {
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		_, err1 := exec.Command("bash", "-c", "easyrsa  ").Output()
-		if err1 != nil {
-
-			fmt.Println("easyrsa error: " + err1.Error())
-			return
-		}
-
-		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
-
-			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
-				fmt.Println(err4)
-				return
-			}
-		}
-
-		_, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
-		if err5 != nil {
-			fmt.Println(err5)
-			return
-		}
-
-		cmd := exec.Command("bash", "-c", "easyrsa init-pki")
-		cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-		out3, _ := cmd.Output()
-
-		if *arg_tls_debug {
-			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
-			fmt.Printf(" %s\n", out3)
-		}
-
-		var_data := `
-set_var EASYRSA_DN "cn_only"
-set_var EASYRSA_KEY_SIZE 2048
-set_var EASYRSA_REQ_CN   "ca@desec.example.com"
-set_var EASYRSA_BATCH    "yes"
-set_var EASYRSA_CA_EXPIRE 3650
-set_var EASYRSA_CERT_EXPIRE 3650
-        `
-
-		f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
-		if err7 != nil {
-			fmt.Println(err7)
-			return
-		}
-		defer f.Close()
-
-		f.WriteString(var_data)
-		f.Close()
-
-		cmd2 := exec.Command("bash", "-c", "easyrsa build-ca nopass")
-		cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-		out4, _ := cmd2.Output()
-
-		if *arg_tls_debug {
-			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
-			fmt.Printf(" %s\n", out4)
-		}
-
-		cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
-		cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
-		out5, _ := cmd3.Output()
-
-		if *arg_tls_debug {
-			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
-			fmt.Printf(" %s\n", out5)
-
-			fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
-			fmt.Println("")
-		}
+		cert.Run(filepath.Join(homepath, ".httphere", "tls"), "server")
 
 		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")
@@ -554,6 +491,87 @@ set_var EASYRSA_CERT_EXPIRE 3650
 		fmt.Println("  Key: " + yellow_clr(key_filename))
 		fmt.Println("")
 	}
+
+	/*
+			if *arg_tls && !crt_is_exists && !fiber.IsChild() {
+
+				_, err1 := exec.Command("bash", "-c", "easyrsa  ").Output()
+				if err1 != nil {
+
+					fmt.Println("easyrsa error: " + err1.Error())
+					return
+				}
+
+				if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
+
+					if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
+						fmt.Println(err4)
+						return
+					}
+				}
+
+				_, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
+				if err5 != nil {
+					fmt.Println(err5)
+					return
+				}
+
+				cmd := exec.Command("bash", "-c", "easyrsa init-pki")
+				cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				out3, _ := cmd.Output()
+
+				if *arg_tls_debug {
+					fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+					fmt.Printf(" %s\n", out3)
+				}
+
+				var_data := `
+		set_var EASYRSA_DN "cn_only"
+		set_var EASYRSA_KEY_SIZE 2048
+		set_var EASYRSA_REQ_CN   "ca@desec.example.com"
+		set_var EASYRSA_BATCH    "yes"
+		set_var EASYRSA_CA_EXPIRE 3650
+		set_var EASYRSA_CERT_EXPIRE 3650
+		        `
+
+				f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+				if err7 != nil {
+					fmt.Println(err7)
+					return
+				}
+				defer f.Close()
+
+				f.WriteString(var_data)
+				f.Close()
+
+				cmd2 := exec.Command("bash", "-c", "easyrsa build-ca nopass")
+				cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				out4, _ := cmd2.Output()
+
+				if *arg_tls_debug {
+					fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+					fmt.Printf(" %s\n", out4)
+				}
+
+				cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
+				cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				out5, _ := cmd3.Output()
+
+				if *arg_tls_debug {
+					fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+					fmt.Printf(" %s\n", out5)
+
+					fmt.Println(yellow_clr("--------------------------------------------------------------------------------------------------"))
+					fmt.Println("")
+				}
+
+				fmt.Println(yellow_clr("  Generate new TLS keys"))
+				fmt.Println("")
+				fmt.Println("  Crt: " + yellow_clr(crt_filename))
+				fmt.Println("  Key: " + yellow_clr(key_filename))
+				fmt.Println("")
+			}
+	*/
 
 	if !fiber.IsChild() {
 		fmt.Println("")

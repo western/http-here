@@ -1,7 +1,6 @@
-package app
+package util
 
 import (
-	"archive/zip"
 	"bufio"
 	"errors"
 	"fmt"
@@ -15,7 +14,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	_ "runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,14 +23,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"crypto/md5"
-	"encoding/hex"
-
-	"github.com/edwvee/exiffix"
-	"golang.org/x/image/draw"
-	"image"
-	"image/gif"
-	"image/jpeg"
-	"image/png"
+	_ "encoding/hex"
 )
 
 func init() {
@@ -61,12 +52,9 @@ func CleanDirtyPath(p string) string {
 	return p
 }
 
-func LogPrefix(c *fiber.Ctx, status string, addition string) {
+func LogPrefix(c *fiber.Ctx, status, msg string) {
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
-	//magenta_clr := color.New(color.FgMagenta).SprintFunc()
-	//cian_clr := color.New(color.FgCyan).SprintFunc()
-	//yellow_clr := color.New(color.FgYellow).SprintFunc()
 	red_clr := color.New(color.FgRed).SprintFunc()
 
 	pref := ""
@@ -102,14 +90,11 @@ func LogPrefix(c *fiber.Ctx, status string, addition string) {
 		pref += "[" + green_clr(status) + "] "
 	}
 
-	//pref += cian(addition)
-	pref += addition
+	//pref += "[" + tag + "] "
+
+	pref += msg
 
 	fmt.Println(pref)
-
-	// [2024-10-29 18:22:46] [192.168.0.101] [loginT] [200] Dir /tmp/fold1/fold3
-	//fmt.Printf("[%s] [%s] [%s] [%s] %s\n", magenta("warning"), red("error"))
-
 }
 
 // get ext and normalize
@@ -226,6 +211,7 @@ func GetMd5File(path string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
+/*
 func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	// Open the Directory
 	//files, err := ioutil.ReadDir(basePath)
@@ -282,6 +268,7 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 		}
 	}
 }
+*/
 
 func WalkAndClearOld(path string) {
 
@@ -420,6 +407,7 @@ func WalkAndClearZeroFile(path string, deep int) {
 
 }
 
+/*
 func WalkAndMakeThumbnail(path string, deep int) {
 
 	//fmt.Println("WalkAndMakeThumbnail ", path)
@@ -577,6 +565,7 @@ func WalkAndMakeThumbnail(path string, deep int) {
 
 	return
 }
+*/
 
 // openssl aes-256-cbc -a -salt -in file.txt -out file.txt.cr -pass pass:123
 func CryptFile(path, pass string) (bool, error) {

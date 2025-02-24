@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	_ "log"
 	"os"
 	"path/filepath"
 

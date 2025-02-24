@@ -1,14 +1,15 @@
 package model
 
 import (
+	"fmt"
 	"os"
-	_ "strconv"
+	_ "reflect"
+	"strconv"
 	"time"
 
-	_ "github.com/fatih/color"
+	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
 
-	_ "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -31,22 +32,99 @@ func (EventLog) TableName() string {
 	return "event_log"
 }
 
-func EventLogAdd(db *gorm.DB, tag, msg string) error {
+// model.EventLogAdd(db, c, "500", "CORE", "Error "+err.Error())
+// model.EventLogAdd(nil, nil, "500", "CORE", "Error "+err.Error())
+func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
+	green_clr := color.New(color.FgGreen).SprintFunc()
+	red_clr := color.New(color.FgRed).SprintFunc()
+
+	pref := ""
+
+	if status != "200" {
+		pref += red_clr("| ")
+	} else {
+		pref += green_clr("| ")
+	}
+
+	pid := strconv.Itoa(os.Getpid())
+	pref += "[" + pid + "] "
+
+	_dt := time.Now().Format("2006-01-02 15:04:05.000")
+	pref += "[" + _dt + "] "
+
+	_ip := ""
+	if c != nil {
+		_ip = c.IP()
+		pref += "[" + _ip + "] "
+	} else {
+		pref += "[] "
+	}
+
+	_user := ""
+	if c != nil && c.Locals("username") != nil {
+		_user = green_clr(c.Locals("username").(string))
+	}
+
+	if len(_user) > 0 {
+		pref += "[" + _user + "] "
+	} else {
+		pref += "[] "
+	}
+
+	if status != "200" {
+		pref += "[" + red_clr(status) + "] "
+	} else {
+		pref += "[" + green_clr(status) + "] "
+	}
+
+	pref += "[" + tag + "] "
+
+	pref += msg
+
+	if tag != "INIT" {
+		fmt.Println(pref)
+	}
+
+	//fmt.Println(reflect.TypeOf(*db))
 	/*
-	   db, err := connectToSQLite()
-	   if err != nil {
-	       log.Fatal(err)
-	   }
-	   defer db.Close()
+		if db == nil {
+		    fmt.Println("db == nil")
+		}else{
+		    fmt.Println("db != nil")
+		}
 	*/
 
+	if db != nil {
+
+		el := &EventLog{
+			Proc_id: os.Getpid(),
+			DT:      _dt,
+
+			IP:    _ip,
+			Login: _user,
+
+			Code: status,
+
+			TAG: tag,
+			MSG: msg,
+		}
+
+		result := db.Create(el)
+		if result.Error != nil {
+			//return result.Error
+			fmt.Println(result.Error)
+		}
+	}
+
+}
+
+/*
+func EventLogAdd(db *gorm.DB, tag, msg string) error {
+
 	pid := os.Getpid()
-	//pid := strconv.Itoa(os.Getpid())
 
 	dt := time.Now().Format("2006-01-02 15:04:05.000")
-
-	// c.IP()
 
 	el := &EventLog{
 		Proc_id: pid,
@@ -71,20 +149,9 @@ func EventLogAdd(db *gorm.DB, tag, msg string) error {
 
 func EventLogMsg(db *gorm.DB, c *fiber.Ctx, code, tag, msg string) error {
 
-	/*
-	   db, err := connectToSQLite()
-	   if err != nil {
-	       log.Fatal(err)
-	   }
-	   defer db.Close()
-	*/
-
 	pid := os.Getpid()
-	//pid := strconv.Itoa(os.Getpid())
 
 	dt := time.Now().Format("2006-01-02 15:04:05.000")
-
-	// c.IP()
 
 	username := ""
 	if c.Locals("username") != nil {
@@ -111,3 +178,4 @@ func EventLogMsg(db *gorm.DB, c *fiber.Ctx, code, tag, msg string) error {
 	return nil
 
 }
+*/

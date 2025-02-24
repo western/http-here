@@ -2,18 +2,15 @@ package model
 
 import (
 	"crypto/md5"
-	_ "encoding/hex"
 	"errors"
 	"fmt"
 	"html/template"
 	"io"
-	_ "io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
-	_ "strconv"
+	"regexp"
 	"strings"
-	_ "time"
 
 	_ "github.com/fatih/color"
 	_ "github.com/gofiber/fiber/v2"
@@ -48,6 +45,7 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 	ext = strings.ToLower(ext)
 	ext = strings.Replace(ext, ".", "", -1)
 
+	file_ext := GetExtNorm(FullPath)
 	name := filepath.Base(FullPath)
 
 	modtime_human := ""
@@ -74,7 +72,18 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 		return nil
 	}
 
-	md5_hash := GetMd5File(FullPath)
+	md5_hash := ""
+
+	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
+	if is_match {
+
+		md5_hash = GetMd5File(FullPath)
+
+	} else if size < 50*1024*1024 {
+
+		md5_hash = GetMd5File(FullPath)
+
+	}
 
 	el := &File{
 		MD5: md5_hash,
@@ -99,7 +108,9 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 func FileChkAsync(db *gorm.DB) {
 
 	// -----------------------------------------------------------------------------------------------------------------------------
-	// check from db
+	// chk from db
+
+	//model.EventLogAdd(db, "200", "FileChkAsync", "start")
 
 	var rows []File
 
@@ -119,9 +130,10 @@ func FileChkAsync(db *gorm.DB) {
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------------
-	// check from folder
-    
-    /*
+	// chk from folder
+
+	//model.EventLogAdd(db, "200", "FileChkAsync", "check from folder")
+
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("User homepath detect error: ", err)
@@ -150,7 +162,8 @@ func FileChkAsync(db *gorm.DB) {
 		}
 
 	}
-	*/
+
+	//model.EventLogAdd(db, "200", "FileChkAsync", "check end")
 
 }
 
@@ -252,6 +265,8 @@ func FileSearchResult(db *gorm.DB, arg_fold, s string) []FileSearch {
 
 }
 
+// --------------------------------------------------------------------------------------------------------------------------
+
 func GetMd5File(path string) string {
 
 	f, err := os.Open(path)
@@ -281,4 +296,17 @@ func PrettyByteSize(b int64) string {
 		bf /= 1024.0
 	}
 	return fmt.Sprintf("%.1fYiB", bf)
+}
+
+// get ext and normalize
+func GetExtNorm(path string) string {
+
+	ext := filepath.Ext(path)
+	ext = strings.ToLower(ext)
+	ext = strings.Replace(ext, ".", "", -1)
+	if ext == "jpeg" {
+		ext = "jpg"
+	}
+
+	return ext
 }

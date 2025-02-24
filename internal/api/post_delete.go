@@ -1,35 +1,15 @@
 package api
 
 import (
-	_ "archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
-	_ "fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
 	"net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
-	_ "regexp"
-	_ "strconv"
 	"strings"
-	_ "time"
 
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func PostDelete(c *fiber.Ctx) error {
@@ -43,19 +23,19 @@ func PostDelete(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
 	}
 
-	u_path := CleanDirtyPath(u.Path)
+	u_path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
-	form_path = CleanDirtyPath(form_path)
+	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
 		u_path = form_path
 	}
@@ -67,7 +47,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		LogPrefix(c, "500", "form is empty")
+		util.LogPrefix(c, "500", "form is empty")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -83,17 +63,17 @@ func PostDelete(c *fiber.Ctx) error {
 			//re := regexp.MustCompile("\\s+")
 			//name = re.ReplaceAllLiteralString(name, " ")
 
-			name = CleanDirtyPath(name)
+			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				LogPrefix(c, "500", "name is empty")
+				util.LogPrefix(c, "500", "name is empty")
 				continue
 			}
 
 			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
 
 			if err != nil {
-				LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
 				continue
 			}
 
@@ -103,11 +83,11 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+				util.LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 			} else {
 
@@ -115,11 +95,11 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
 
-					LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+				util.LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
 
 			}
 

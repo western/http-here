@@ -1,28 +1,22 @@
 package app
 
 import (
-	_ "archive/zip"
-	"errors"
-	"fmt"
-	"path/filepath"
-	_ "reflect"
-	"regexp"
-	_ "strconv"
-	"strings"
-
 	"bufio"
-	"os"
-	"os/exec"
-
+	"errors"
+	_ "fmt"
 	"io"
 	"log"
 	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strings"
 	"time"
 
-	_ "crypto/md5"
-	_ "encoding/hex"
-
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -40,9 +34,16 @@ func GetResize(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	db, err := model.ConnectToSQLite()
+	if err != nil {
+		panic(err)
+	}
+
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		model.EventLogAdd(db, c, "500", "GetResize", "Error homedir detect "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error homedir detect",
@@ -51,8 +52,11 @@ func GetResize(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
 
-		if err2 := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err2 != nil {
-			fmt.Println(err2)
+		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
+
+			//fmt.Println(err)
+			model.EventLogAdd(db, c, "500", "GetResize", "MkdirAll error "+err.Error())
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error thumbnails folder create",
@@ -63,7 +67,8 @@ func GetResize(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetResize", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -71,7 +76,7 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	c_path = CleanDirtyPath(c_path)
+	c_path = util.CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__resize", "", 1)
 
 	//c_width := "600"
@@ -90,7 +95,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 
-			LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
+			//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
+			model.EventLogAdd(db, c, "500", "GetResize", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -101,7 +107,8 @@ func GetResize(c *fiber.Ctx) error {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetResize", filepath.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -110,13 +117,16 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	file_ext := GetExtNorm(c_path)
-	orig_filename := GetFileName(c_path)
+	file_ext := util.GetExtNorm(c_path)
+	orig_filename := util.GetFileName(c_path)
 
 	//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
-		LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+
+		//util.LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		model.EventLogAdd(db, c, "500", "GetResize", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"file": filepath.Join("/__resize/", c_path),
@@ -128,12 +138,6 @@ func GetResize(c *fiber.Ctx) error {
 	//hex_name := hex.EncodeToString(hash_name[:])
 	hex_name := ""
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
-	//defer db.Close()
-
 	var row model.File
 
 	if result := db.Where("full_path = ?", filepath.Join(arg_fold, c_path)).First(&row); result.Error == nil {
@@ -142,12 +146,14 @@ func GetResize(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			LogPrefix(c, "200", "SendFile db thumb/cache "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "SendFile db thumb/cache "+filepath.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "SendFile db thumb/cache "+filepath.Join(c_path))
+
 			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
 	} else {
 
-		hex_name = GetMd5File(filepath.Join(arg_fold, c_path))
+		hex_name = util.GetMd5File(filepath.Join(arg_fold, c_path))
 	}
 
 	is_img_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
@@ -156,7 +162,9 @@ func GetResize(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+filepath.Join(c_path))
+
 			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 
 		} else if errors.Is(err, os.ErrNotExist) {
@@ -202,7 +210,8 @@ func GetResize(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+				//util.LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "GetResize", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
 
 				err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
 				if err != nil {
@@ -242,7 +251,8 @@ func GetResize(c *fiber.Ctx) error {
 			src = nil
 			dst = nil
 
-			LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "Resize and SendFile "+filepath.Join(c_path))
 
 			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
@@ -256,7 +266,8 @@ func GetResize(c *fiber.Ctx) error {
 		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 		if err != nil {
 
-			LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+			//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -283,20 +294,18 @@ func GetResize(c *fiber.Ctx) error {
 
 			} else {
 
-				LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
+				//util.LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
+				model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+filepath.Join(c_path))
+
 				return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 			}
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//input, _ := os.Open(filepath.Join(arg_fold, c_path))
-		//defer input.Close()
-
 		output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
 		defer output.Close()
 
-		//filepath_dir := filepath.Dir(c_path)
 		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
 
 		//var readerFile *os.File
@@ -307,6 +316,15 @@ func GetResize(c *fiber.Ctx) error {
 
 			// libreoffice --headless --convert-to png --outdir /tmp "000_RR_fff ddd ttt.docx"
 			// --accept='socket,host=localhost,port=8103;urp;StarOffice.ComponentContext'
+
+			//libreoffice_prefix := "libreoffice"
+
+			if runtime.GOOS == "windows" {
+				// cmd.exe /c
+				// C:\Program Files\LibreOffice\program\soffice.exe
+				//libreoffice_prefix := "libreoffice"
+			}
+
 			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
 			cmd.Dir = arg_fold
 			//out, _ := cmd.Output()
@@ -327,7 +345,7 @@ func GetResize(c *fiber.Ctx) error {
 
 				if err := cmd.Wait(); err != nil {
 
-					LogPrefix(c, "500", "Error libreoffice "+err.Error())
+					util.LogPrefix(c, "500", "Error libreoffice "+err.Error())
 
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"code": 500,
@@ -351,7 +369,8 @@ func GetResize(c *fiber.Ctx) error {
 			if read_err != nil {
 				//panic(err)
 
-				LogPrefix(c, "500", "REPEAT Error libreoffice, open file "+err.Error())
+				//util.LogPrefix(c, "500", "REPEAT Error libreoffice, open file "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetResize", "REPEAT Error libreoffice, open file "+err.Error())
 
 				/*
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -365,7 +384,8 @@ func GetResize(c *fiber.Ctx) error {
 
 			if read_err_cnt > 5 {
 
-				LogPrefix(c, "500", "SEVERAL Errors libreoffice, open file "+err.Error())
+				//util.LogPrefix(c, "500", "SEVERAL Errors libreoffice, open file "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetResize", "SEVERAL Errors libreoffice, open file "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -379,7 +399,8 @@ func GetResize(c *fiber.Ctx) error {
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
 
-			LogPrefix(c, "500", "Error copy after libreoffice convert: "+err.Error())
+			//util.LogPrefix(c, "500", "Error copy after libreoffice convert: "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetResize", "Error copy after libreoffice convert: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -397,7 +418,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		LogPrefix(c, "200", "Make office thumbnail and SendFile "+filepath.Join(c_path))
+		//util.LogPrefix(c, "200", "Make office thumbnail and SendFile "+filepath.Join(c_path))
+		model.EventLogAdd(db, c, "200", "GetResize", "Make office thumbnail and SendFile "+filepath.Join(c_path))
 
 		return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
 	}

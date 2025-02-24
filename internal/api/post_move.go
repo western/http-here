@@ -1,35 +1,16 @@
 package api
 
 import (
-	_ "archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
 	"fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
 	"net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
-	_ "regexp"
-	_ "strconv"
 	"strings"
-	_ "time"
 
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func PostMove(c *fiber.Ctx) error {
@@ -43,27 +24,27 @@ func PostMove(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
 	}
 
-	u_path := CleanDirtyPath(u.Path)
+	u_path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	from_path := c.FormValue("from_path")
-	from_path = CleanDirtyPath(from_path)
+	from_path = util.CleanDirtyPath(from_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	to := c.FormValue("to")
-	to = CleanDirtyPath(to)
+	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		LogPrefix(c, "500", "to is empty")
+		util.LogPrefix(c, "500", "to is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to is empty",
@@ -72,7 +53,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err != nil {
-		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
+		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, to) + "' not exists",
@@ -84,7 +65,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		LogPrefix(c, "500", "form is empty")
+		util.LogPrefix(c, "500", "form is empty")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
@@ -100,10 +81,10 @@ func PostMove(c *fiber.Ctx) error {
 			//re := regexp.MustCompile("\\s+")
 			//name = re.ReplaceAllLiteralString(name, " ")
 
-			name = CleanDirtyPath(name)
+			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				LogPrefix(c, "500", "name is empty")
+				util.LogPrefix(c, "500", "name is empty")
 				continue
 			}
 
@@ -116,18 +97,18 @@ func PostMove(c *fiber.Ctx) error {
 
 			_, err := os.Stat(src_file_path)
 			if err != nil {
-				LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
+				util.LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
 				continue
 			}
 
 			_, err = os.Stat(target_file_path)
 			if err == nil {
 
-				LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
+				util.LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
 				if err := os.RemoveAll(target_file_path); err != nil {
 
-					LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
+					util.LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
 					continue
 				}
 			}
@@ -136,11 +117,11 @@ func PostMove(c *fiber.Ctx) error {
 
 			if err != nil {
 
-				LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
+				util.LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
 
 			} else {
 
-				LogPrefix(c, "200", "Move '"+src_file_path+"' to "+target_file_path)
+				util.LogPrefix(c, "200", "Move '"+src_file_path+"' to "+target_file_path)
 			}
 
 		}

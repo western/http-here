@@ -1,35 +1,14 @@
 package api
 
 import (
-	_ "archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
-	_ "fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
 	"net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
-	_ "regexp"
-	_ "strconv"
-	_ "strings"
-	_ "time"
 
 	"github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func PostRename(c *fiber.Ctx) error {
@@ -43,19 +22,19 @@ func PostRename(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+		util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
 		}, "application/json")
 	}
 
-	u_path := CleanDirtyPath(u.Path)
+	u_path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
-	form_path = CleanDirtyPath(form_path)
+	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
 		u_path = form_path
 	}
@@ -63,10 +42,10 @@ func PostRename(c *fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	to := c.FormValue("to")
-	to = CleanDirtyPath(to)
+	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		LogPrefix(c, "500", "to is empty")
+		util.LogPrefix(c, "500", "to is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to is empty",
@@ -75,7 +54,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, to))
 	if err == nil {
-		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' already exists ")
+		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' already exists ")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, to) + "' already exists",
@@ -83,10 +62,10 @@ func PostRename(c *fiber.Ctx) error {
 	}
 
 	name := c.FormValue("name")
-	name = CleanDirtyPath(name)
+	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		LogPrefix(c, "500", "name is empty")
+		util.LogPrefix(c, "500", "name is empty")
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
@@ -95,7 +74,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(filepath.Join(arg_fold, u_path, name))
 	if err != nil {
-		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
+		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + filepath.Join(arg_fold, u_path, name) + "' not exists",
@@ -109,7 +88,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	if err != nil {
 
-		LogPrefix(c, "500", "Rename error "+err.Error())
+		util.LogPrefix(c, "500", "Rename error "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Rename error",
@@ -117,7 +96,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	} else {
 
-		LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
+		util.LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
 
 	db, err := model.ConnectToSQLite()

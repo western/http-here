@@ -1,35 +1,13 @@
 package api
 
 import (
-	_ "archive/zip"
-	_ "bufio"
-	_ "crypto/md5"
-	_ "encoding/hex"
-	_ "errors"
-	_ "fmt"
-	_ "html/template"
-	_ "io"
-	_ "log"
-	_ "net/url"
 	"os"
-	_ "os/exec"
 	"path/filepath"
-	_ "regexp"
-	_ "strconv"
-	_ "strings"
-	_ "time"
 
 	_ "github.com/western/http-here/internal/model"
+	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/edwvee/exiffix"
-	_ "golang.org/x/image/draw"
-	_ "image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	_ "math"
 )
 
 func GetList(c *fiber.Ctx) error {
@@ -44,7 +22,7 @@ func GetList(c *fiber.Ctx) error {
 		u, err := url.Parse(referer)
 		if err != nil {
 
-			LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
+			util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error url parse " + referer,
@@ -58,7 +36,7 @@ func GetList(c *fiber.Ctx) error {
 
 	u_path := c.FormValue("path")
 
-	u_path = CleanDirtyPath(u_path)
+	u_path = util.CleanDirtyPath(u_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -74,7 +52,7 @@ func GetList(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(filepath.Join(arg_fold, u_path)); err != nil {
 
-		LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path)+"' not exists")
+		util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path)+"' not exists")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  filepath.Join(u_path) + " not exists",
@@ -84,7 +62,7 @@ func GetList(c *fiber.Ctx) error {
 	entries, err := os.ReadDir(filepath.Join(arg_fold, u_path))
 	if err != nil {
 
-		LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, u_path)+" "+err.Error())
+		util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, u_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  filepath.Join(u_path) + " readdir error",
@@ -100,7 +78,7 @@ func GetList(c *fiber.Ctx) error {
 
 	rows := listGenerateView(arg_fold, u_path, entries, s_sort)
 
-	LogPrefix(c, "200", "Get list '"+filepath.Join(arg_fold, u_path)+"'")
+	util.LogPrefix(c, "200", "Get list '"+filepath.Join(arg_fold, u_path)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,
