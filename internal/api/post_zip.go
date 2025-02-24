@@ -6,7 +6,8 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"strings"
 	"time"
 
@@ -37,9 +38,9 @@ func PostZip(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err != nil {
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
 
-		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
 
 			//fmt.Println(err4)
 			model.EventLogAdd(db, c, "500", "PostZip", "mkdirall error: "+err.Error())
@@ -80,7 +81,7 @@ func PostZip(c *fiber.Ctx) error {
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-	archive, err := os.Create(filepath.Join(homepath, ".httphere", "temp", archive_name))
+	archive, err := os.Create(path.Join(homepath, ".httphere", "temp", archive_name))
 
 	if err != nil {
 		//fmt.Println(err)
@@ -121,29 +122,29 @@ func PostZip(c *fiber.Ctx) error {
 			continue
 		}
 
-		fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+		fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
 		if err != nil {
-			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
 
 		if fileInfo.IsDir() {
 
-			addFilesToZip(zipWriter, filepath.Join(arg_fold, u_path, name), name)
+			addFilesToZip(zipWriter, path.Join(arg_fold, u_path, name), name)
 
 		} else {
 
-			f1, err := os.Open(filepath.Join(arg_fold, u_path, name))
+			f1, err := os.Open(path.Join(arg_fold, u_path, name))
 			if err != nil {
 				panic(err)
 			}
@@ -165,15 +166,15 @@ func PostZip(c *fiber.Ctx) error {
 	zipWriter.Close()
 	archive.Close()
 
-	//return c.SendFile(filepath.Join(arg_fold, u_path, "archive.zip"), false)
-	//return c.Download(filepath.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
+	//return c.SendFile(path.Join(arg_fold, u_path, "archive.zip"), false)
+	//return c.Download(path.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
 
-	//util.LogPrefix(c, "200", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
-	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+filepath.Join(homepath, ".httphere", "temp", archive_name))
+	//util.LogPrefix(c, "200", "Temp file create "+path.Join(homepath, ".httphere", "temp", archive_name))
+	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+path.Join(homepath, ".httphere", "temp", archive_name))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-		"file": filepath.Join("/__temp/", archive_name),
+		"file": path.Join("/__temp/", archive_name),
 	}, "application/json")
 
 }
@@ -187,32 +188,32 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	}
 
 	for _, file := range files {
-		//fmt.Println(  filepath.Join(basePath, file.Name())   )
+		//fmt.Println(  path.Join(basePath, file.Name())   )
 		if !file.IsDir() {
 			//dat, err := ioutil.ReadFile(basePath + file.Name())
-			dat, err := os.ReadFile(filepath.Join(basePath, file.Name()))
+			dat, err := os.ReadFile(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
 			}
 
-			fileInfo, err := os.Stat(filepath.Join(basePath, file.Name()))
+			fileInfo, err := os.Stat(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+filepath.Join(basePath, file.Name())+"' not exists")
+				//LogPrefix(c, "500", "'"+path.Join(basePath, file.Name())+"' not exists")
 				//continue
 			}
 
 			header, err := zip.FileInfoHeader(fileInfo)
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+				//LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 				//continue
 			}
 			header.Method = zip.Store
-			header.Name = filepath.Join(baseInZip, file.Name())
+			header.Name = path.Join(baseInZip, file.Name())
 
 			// Add some files to the archive.
-			//f, err := w.Create(filepath.Join(baseInZip, file.Name()))
+			//f, err := w.Create(path.Join(baseInZip, file.Name()))
 			f, err := w.CreateHeader(header)
 			if err != nil {
 				fmt.Println(err)
@@ -225,12 +226,12 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 
 			// Recurse
 			//newBase := basePath + file.Name() + "/"
-			newBase := filepath.Join(basePath, file.Name()) + "/"
+			newBase := path.Join(basePath, file.Name()) + "/"
 			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
 			//fmt.Println("Recursing and Adding SubDir: " + newBase)
 
 			//addFiles(w, newBase, baseInZip+file.Name()+"/")
-			addFilesToZip(w, newBase, filepath.Join(baseInZip, file.Name())+"/")
+			addFilesToZip(w, newBase, path.Join(baseInZip, file.Name())+"/")
 		}
 	}
 }

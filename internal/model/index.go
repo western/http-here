@@ -3,7 +3,8 @@ package model
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 
 	"github.com/western/http-here/internal/conf"
 
@@ -29,9 +30,9 @@ func ConnectToSQLite() (*gorm.DB, error) {
 		*/
 	}
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "db")); err != nil {
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "db")); err != nil {
 
-		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "db"), os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "db"), os.ModePerm); err != nil {
 			fmt.Println(err)
 			/*
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -42,7 +43,7 @@ func ConnectToSQLite() (*gorm.DB, error) {
 		}
 	}
 
-	db, err := gorm.Open(sqlite.Open(filepath.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(path.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 

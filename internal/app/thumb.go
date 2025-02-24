@@ -9,7 +9,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -50,9 +51,9 @@ func GetResize(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb")); err != nil {
 
-		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
 
 			//fmt.Println(err)
 			model.EventLogAdd(db, c, "500", "GetResize", "MkdirAll error "+err.Error())
@@ -67,12 +68,12 @@ func GetResize(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetResize", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetResize", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error " + filepath.Join(arg_fold, c_path),
+			"msg":  "Error " + path.Join(arg_fold, c_path),
 		}, "application/json")
 	}
 
@@ -85,7 +86,7 @@ func GetResize(c *fiber.Ctx) error {
 	//modtime_human := ""
 	//size_human := ""
 
-	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
+	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
 
 		//modtime := fileInfo.ModTime()
 		//modtime_human = modtime.Format("2006-01-02 15:04:05")
@@ -95,24 +96,24 @@ func GetResize(c *fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 
-			//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
-			model.EventLogAdd(db, c, "500", "GetResize", "Error "+filepath.Join(arg_fold, c_path)+" It is a folder")
+			//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
+			model.EventLogAdd(db, c, "500", "GetResize", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"file": filepath.Join("/__resize/", c_path) + " It is a folder",
+				"file": path.Join("/__resize/", c_path) + " It is a folder",
 				"msg":  "It is a folder",
 			}, "application/json")
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetResize", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetResize", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			"file": filepath.Join("/__resize/", c_path),
+			"file": path.Join("/__resize/", c_path),
 			"msg":  "Not found",
 		}, "application/json")
 	}
@@ -124,12 +125,12 @@ func GetResize(c *fiber.Ctx) error {
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 
-		//util.LogPrefix(c, "500", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
-		model.EventLogAdd(db, c, "500", "GetResize", filepath.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		//util.LogPrefix(c, "500", path.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		model.EventLogAdd(db, c, "500", "GetResize", path.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"file": filepath.Join("/__resize/", c_path),
+			"file": path.Join("/__resize/", c_path),
 			"msg":  "Only for JPEG, PNG, GIF and office files",
 		}, "application/json")
 	}
@@ -140,39 +141,39 @@ func GetResize(c *fiber.Ctx) error {
 
 	var row model.File
 
-	if result := db.Where("full_path = ?", filepath.Join(arg_fold, c_path)).First(&row); result.Error == nil {
+	if result := db.Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row); result.Error == nil {
 
 		hex_name = row.MD5
 
-		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			//util.LogPrefix(c, "200", "SendFile db thumb/cache "+filepath.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "SendFile db thumb/cache "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "SendFile db thumb/cache "+path.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "SendFile db thumb/cache "+path.Join(c_path))
 
-			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
 	} else {
 
-		hex_name = util.GetMd5File(filepath.Join(arg_fold, c_path))
+		hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
 	}
 
 	is_img_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 
 	if is_img_match {
 
-		if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			//util.LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "SendFile thumb/cache "+path.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+path.Join(c_path))
 
-			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 
 		} else if errors.Is(err, os.ErrNotExist) {
 
-			input, _ := os.Open(filepath.Join(arg_fold, c_path))
+			input, _ := os.Open(path.Join(arg_fold, c_path))
 			defer input.Close()
 
-			output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
 			defer output.Close()
 
 			var src image.Image
@@ -210,15 +211,15 @@ func GetResize(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				//util.LogPrefix(c, "200", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
-				model.EventLogAdd(db, c, "200", "GetResize", "SendFile original without resize "+filepath.Join(arg_fold, c_path))
+				//util.LogPrefix(c, "200", "SendFile original without resize "+path.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "GetResize", "SendFile original without resize "+path.Join(arg_fold, c_path))
 
-				err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				return c.SendFile(filepath.Join(arg_fold, c_path), false)
+				return c.SendFile(path.Join(arg_fold, c_path), false)
 			}
 
 			// Resize:
@@ -251,10 +252,10 @@ func GetResize(c *fiber.Ctx) error {
 			src = nil
 			dst = nil
 
-			//util.LogPrefix(c, "200", "Resize and SendFile "+filepath.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "Resize and SendFile "+filepath.Join(c_path))
+			//util.LogPrefix(c, "200", "Resize and SendFile "+path.Join(c_path))
+			model.EventLogAdd(db, c, "200", "GetResize", "Resize and SendFile "+path.Join(c_path))
 
-			return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
 
 	}
@@ -279,37 +280,37 @@ func GetResize(c *fiber.Ctx) error {
 
 		var FI os.FileInfo
 
-		if FI, err = os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err != nil {
+		if FI, err = os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err != nil {
 
-			//panic("Stat error " + filepath.Join(homepath, ".httphere", "thumb", hex_name) + " " + err.Error())
+			//panic("Stat error " + path.Join(homepath, ".httphere", "thumb", hex_name) + " " + err.Error())
 		}
 
 		if FI != nil {
 
 			if FI.Size() == 0 {
 
-				if err = os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err != nil {
-					panic("Problem of remove zero file " + filepath.Join(homepath, ".httphere", "thumb", hex_name) + " " + err.Error())
+				if err = os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name)); err != nil {
+					panic("Problem of remove zero file " + path.Join(homepath, ".httphere", "thumb", hex_name) + " " + err.Error())
 				}
 
 			} else {
 
-				//util.LogPrefix(c, "200", "SendFile thumb/cache "+filepath.Join(c_path))
-				model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+filepath.Join(c_path))
+				//util.LogPrefix(c, "200", "SendFile thumb/cache "+path.Join(c_path))
+				model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+path.Join(c_path))
 
-				return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+				return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 			}
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+		output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
 		defer output.Close()
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
 		//var readerFile *os.File
-		readerFile, read_err := os.Open(filepath.Join(filepath_tmp, orig_filename+".png"))
+		readerFile, read_err := os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 		read_err_cnt := 1
 
 		for read_err != nil {
@@ -325,7 +326,7 @@ func GetResize(c *fiber.Ctx) error {
 				//libreoffice_prefix := "libreoffice"
 			}
 
-			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
 			cmd.Dir = arg_fold
 			//out, _ := cmd.Output()
 			//fmt.Println("out=", out)
@@ -365,7 +366,7 @@ func GetResize(c *fiber.Ctx) error {
 				//fmt.Println("libreoffice:", scanner.Text())
 			}
 
-			readerFile, read_err = os.Open(filepath.Join(filepath_tmp, orig_filename+".png"))
+			readerFile, read_err = os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 			if read_err != nil {
 				//panic(err)
 
@@ -411,22 +412,22 @@ func GetResize(c *fiber.Ctx) error {
 		output.Close()
 		readerFile.Close()
 
-		if _, err = os.Stat(filepath.Join(filepath_tmp, orig_filename+".png")); err == nil {
+		if _, err = os.Stat(path.Join(filepath_tmp, orig_filename+".png")); err == nil {
 
-			os.Remove(filepath.Join(filepath_tmp, orig_filename+".png"))
+			os.Remove(path.Join(filepath_tmp, orig_filename+".png"))
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Make office thumbnail and SendFile "+filepath.Join(c_path))
-		model.EventLogAdd(db, c, "200", "GetResize", "Make office thumbnail and SendFile "+filepath.Join(c_path))
+		//util.LogPrefix(c, "200", "Make office thumbnail and SendFile "+path.Join(c_path))
+		model.EventLogAdd(db, c, "200", "GetResize", "Make office thumbnail and SendFile "+path.Join(c_path))
 
-		return c.SendFile(filepath.Join(homepath, ".httphere", "thumb", hex_name), false)
+		return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 	}
 
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"code": 400,
-		"file": filepath.Join(c_path),
+		"file": path.Join(c_path),
 		"msg":  "Bad request",
 	}, "application/json")
 

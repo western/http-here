@@ -3,7 +3,8 @@ package api
 import (
 	"net/url"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"strings"
 
 	"github.com/western/http-here/internal/model"
@@ -80,11 +81,11 @@ func PostDelete(c *fiber.Ctx) error {
 				continue
 			}
 
-			fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name))
+			fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
 
 			if err != nil {
-				//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
-				model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' not exists")
+				//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 				continue
 			}
 
@@ -92,29 +93,29 @@ func PostDelete(c *fiber.Ctx) error {
 
 				// remove fold and all inside data
 
-				if err := os.RemoveAll(filepath.Join(arg_fold, u_path, name)); err != nil {
+				if err := os.RemoveAll(path.Join(arg_fold, u_path, name)); err != nil {
 
-					//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				//util.LogPrefix(c, "200", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+filepath.Join(arg_fold, u_path, name)+"'")
+				//util.LogPrefix(c, "200", "Remove fold '"+path.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+path.Join(arg_fold, u_path, name)+"'")
 
 			} else {
 
 				// remove one file
 
-				if err := os.Remove(filepath.Join(arg_fold, u_path, name)); err != nil {
+				if err := os.Remove(path.Join(arg_fold, u_path, name)); err != nil {
 
-					//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+filepath.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				//util.LogPrefix(c, "200", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+filepath.Join(arg_fold, u_path, name)+"'")
+				//util.LogPrefix(c, "200", "Remove '"+path.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+path.Join(arg_fold, u_path, name)+"'")
 
 			}
 

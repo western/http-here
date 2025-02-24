@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"strings"
 
 	"github.com/western/http-here/internal/model"
@@ -60,14 +61,14 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	_, err = os.Stat(filepath.Join(arg_fold, to))
+	_, err = os.Stat(path.Join(arg_fold, to))
 	if err != nil {
-		//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
-		model.EventLogAdd(db, c, "500", "PostMove", "'"+filepath.Join(arg_fold, to)+"' not exists "+err.Error())
+		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, to)+"' not exists "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostMove", "'"+path.Join(arg_fold, to)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "'" + filepath.Join(arg_fold, to) + "' not exists",
+			"msg":  "'" + path.Join(arg_fold, to) + "' not exists",
 		}, "application/json")
 	}
 
@@ -102,12 +103,12 @@ func PostMove(c *fiber.Ctx) error {
 				continue
 			}
 
-			src_file_path := filepath.Join(arg_fold, u_path, name)
+			src_file_path := path.Join(arg_fold, u_path, name)
 			if len(from_path) > 0 {
-				src_file_path = filepath.Join(arg_fold, from_path, name)
+				src_file_path = path.Join(arg_fold, from_path, name)
 			}
 
-			target_file_path := filepath.Join(arg_fold, to, name)
+			target_file_path := path.Join(arg_fold, to, name)
 
 			_, err := os.Stat(src_file_path)
 			if err != nil {

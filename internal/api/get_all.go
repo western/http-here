@@ -3,10 +3,12 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	_ "fmt"
 	"html/template"
 	"io"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -58,61 +60,52 @@ func GetAll(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		//model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-
+		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	if fileInfo, err := os.Stat(filepath.Join(arg_fold, c_path)); err == nil {
+	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
 
 		if fileInfo.IsDir() {
 
+			//fmt.Println("c_path=", c_path)
+
 			if arg_spa == "1" {
 
-				//util.LogPrefix(c, "302", "SPA application, redirect to /#!"+c_path)
-				//model.EventLogMsg(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
 				model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
-
 				return c.Redirect("/#!"+c_path, 302)
 			}
 
 			// check index.html inside
-			if _, err := os.Stat(filepath.Join(arg_fold, c_path, "index.html")); err == nil {
+			if _, err := os.Stat(path.Join(arg_fold, c_path, "index.html")); err == nil {
 
-				//util.LogPrefix(c, "200", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
-				//model.EventLogMsg(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
-				model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+filepath.Join(arg_fold, c_path, "index.html"))
-
-				return c.SendFile(filepath.Join(arg_fold, c_path, "index.html"), false)
+				model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(arg_fold, c_path, "index.html"))
+				return c.SendFile(path.Join(arg_fold, c_path, "index.html"), false)
 			}
 
-			//util.LogPrefix(c, "200", "Dir "+filepath.Join(arg_fold, c_path))
-			//model.EventLogMsg(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
-			model.EventLogAdd(db, c, "200", "CORE", "Dir "+filepath.Join(arg_fold, c_path))
+			model.EventLogAdd(db, c, "200", "CORE", "Dir "+path.Join(arg_fold, c_path))
 
 			breadcrumb := ""
+			//separator := string(os.PathSeparator)
+			separator := "/"
+			//fmt.Println("os.PathSeparator=", separator)
 
-			res1 := strings.Split(c_path, "/")
+			res1 := strings.Split(c_path, separator)
 			pt := ""
 			for indx, el := range res1 {
 				if indx == 0 {
 					continue
 				}
-				pt += "/" + el
+				pt += separator + el
 				breadcrumb += `<li class="breadcrumb-item"><a class="nodecor" href="` + pt + `">` + el + `</a></li>`
 			}
 
-			entries, err := os.ReadDir(filepath.Join(arg_fold, c_path))
+			entries, err := os.ReadDir(path.Join(arg_fold, c_path))
 			if err != nil {
 
-				//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-				//model.EventLogMsg(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-				model.EventLogAdd(db, c, "500", "CORE", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-
+				model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 
@@ -155,7 +148,6 @@ func GetAll(c *fiber.Ctx) error {
 				cookie.Name = "sort"
 				cookie.Value = s_sort
 				c.Cookie(cookie)
-
 			}
 
 			rows = listGenerateView(arg_fold, c_path, entries, s_sort)
@@ -245,10 +237,9 @@ func GetAll(c *fiber.Ctx) error {
 				if err != nil {
 					panic(err)
 				}
-				//fmt.Println("Decrypt Temp file name:", f.Name())
 				defer os.Remove(f.Name())
 
-				readerFile, _ := os.Open(filepath.Join(arg_fold, c_path))
+				readerFile, _ := os.Open(path.Join(arg_fold, c_path))
 				_, err = io.Copy(f, readerFile)
 				if err != nil {
 					panic(err)
@@ -258,16 +249,11 @@ func GetAll(c *fiber.Ctx) error {
 				isOk, err := util.DecryptFile(f.Name(), code)
 				if !isOk {
 
-					//util.LogPrefix(c, "500", "Error DecryptFile "+err.Error())
-					//model.EventLogMsg(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
 					model.EventLogAdd(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
-
 					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 				}
 
-				//util.LogPrefix(c, "200", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
-				//model.EventLogMsg(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
-				model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+filepath.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+path.Join(arg_fold, c_path))
 
 				fname := filepath.Base(c_path)
 				fname = strings.Replace(fname, ".crypt", "", 1)
@@ -277,20 +263,16 @@ func GetAll(c *fiber.Ctx) error {
 
 			} else {
 
-				//util.LogPrefix(c, "200", "SendFile "+filepath.Join(arg_fold, c_path))
-				//model.EventLogMsg(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
-				model.EventLogAdd(db, c, "200", "CORE", "SendFile "+filepath.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "CORE", "SendFile "+path.Join(arg_fold, c_path))
 
-				return c.SendFile(filepath.Join(arg_fold, c_path), false)
+				return c.SendFile(path.Join(arg_fold, c_path), false)
 			}
 
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		//model.EventLogMsg(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "CORE", filepath.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "CORE", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -342,7 +324,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 		is_edit_doc, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", ext)
 		is_edit_code, _ := regexp.MatchString("^(html|txt|js|css|md)$", ext)
 
-		if fileInfo2, err := os.Stat(filepath.Join(arg_fold, c_path, e.Name())); err == nil {
+		if fileInfo2, err := os.Stat(path.Join(arg_fold, c_path, e.Name())); err == nil {
 
 			modtime := fileInfo2.ModTime()
 			modtime_human := modtime.Format("2006-01-02 15:04:05")
@@ -350,10 +332,14 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 			size := fileInfo2.Size()
 			size_human := util.PrettyByteSize(size)
 
+			//fmt.Println("path.Join=", path.Join(c_path, e.Name()))
+			//fmt.Println("path.Join=", path.Join(c_path, e.Name()))
+
 			if fileInfo2.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
-					IsDir:    fileInfo2.IsDir(),
-					FullPath: filepath.Join(c_path, e.Name()),
+					IsDir: fileInfo2.IsDir(),
+					//FullPath: path.Join(c_path, e.Name()),
+					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 
 					Size:      size,
@@ -371,8 +357,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
-					IsDir:    fileInfo2.IsDir(),
-					FullPath: filepath.Join(c_path, e.Name()),
+					IsDir: fileInfo2.IsDir(),
+					//FullPath: path.Join(c_path, e.Name()),
+					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 
 					Size:      size,
@@ -381,7 +368,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
 
-					//Md5:       GetMd5File( filepath.Join(arg_fold, c_path, e.Name()) ),
+					//Md5:       GetMd5File( path.Join(arg_fold, c_path, e.Name()) ),
 					IsPreviewImg: is_preview_img,
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
@@ -389,8 +376,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 					Rndm:         util.RandStringRunes(2),
 				})
 
-				//fmt.Println("model.FileAddAsync",filepath.Join(arg_fold, c_path, e.Name()))
-				go model.FileAddAsync(db, filepath.Join(arg_fold, c_path, e.Name()))
+				go model.FileAddAsync(db, path.Join(arg_fold, c_path, e.Name()))
 			}
 
 		}
@@ -398,7 +384,6 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 	}
 
 	if s_sort == "name" {
-		//fmt.Println("s_sort=",s_sort)
 
 		sort.Slice(rows_dir, func(i, j int) bool {
 			return rows_dir[i].Name < rows_dir[j].Name
@@ -410,7 +395,6 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 	}
 
 	if s_sort == "modified" {
-		//fmt.Println("s_sort=",s_sort)
 
 		sort.Slice(rows_dir, func(i, j int) bool {
 			return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
@@ -422,7 +406,6 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 	}
 
 	if s_sort == "size" {
-		//fmt.Println("s_sort=",s_sort)
 
 		sort.Slice(rows_dir, func(i, j int) bool {
 			return rows_dir[i].Size < rows_dir[j].Size

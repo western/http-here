@@ -4,7 +4,8 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"regexp"
 	"strings"
 
@@ -78,12 +79,12 @@ func PostUpload(c *fiber.Ctx) error {
 
 		// -------------------------------------------------------------------------------------------------------------------------
 
-		if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, filename)); err == nil {
+		if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, filename)); err == nil {
 
 			if !fileInfo.IsDir() {
-				//util.LogPrefix(c, "200", "'"+filepath.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
-				//model.EventLogMsg(db, c, "200", "PostUpload", "'"+filepath.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
-				model.EventLogAdd(db, c, "200", "PostUpload", "'"+filepath.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
+				//util.LogPrefix(c, "200", "'"+path.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
+				//model.EventLogMsg(db, c, "200", "PostUpload", "'"+path.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
+				model.EventLogAdd(db, c, "200", "PostUpload", "'"+path.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
 			}
 		}
 
@@ -129,16 +130,16 @@ func PostUpload(c *fiber.Ctx) error {
 				}, "application/json")
 			}
 
-			out, err := os.Create(filepath.Join(arg_fold, u_path, filename+".crypt"))
+			out, err := os.Create(path.Join(arg_fold, u_path, filename+".crypt"))
 			if err != nil {
 
-				//util.LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
-				//model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
-				model.EventLogAdd(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				//util.LogPrefix(c, "500", "Error create "+path.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				//model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+path.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostUpload", "Error create "+path.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename+".crypt"),
+					"msg":  "Error create " + path.Join(arg_fold, u_path, filename+".crypt"),
 				}, "application/json")
 			}
 			defer out.Close()
@@ -151,22 +152,22 @@ func PostUpload(c *fiber.Ctx) error {
 			}
 			f.Close()
 
-			//util.LogPrefix(c, "200", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
-			//model.EventLogMsg(db, c, "200", "PostUpload", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
-			model.EventLogAdd(db, c, "200", "PostUpload", "Save encrypted '"+filepath.Join(arg_fold, u_path, filename+".crypt")+"'")
+			//util.LogPrefix(c, "200", "Save encrypted '"+path.Join(arg_fold, u_path, filename+".crypt")+"'")
+			//model.EventLogMsg(db, c, "200", "PostUpload", "Save encrypted '"+path.Join(arg_fold, u_path, filename+".crypt")+"'")
+			model.EventLogAdd(db, c, "200", "PostUpload", "Save encrypted '"+path.Join(arg_fold, u_path, filename+".crypt")+"'")
 
 		} else {
 
-			out, err := os.Create(filepath.Join(arg_fold, u_path, filename))
+			out, err := os.Create(path.Join(arg_fold, u_path, filename))
 			if err != nil {
 
-				//util.LogPrefix(c, "500", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-				//model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-				model.EventLogAdd(db, c, "500", "PostUpload", "Error create "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				//util.LogPrefix(c, "500", "Error create "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				//model.EventLogMsg(db, c, "500", "PostUpload", "Error create "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostUpload", "Error create "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + filepath.Join(arg_fold, u_path, filename),
+					"msg":  "Error create " + path.Join(arg_fold, u_path, filename),
 				}, "application/json")
 			}
 			defer out.Close()
@@ -175,19 +176,19 @@ func PostUpload(c *fiber.Ctx) error {
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
 
-				//util.LogPrefix(c, "500", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-				//model.EventLogMsg(db, c, "500", "PostUpload", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
-				model.EventLogAdd(db, c, "500", "PostUpload", "Error copy "+filepath.Join(arg_fold, u_path, filename)+" "+err.Error())
+				//util.LogPrefix(c, "500", "Error copy "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				//model.EventLogMsg(db, c, "500", "PostUpload", "Error copy "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostUpload", "Error copy "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error copy " + filepath.Join(arg_fold, u_path, filename),
+					"msg":  "Error copy " + path.Join(arg_fold, u_path, filename),
 				}, "application/json")
 			}
 
-			//util.LogPrefix(c, "200", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
-			//model.EventLogMsg(db, c, "200", "PostUpload", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
-			model.EventLogAdd(db, c, "200", "PostUpload", "Save '"+filepath.Join(arg_fold, u_path, filename)+"'")
+			//util.LogPrefix(c, "200", "Save '"+path.Join(arg_fold, u_path, filename)+"'")
+			//model.EventLogMsg(db, c, "200", "PostUpload", "Save '"+path.Join(arg_fold, u_path, filename)+"'")
+			model.EventLogAdd(db, c, "200", "PostUpload", "Save '"+path.Join(arg_fold, u_path, filename)+"'")
 
 		}
 

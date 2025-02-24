@@ -6,7 +6,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"regexp"
 	"strings"
 
@@ -38,8 +39,8 @@ func GetEditDoc(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetEditDoc", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetEditDoc", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
@@ -48,10 +49,10 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__doc", "")
 
-	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
+	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetEditDoc", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetEditDoc", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
@@ -76,9 +77,9 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
-		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
+		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
 		cmd.Dir = arg_fold
 
 		stderr, _ := cmd.StderrPipe()
@@ -91,7 +92,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 			//fmt.Println("libreoffice:", scanner.Text())
 		}
 
-		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
 			//util.LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
@@ -102,8 +103,8 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetEditDoc", "Open for edit "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Open for edit "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetEditDoc", "Open for edit "+path.Join(arg_fold, c_path))
 
 		return c.Render("view/edit/edit_doc", fiber.Map{
 			"file_name": orig_filename + "." + file_ext,
@@ -143,8 +144,8 @@ func GetEditCode(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetEditCode", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetEditCode", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
@@ -153,10 +154,10 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__code", "")
 
-	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
+	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetEditCode", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetEditCode", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
@@ -168,16 +169,16 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	if is_code_match {
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		util.CopyFile(
-			filepath.Join(arg_fold, c_path),
-			filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
+			path.Join(arg_fold, c_path),
+			path.Join(filepath_tmp, orig_filename+"."+file_ext),
 		)
 
-		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
 
 			//util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
@@ -188,8 +189,8 @@ func GetEditCode(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Open for edit "+filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetEditCode", "Open for edit "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Open for edit "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetEditCode", "Open for edit "+path.Join(arg_fold, c_path))
 
 		return c.Render("view/edit/edit_code", fiber.Map{
 			"file_name": orig_filename + "." + file_ext,
@@ -231,15 +232,15 @@ func PostEdit(c *fiber.Ctx) error {
 
 	full_path := c.FormValue("full_path")
 
-	if _, err := os.Stat(filepath.Join(arg_fold, full_path)); err != nil {
+	if _, err := os.Stat(path.Join(arg_fold, full_path)); err != nil {
 
-		//util.LogPrefix(c, "500", filepath.Join(arg_fold, full_path))
-		//model.EventLogMsg(db, c, "500", "EDIT", filepath.Join(arg_fold, full_path))
-		model.EventLogAdd(db, c, "500", "PostEdit", filepath.Join(arg_fold, full_path))
+		//util.LogPrefix(c, "500", path.Join(arg_fold, full_path))
+		//model.EventLogMsg(db, c, "500", "EDIT", path.Join(arg_fold, full_path))
+		model.EventLogAdd(db, c, "500", "PostEdit", path.Join(arg_fold, full_path))
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  filepath.Join(arg_fold, full_path) + " not found",
+			"msg":  path.Join(arg_fold, full_path) + " not found",
 		}, "application/json")
 	}
 
@@ -256,8 +257,8 @@ func PostEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-		source_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
 
 		f, err := os.Create(source_temp_file)
 		if err != nil {
@@ -276,8 +277,8 @@ func PostEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		target_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
-		target_file := filepath.Join(arg_fold, full_path)
+		target_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
+		target_file := path.Join(arg_fold, full_path)
 
 		err = os.Rename(target_temp_file, target_file)
 
@@ -294,7 +295,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 		} else {
 
-			go model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
+			go model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
 			//util.LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
 			//model.EventLogMsg(db, c, "200", "EDIT", "Move "+target_temp_file+" => "+target_file)
@@ -317,8 +318,8 @@ func PostEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-		html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
 		f, err := os.Create(html_temp_file)
 		if err != nil {
@@ -367,8 +368,8 @@ func PostEdit(c *fiber.Ctx) error {
 			convert_format = "rtf:Rich Text Format"
 		}
 
-		//filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
-		//html_temp_file := filepath.Join(filepath_tmp, orig_filename+".html")
+		//filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		//html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
 		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to \""+convert_format+"\" --outdir "+filepath_tmp+" \""+html_temp_file+"\"")
 		cmd.Dir = filepath_tmp
@@ -385,8 +386,8 @@ func PostEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		target_temp_file := filepath.Join(filepath_tmp, orig_filename+"."+file_ext)
-		target_file := filepath.Join(arg_fold, full_path)
+		target_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
+		target_file := path.Join(arg_fold, full_path)
 
 		err = os.Rename(target_temp_file, target_file)
 
@@ -404,14 +405,14 @@ func PostEdit(c *fiber.Ctx) error {
 		} else {
 
 			// remove temporary html
-			if _, err := os.Stat(filepath.Join(filepath_tmp, orig_filename+".html")); err == nil {
+			if _, err := os.Stat(path.Join(filepath_tmp, orig_filename+".html")); err == nil {
 
-				os.Remove(filepath.Join(filepath_tmp, orig_filename+".html"))
+				os.Remove(path.Join(filepath_tmp, orig_filename+".html"))
 			}
 
-			model.FileDelMd5Async(db, filepath.Join(arg_fold, full_path))
+			model.FileDelMd5Async(db, path.Join(arg_fold, full_path))
 
-			model.FileDelAsync(db, filepath.Join(arg_fold, full_path))
+			model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
 			//util.LogPrefix(c, "200", "Move "+target_temp_file+" => "+target_file)
 			//model.EventLogMsg(db, c, "200", "EDIT", "Move "+target_temp_file+" => "+target_file)

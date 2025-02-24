@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -164,8 +165,8 @@ func CopyDir(src string, dst string) error {
 		return err
 	}
 	for _, fd := range fds {
-		srcfp := filepath.Join(src, fd.Name())
-		dstfp := filepath.Join(dst, fd.Name())
+		srcfp := path.Join(src, fd.Name())
+		dstfp := path.Join(dst, fd.Name())
 
 		if fd.IsDir() {
 			if err = CopyDir(srcfp, dstfp); err != nil {
@@ -223,32 +224,32 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	}
 
 	for _, file := range files {
-		//fmt.Println(  filepath.Join(basePath, file.Name())   )
+		//fmt.Println(  path.Join(basePath, file.Name())   )
 		if !file.IsDir() {
 			//dat, err := ioutil.ReadFile(basePath + file.Name())
-			dat, err := os.ReadFile(filepath.Join(basePath, file.Name()))
+			dat, err := os.ReadFile(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
 			}
 
-			fileInfo, err := os.Stat(filepath.Join(basePath, file.Name()))
+			fileInfo, err := os.Stat(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+filepath.Join(basePath, file.Name())+"' not exists")
+				//LogPrefix(c, "500", "'"+path.Join(basePath, file.Name())+"' not exists")
 				//continue
 			}
 
 			header, err := zip.FileInfoHeader(fileInfo)
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+				//LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 				//continue
 			}
 			header.Method = zip.Store
-			header.Name = filepath.Join(baseInZip, file.Name())
+			header.Name = path.Join(baseInZip, file.Name())
 
 			// Add some files to the archive.
-			//f, err := w.Create(filepath.Join(baseInZip, file.Name()))
+			//f, err := w.Create(path.Join(baseInZip, file.Name()))
 			f, err := w.CreateHeader(header)
 			if err != nil {
 				fmt.Println(err)
@@ -261,27 +262,27 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 
 			// Recurse
 			//newBase := basePath + file.Name() + "/"
-			newBase := filepath.Join(basePath, file.Name()) + "/"
+			newBase := path.Join(basePath, file.Name()) + "/"
 			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
 			//fmt.Println("Recursing and Adding SubDir: " + newBase)
 
 			//addFiles(w, newBase, baseInZip+file.Name()+"/")
-			addFilesToZip(w, newBase, filepath.Join(baseInZip, file.Name())+"/")
+			addFilesToZip(w, newBase, path.Join(baseInZip, file.Name())+"/")
 		}
 	}
 }
 */
 
-func WalkAndClearOld(path string) {
+func WalkAndClearOld(path_ string) {
 
-	files, err := os.ReadDir(path)
+	files, err := os.ReadDir(path_)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for _, file := range files {
 
-		full_name := filepath.Join(path, file.Name())
+		full_name := path.Join(path_, file.Name())
 
 		if !file.IsDir() {
 
@@ -309,13 +310,13 @@ type TreeRow struct {
 	Nodes []TreeRow `json:"nodes"`
 }
 
-func WalkAndTreeBuild(path string, prev_path string, deep int) []TreeRow {
+func WalkAndTreeBuild(path_ string, prev_path string, deep int) []TreeRow {
 
 	//fmt.Println("WalkAndTreeBuild ", path)
 
 	var node_list []TreeRow
 
-	files, err := os.ReadDir(path)
+	files, err := os.ReadDir(path_)
 	if err != nil {
 		//fmt.Println(err)
 		return node_list
@@ -339,12 +340,12 @@ func WalkAndTreeBuild(path string, prev_path string, deep int) []TreeRow {
 
 		} else if file.IsDir() {
 
-			nodes := WalkAndTreeBuild(filepath.Join(path, file.Name()), filepath.Join(prev_path, file.Name()), deep+1)
+			nodes := WalkAndTreeBuild(path.Join(path_, file.Name()), path.Join(prev_path, file.Name()), deep+1)
 
 			node_list = append(node_list, TreeRow{
 
 				Text: file.Name(),
-				Path: filepath.Join(prev_path, file.Name()),
+				Path: path.Join(prev_path, file.Name()),
 
 				Nodes: nodes,
 			})
@@ -374,9 +375,9 @@ func MultipartToFile(file *multipart.FileHeader) *os.File {
 	return file2
 }
 
-func WalkAndClearZeroFile(path string, deep int) {
+func WalkAndClearZeroFile(path_ string, deep int) {
 
-	files, err := os.ReadDir(path)
+	files, err := os.ReadDir(path_)
 	if err != nil {
 		return
 	}
@@ -389,20 +390,20 @@ func WalkAndClearZeroFile(path string, deep int) {
 
 		if !file.IsDir() {
 
-			if NewFileInfo, err := os.Stat(filepath.Join(path, file.Name())); err == nil {
+			if NewFileInfo, err := os.Stat(path.Join(path_, file.Name())); err == nil {
 				if NewFileInfo.Size() == 0 {
 
-					//fmt.Println("WalkAndClearZeroFile", "remove=", filepath.Join(path, file.Name())    )
+					//fmt.Println("WalkAndClearZeroFile", "remove=", path.Join(path_, file.Name())    )
 
-					if err2 := os.Remove(filepath.Join(path, file.Name())); err2 != nil {
-						panic("Problem of remove zero file " + filepath.Join(path, file.Name()) + " " + err2.Error())
+					if err2 := os.Remove(path.Join(path_, file.Name())); err2 != nil {
+						panic("Problem of remove zero file " + path.Join(path_, file.Name()) + " " + err2.Error())
 					}
 				}
 			}
 
 		} else if file.IsDir() {
 
-			WalkAndClearZeroFile(filepath.Join(path, file.Name()), deep+1)
+			WalkAndClearZeroFile(path.Join(path_, file.Name()), deep+1)
 
 		}
 	}
@@ -430,7 +431,7 @@ func WalkAndMakeThumbnail(path string, deep int) {
 
 	for _, file := range files {
 
-		fileInfo, err := os.Stat(filepath.Join(path, file.Name()))
+		fileInfo, err := os.Stat(path.Join(path, file.Name()))
 
 		modtime := fileInfo.ModTime()
 		modtime_human := modtime.Format("2006-01-02 15:04:05")
@@ -456,17 +457,17 @@ func WalkAndMakeThumbnail(path string, deep int) {
 			hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
 			hex_name := hex.EncodeToString(hash_name[:])
 
-			if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
-				//fmt.Println("Is exists ", filepath.Join(homepath, ".httphere", "thumb", hex_name))
+			if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
+				//fmt.Println("Is exists ", path.Join(homepath, ".httphere", "thumb", hex_name))
 				continue
 			}
 
 			go func() {
 
-				input, _ := os.Open(filepath.Join(path, file.Name()))
+				input, _ := os.Open(path.Join(path, file.Name()))
 				defer input.Close()
 
-				output, _ := os.Create(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+				output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
 				defer output.Close()
 
 				var src image.Image
@@ -507,13 +508,13 @@ func WalkAndMakeThumbnail(path string, deep int) {
 					dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 				} else {
 
-					err := os.Remove(filepath.Join(homepath, ".httphere", "thumb", hex_name))
+					err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
 					if err != nil {
 						//log.Fatal(err)
 						panic(err)
 					}
 
-					//fmt.Println("Too small for thumb make ", filepath.Join(path, file.Name()))
+					//fmt.Println("Too small for thumb make ", path.Join(path, file.Name()))
 					return
 				}
 
@@ -550,17 +551,17 @@ func WalkAndMakeThumbnail(path string, deep int) {
 				src = nil
 				dst = nil
 
-				//fmt.Println("Make thumb for ", filepath.Join(path, file.Name()))
+				//fmt.Println("Make thumb for ", path.Join(path, file.Name()))
 
 				//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
 
 			}()
 
-			//fmt.Println("Not wait for ", filepath.Join(path, file.Name()))
+			//fmt.Println("Not wait for ", path.Join(path, file.Name()))
 
 		} else if file.IsDir() {
 
-			WalkAndMakeThumbnail(filepath.Join(path, file.Name()), deep+1)
+			WalkAndMakeThumbnail(path.Join(path, file.Name()), deep+1)
 
 		}
 	}
@@ -570,14 +571,14 @@ func WalkAndMakeThumbnail(path string, deep int) {
 */
 
 // openssl aes-256-cbc -a -salt -in file.txt -out file.txt.cr -pass pass:123
-func CryptFile(path, pass string) (bool, error) {
+func CryptFile(path_, pass string) (bool, error) {
 
 	_, err := exec.Command("bash", "-c", "openssl --help").Output()
 	if err != nil {
 		return false, err
 	}
 
-	if len(path) == 0 {
+	if len(path_) == 0 {
 		return false, errors.New("Path of file is empty")
 	}
 
@@ -585,11 +586,11 @@ func CryptFile(path, pass string) (bool, error) {
 		return false, errors.New("Pass is empty")
 	}
 
-	from_file := filepath.Base(path)
-	to_file := filepath.Base(path) + ".cr"
+	from_file := filepath.Base(path_)
+	to_file := filepath.Base(path_) + ".cr"
 
 	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -a -salt -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
-	cmd.Dir = filepath.Dir(path)
+	cmd.Dir = filepath.Dir(path_)
 	//out, _ := cmd.Output()
 	//_ = out
 
@@ -607,11 +608,11 @@ func CryptFile(path, pass string) (bool, error) {
 	//fmt.Println("--------------------------------------------------------------------------------------------------")
 	//fmt.Println("out=", out)
 
-	if err = os.Remove(path); err != nil {
+	if err = os.Remove(path_); err != nil {
 		return false, err
 	}
 
-	if err = os.Rename(filepath.Join(filepath.Dir(path), to_file), path); err != nil {
+	if err = os.Rename(path.Join(filepath.Dir(path_), to_file), path_); err != nil {
 		return false, err
 	}
 
@@ -619,14 +620,14 @@ func CryptFile(path, pass string) (bool, error) {
 }
 
 // openssl aes-256-cbc -d -a -in file.txt.cr -out file.txt.new -pass pass:123
-func DecryptFile(path, pass string) (bool, error) {
+func DecryptFile(path_, pass string) (bool, error) {
 
 	_, err := exec.Command("bash", "-c", "openssl --help").Output()
 	if err != nil {
 		return false, err
 	}
 
-	if len(path) == 0 {
+	if len(path_) == 0 {
 		return false, errors.New("Path of file is empty")
 	}
 
@@ -634,13 +635,13 @@ func DecryptFile(path, pass string) (bool, error) {
 		return false, errors.New("Pass is empty")
 	}
 
-	from_file := filepath.Base(path)
-	to_file := filepath.Base(path)
+	from_file := filepath.Base(path_)
+	to_file := filepath.Base(path_)
 	to_file = strings.Replace(to_file, ".cr", "", 1)
 	to_file += ".decrypt"
 
 	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -d -a  -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
-	cmd.Dir = filepath.Dir(path)
+	cmd.Dir = filepath.Dir(path_)
 	//out, _ := cmd.Output()
 	//_ = out
 
@@ -658,11 +659,11 @@ func DecryptFile(path, pass string) (bool, error) {
 	//fmt.Println("--------------------------------------------------------------------------------------------------")
 	//fmt.Println("out=", out)
 
-	if err = os.Remove(path); err != nil {
+	if err = os.Remove(path_); err != nil {
 		return false, err
 	}
 
-	if err = os.Rename(filepath.Join(filepath.Dir(path), to_file), path); err != nil {
+	if err = os.Rename(path.Join(filepath.Dir(path_), to_file), path_); err != nil {
 		return false, err
 	}
 

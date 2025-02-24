@@ -6,7 +6,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"regexp"
 	"strings"
 
@@ -40,8 +41,8 @@ func GetConvert(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetConvert", "Error "+filepath.Join(arg_fold, c_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetConvert", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -52,10 +53,10 @@ func GetConvert(c *fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__convert", "")
 
-	if _, err := os.Stat(filepath.Join(arg_fold, c_path)); err != nil {
+	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetConvert", filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "GetConvert", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -84,9 +85,9 @@ func GetConvert(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
-		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+filepath.Join(arg_fold, c_path)+"\"")
+		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
 		cmd.Dir = arg_fold
 
 		stderr, _ := cmd.StderrPipe()
@@ -99,7 +100,7 @@ func GetConvert(c *fiber.Ctx) error {
 			//fmt.Println("libreoffice:", scanner.Text())
 		}
 
-		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
 			//util.LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
@@ -110,8 +111,8 @@ func GetConvert(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Convert file to html "+filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Convert file to html "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+path.Join(arg_fold, c_path))
 
 		return c.JSON(fiber.Map{
 			"code":      200,
@@ -124,16 +125,16 @@ func GetConvert(c *fiber.Ctx) error {
 
 	if is_code_match {
 
-		filepath_tmp := filepath.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		util.CopyFile(
-			filepath.Join(arg_fold, c_path),
-			filepath.Join(filepath_tmp, orig_filename+"."+file_ext),
+			path.Join(arg_fold, c_path),
+			path.Join(filepath_tmp, orig_filename+"."+file_ext),
 		)
 
-		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
 
 			//util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
@@ -144,8 +145,8 @@ func GetConvert(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Convert for edit "+filepath.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetConvert", "Convert for edit "+filepath.Join(arg_fold, c_path))
+		//util.LogPrefix(c, "200", "Convert for edit "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetConvert", "Convert for edit "+path.Join(arg_fold, c_path))
 
 		return c.JSON(fiber.Map{
 			"code":      200,

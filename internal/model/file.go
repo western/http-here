@@ -8,13 +8,10 @@ import (
 	"io"
 	"math"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
-	
-	
-	
-	
 
 	_ "github.com/fatih/color"
 	_ "github.com/gofiber/fiber/v2"
@@ -144,7 +141,7 @@ func FileChkAsync(db *gorm.DB) {
 		return
 	}
 
-	filepath_thumb := filepath.Join(homepath, ".httphere", "thumb")
+	filepath_thumb := path.Join(homepath, ".httphere", "thumb")
 
 	files, err := os.ReadDir(filepath_thumb)
 	if err != nil {
@@ -153,7 +150,7 @@ func FileChkAsync(db *gorm.DB) {
 
 	for _, file := range files {
 
-		full_name := filepath.Join(filepath_thumb, file.Name())
+		full_name := path.Join(filepath_thumb, file.Name())
 
 		var rows []File
 
@@ -167,7 +164,6 @@ func FileChkAsync(db *gorm.DB) {
 
 	}
 
-	
 	//EventLogAdd(db, nil, "", "FileChkAsync", "check end")
 
 }
@@ -182,7 +178,7 @@ func FileDelMd5Async(db *gorm.DB, FullPath string) {
 		return
 	}
 
-	filepath_thumb := filepath.Join(homepath, ".httphere", "thumb")
+	filepath_thumb := path.Join(homepath, ".httphere", "thumb")
 
 	var rows []File
 
@@ -190,9 +186,9 @@ func FileDelMd5Async(db *gorm.DB, FullPath string) {
 
 		for _, file := range rows {
 
-			if _, err := os.Stat(filepath.Join(filepath_thumb, file.MD5)); err == nil {
+			if _, err := os.Stat(path.Join(filepath_thumb, file.MD5)); err == nil {
 
-				os.Remove(filepath.Join(filepath_thumb, file.MD5))
+				os.Remove(path.Join(filepath_thumb, file.MD5))
 			}
 		}
 	}

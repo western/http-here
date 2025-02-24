@@ -3,7 +3,8 @@ package api
 import (
 	"net/url"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"regexp"
 	"strings"
 
@@ -68,32 +69,32 @@ func PostFolder(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	if fileInfo, err := os.Stat(filepath.Join(arg_fold, u_path, name)); err == nil {
+	if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name)); err == nil {
 
 		if fileInfo.IsDir() {
-			//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
-			model.EventLogAdd(db, c, "500", "PostFolder", "'"+filepath.Join(arg_fold, u_path, name)+"' already exists")
+			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
+			model.EventLogAdd(db, c, "500", "PostFolder", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  filepath.Join(u_path, name) + " already exists",
+				"msg":  path.Join(u_path, name) + " already exists",
 			}, "application/json")
 		}
 	}
 
-	if err := os.Mkdir(filepath.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
+	if err := os.Mkdir(path.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
 
-		//util.LogPrefix(c, "500", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+filepath.Join(arg_fold, u_path, name)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error mkdir "+path.Join(arg_fold, u_path, name)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error mkdir " + filepath.Join(arg_fold, u_path, name),
+			"msg":  "Error mkdir " + path.Join(arg_fold, u_path, name),
 		}, "application/json")
 	}
 
-	//util.LogPrefix(c, "200", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
-	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+filepath.Join(arg_fold, u_path, name)+"'")
+	//util.LogPrefix(c, "200", "Mkdir '"+path.Join(arg_fold, u_path, name)+"'")
+	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+path.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

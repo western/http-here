@@ -2,7 +2,8 @@ package api
 
 import (
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 
 	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
@@ -28,26 +29,26 @@ func GetList(c *fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	if _, err := os.Stat(filepath.Join(arg_fold, u_path)); err != nil {
+	if _, err := os.Stat(path.Join(arg_fold, u_path)); err != nil {
 
-		//util.LogPrefix(c, "500", "'"+filepath.Join(arg_fold, u_path)+"' not exists")
-		model.EventLogAdd(db, c, "500", "GetList", "'"+filepath.Join(arg_fold, u_path)+"' not exists")
+		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path)+"' not exists")
+		model.EventLogAdd(db, c, "500", "GetList", "'"+path.Join(arg_fold, u_path)+"' not exists")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  filepath.Join(u_path) + " not exists",
+			"msg":  path.Join(u_path) + " not exists",
 		}, "application/json")
 	}
 
-	entries, err := os.ReadDir(filepath.Join(arg_fold, u_path))
+	entries, err := os.ReadDir(path.Join(arg_fold, u_path))
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+filepath.Join(arg_fold, u_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetList", "Error "+filepath.Join(arg_fold, u_path)+" "+err.Error())
+		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, u_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "GetList", "Error "+path.Join(arg_fold, u_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  filepath.Join(u_path) + " readdir error",
+			"msg":  path.Join(u_path) + " readdir error",
 		}, "application/json")
 	}
 
@@ -60,8 +61,8 @@ func GetList(c *fiber.Ctx) error {
 
 	rows := listGenerateView(arg_fold, u_path, entries, s_sort)
 
-	//util.LogPrefix(c, "200", "Get list '"+filepath.Join(arg_fold, u_path)+"'")
-	model.EventLogAdd(db, c, "200", "GetList", "Get list '"+filepath.Join(arg_fold, u_path)+"'")
+	//util.LogPrefix(c, "200", "Get list '"+path.Join(arg_fold, u_path)+"'")
+	model.EventLogAdd(db, c, "200", "GetList", "Get list '"+path.Join(arg_fold, u_path)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

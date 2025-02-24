@@ -12,7 +12,8 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"path/filepath"
+	"path"
+	_ "path/filepath"
 	"time"
 )
 
@@ -110,7 +111,7 @@ func encodePem(pemBuf *bytes.Buffer, certBytes []byte) error {
 
 func createPemFile(certPath, certName string, b []byte) (*string, error) {
 
-	path := filepath.Join(certPath, certName+".pem")
+	path := path.Join(certPath, certName+".pem")
 
 	err := os.WriteFile(path, b, 0644)
 	if err != nil {
@@ -160,7 +161,7 @@ func readPemForKey(key interface{}) (*pem.Block, error) {
 
 func createKeyFile(certPath, certName string, b []byte) (*string, error) {
 
-	path := filepath.Join(certPath, certName+".key")
+	path := path.Join(certPath, certName+".key")
 
 	err := os.WriteFile(path, b, 0644)
 	if err != nil {

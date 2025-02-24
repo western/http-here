@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -84,7 +85,7 @@ func Core() {
 
 		inf := []string{
 			``,
-			green_clr( conf.Version ),
+			green_clr(conf.Version),
 			``,
 			`Simple zero-configuration command line http server with lightweight interface to work with files`,
 			``,
@@ -167,16 +168,16 @@ func Core() {
 		return
 	}
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "thumb")); err != nil {
-		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb")); err != nil {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
 
 			fmt.Println(err)
 			return
 		}
 	}
 
-	if _, err := os.Stat(filepath.Join(homepath, ".httphere", "tls")); os.IsNotExist(err) {
-		if err := os.MkdirAll(filepath.Join(homepath, ".httphere", "tls"), os.ModePerm); err != nil {
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "tls")); os.IsNotExist(err) {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "tls"), os.ModePerm); err != nil {
 
 			fmt.Println(err)
 			return
@@ -185,8 +186,8 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		util.WalkAndClearZeroFile(filepath.Join(homepath, ".httphere", "thumb"), 0)
-		//go WalkAndClearOld(filepath.Join(homepath, ".httphere", "thumb"))
+		util.WalkAndClearZeroFile(path.Join(homepath, ".httphere", "thumb"), 0)
+		//go WalkAndClearOld(path.Join(homepath, ".httphere", "thumb"))
 	}
 
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -279,8 +280,8 @@ func Core() {
 
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				//util.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
-				model.EventLogAdd(db, c, "401", "basicauth", filepath.Join(arg_fold, c.Path()))
+				//util.LogPrefix(c, "401", path.Join(arg_fold, c.Path()))
+				model.EventLogAdd(db, c, "401", "basicauth", path.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -302,8 +303,8 @@ func Core() {
 			},
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				//util.LogPrefix(c, "401", filepath.Join(arg_fold, c.Path()))
-				model.EventLogAdd(db, c, "401", "basicauth", filepath.Join(arg_fold, c.Path()))
+				//util.LogPrefix(c, "401", path.Join(arg_fold, c.Path()))
+				model.EventLogAdd(db, c, "401", "basicauth", path.Join(arg_fold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -324,12 +325,12 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "temp")); err3 != nil {
+		if _, err3 := os.Stat(path.Join(homepath, ".httphere", "temp")); err3 != nil {
 
 			fmt.Println("")
 			//fmt.Println("  Make temp folder")
 
-			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
+			if err4 := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 				fmt.Println(err4)
 				return
 			}
@@ -338,19 +339,19 @@ func Core() {
 			fmt.Println("")
 			//fmt.Println(yellow("  Clear temp folder"))
 
-			if err := os.RemoveAll(filepath.Join(homepath, ".httphere", "temp")); err != nil {
+			if err := os.RemoveAll(path.Join(homepath, ".httphere", "temp")); err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
+			if err4 := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
 				fmt.Println(err4)
 				return
 			}
 		}
 	}
 
-	//app.Static("/__temp", filepath.Join(homepath, ".httphere", "temp"))
+	//app.Static("/__temp", path.Join(homepath, ".httphere", "temp"))
 
 	if *arg_extend_mode {
 		//app.Get("/__resize/:width/:height/*", controller.GetResize)
@@ -363,32 +364,32 @@ func Core() {
 		c_path = strings.TrimLeft(c_path, "/__temp")
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
-			model.EventLogAdd(db, c, "500", "__temp", "Error "+filepath.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			//util.LogPrefix(c, "500", "Error "+path.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			model.EventLogAdd(db, c, "500", "__temp", "Error "+path.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		c_path = util.CleanDirtyPath(c_path)
 
-		_, err = os.Stat(filepath.Join(homepath, ".httphere", "temp", c_path))
+		_, err = os.Stat(path.Join(homepath, ".httphere", "temp", c_path))
 
 		if err != nil {
 
-			//util.LogPrefix(c, "404", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
-			model.EventLogAdd(db, c, "404", "__temp", "'"+filepath.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			//util.LogPrefix(c, "404", "'"+path.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			model.EventLogAdd(db, c, "404", "__temp", "'"+path.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
 
 			return c.JSON(fiber.Map{
 				"code": 404,
-				"msg":  filepath.Join(c_path) + " not exists",
+				"msg":  path.Join(c_path) + " not exists",
 			}, "application/json")
 
 		}
 
-		//util.LogPrefix(c, "200", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
-		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+filepath.Join(homepath, ".httphere", "temp", c_path))
+		//util.LogPrefix(c, "200", "Temp get "+path.Join(homepath, ".httphere", "temp", c_path))
+		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+path.Join(homepath, ".httphere", "temp", c_path))
 
-		return c.SendFile(filepath.Join(homepath, ".httphere", "temp", c_path))
+		return c.SendFile(path.Join(homepath, ".httphere", "temp", c_path))
 	})
 
 	app.Options("/*", api.OptionsAll)
@@ -443,17 +444,17 @@ func Core() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		//util.LogPrefix(c, "404", filepath.Join(arg_fold, c.Path()))
-		model.EventLogAdd(db, c, "404", "last_handle", filepath.Join(arg_fold, c.Path()))
+		//util.LogPrefix(c, "404", path.Join(arg_fold, c.Path()))
+		model.EventLogAdd(db, c, "404", "last_handle", path.Join(arg_fold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
 
-	//crt_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
-	//key_filename := filepath.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
+	//crt_filename := path.Join(homepath, ".httphere", "easyrsa", "pki", "issued", "server1.crt")
+	//key_filename := path.Join(homepath, ".httphere", "easyrsa", "pki", "private", "server1.key")
 
-	crt_filename := filepath.Join(homepath, ".httphere", "tls", "server.pem")
-	key_filename := filepath.Join(homepath, ".httphere", "tls", "server.key")
+	crt_filename := path.Join(homepath, ".httphere", "tls", "server.pem")
+	key_filename := path.Join(homepath, ".httphere", "tls", "server.key")
 
 	crt_is_exists := false
 
@@ -471,7 +472,7 @@ func Core() {
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		cert.Run(filepath.Join(homepath, ".httphere", "tls"), "server")
+		cert.Run(path.Join(homepath, ".httphere", "tls"), "server")
 
 		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")
@@ -490,22 +491,22 @@ func Core() {
 					return
 				}
 
-				if _, err3 := os.Stat(filepath.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
+				if _, err3 := os.Stat(path.Join(homepath, ".httphere", "easyrsa")); err3 != nil {
 
-					if err4 := os.MkdirAll(filepath.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
+					if err4 := os.MkdirAll(path.Join(homepath, ".httphere", "easyrsa"), os.ModePerm); err4 != nil {
 						fmt.Println(err4)
 						return
 					}
 				}
 
-				_, err5 := exec.Command("bash", "-c", "cd "+filepath.Join(homepath, ".httphere", "easyrsa")).Output()
+				_, err5 := exec.Command("bash", "-c", "cd "+path.Join(homepath, ".httphere", "easyrsa")).Output()
 				if err5 != nil {
 					fmt.Println(err5)
 					return
 				}
 
 				cmd := exec.Command("bash", "-c", "easyrsa init-pki")
-				cmd.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				cmd.Dir = path.Join(homepath, ".httphere", "easyrsa")
 				out3, _ := cmd.Output()
 
 				if *arg_tls_debug {
@@ -522,7 +523,7 @@ func Core() {
 		set_var EASYRSA_CERT_EXPIRE 3650
 		        `
 
-				f, err7 := os.OpenFile(filepath.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+				f, err7 := os.OpenFile(path.Join(homepath, ".httphere", "easyrsa", "pki", "vars"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 				if err7 != nil {
 					fmt.Println(err7)
 					return
@@ -533,7 +534,7 @@ func Core() {
 				f.Close()
 
 				cmd2 := exec.Command("bash", "-c", "easyrsa build-ca nopass")
-				cmd2.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				cmd2.Dir = path.Join(homepath, ".httphere", "easyrsa")
 				out4, _ := cmd2.Output()
 
 				if *arg_tls_debug {
@@ -542,7 +543,7 @@ func Core() {
 				}
 
 				cmd3 := exec.Command("bash", "-c", "easyrsa --req-cn=ChangeMe build-client-full server1 nopass")
-				cmd3.Dir = filepath.Join(homepath, ".httphere", "easyrsa")
+				cmd3.Dir = path.Join(homepath, ".httphere", "easyrsa")
 				out5, _ := cmd3.Output()
 
 				if *arg_tls_debug {
