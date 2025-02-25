@@ -80,7 +80,7 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 		md5_hash = GetMd5File(FullPath)
 
-	} else if size < 50*1024*1024 {
+	} else if size < 20*1024*1024 {
 
 		md5_hash = GetMd5File(FullPath)
 
