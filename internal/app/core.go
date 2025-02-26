@@ -96,7 +96,6 @@ func Core() {
 			``,
 			`     --port                    Port to use [8000]`,
 			`     --tls                     Start HTTPS (need easy-rsa linux package)`,
-			`     --tls-debug               Start HTTPS with verbosity`,
 			``,
 			``,
 			`     --user                    Login for basic authorization`,
