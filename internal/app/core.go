@@ -368,34 +368,34 @@ func Core() {
 
 		c_path, err := url.QueryUnescape(c.Path())
 		c_path = strings.TrimLeft(c_path, "/__temp")
+
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "Error "+path.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
 			model.EventLogAdd(db, c, "500", "__temp", "Error "+path.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
-
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		c_path = util.CleanDirtyPath(c_path)
+		full_filename := path.Join(homepath, ".httphere", "temp", c_path)
 
-		_, err = os.Stat(path.Join(homepath, ".httphere", "temp", c_path))
+		if runtime.GOOS == "windows" {
+			full_filename = util.RotateSlash(full_filename)
+		}
 
+		_, err = os.Stat(full_filename)
 		if err != nil {
 
-			//util.LogPrefix(c, "404", "'"+path.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
-			model.EventLogAdd(db, c, "404", "__temp", "'"+path.Join(homepath, ".httphere", "temp", c_path)+"' not exists")
+			model.EventLogAdd(db, c, "404", "__temp", "'"+full_filename+"' not found")
 
 			return c.JSON(fiber.Map{
 				"code": 404,
-				"msg":  path.Join(c_path) + " not exists",
+				"msg":  path.Join(c_path) + " not found",
 			}, "application/json")
-
 		}
 
-		//util.LogPrefix(c, "200", "Temp get "+path.Join(homepath, ".httphere", "temp", c_path))
-		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+path.Join(homepath, ".httphere", "temp", c_path))
+		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+full_filename)
 
-		return c.SendFile(path.Join(homepath, ".httphere", "temp", c_path))
+		return c.SendFile(full_filename)
 	})
 
 	app.Options("/*", api.OptionsAll)

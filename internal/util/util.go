@@ -329,6 +329,7 @@ func RunAnyCommandUnderWin(c string) error {
 
 	pid := strconv.Itoa(os.Getpid())
 	cmd_filename := path.Join(filepath_tmp, "run"+pid+".cmd")
+	cmd_filename = RotateSlash(cmd_filename)
 
 	myf, err := os.Create(cmd_filename)
 	if err != nil {
