@@ -29,6 +29,11 @@ git clone --branch v1.12.0 https://github.com/western/http-here
 cd http-here
 make build
 ```
+or
+```console
+go install github.com/western/http-here/cmd/http-here@v1.12.0
+```
+
 
 Install v1.9.2 (last version without database)
 ```console
@@ -50,6 +55,10 @@ gzip -d http-here.gz
 chmod +x http-here
 ```
 
+windows / amd64
+```console
+https://github.com/western/http-here/releases/download/v1.12.0/http-here.zip
+```
 
 
 ## Run
@@ -214,7 +223,8 @@ http-here /tmp
 
 ## Automatic TLS keys generate
 
-- For start HTTPS server you need `easyrsa` (easy-rsa package) linux package
+- For start HTTPS server you need `easyrsa` (easy-rsa) linux package
+- Since version v1.12.0 you not need `easyrsa`
 - When you start server with `--tls` option, all keys generate automatically
 
 ```console
@@ -243,7 +253,7 @@ For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, doc
 
 
 - `libreoffice` - for doc thumbnails, for doc files online edit
-- `easyrsa` (easy-rsa) - package for certs build
+- `easyrsa` (easy-rsa) - package for certs build (for versions before v1.12.0)
 - `openssl` - encrypt file support
 
 
@@ -263,6 +273,19 @@ https://github.com/western/http-here/issues
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
 - [ ] REST restructure
+
+### 1.12.0
+- [x] TLS keys generate without any external utils (not need any easy-rsa)
+- [x] control thumbnails and temporary html after edit
+- [x] edit: return 500 instead panic, some stable
+- [x] rewrited util.LogPrefix => model.EventLogAdd
+- [x] prepare windows build
+- [x] windows libreoffice support
+- [x] clear code
+- [x] fix breadcrumbs view for mobile and SPA
+- [x] spa fix: button overlay for mobile
+
+<hr>
 
 ### 1.11.4
 - [x] redirect if you try open folder during SPA application mode
