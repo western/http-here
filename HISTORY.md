@@ -1,6 +1,32 @@
 
 ## History
 
+
+
+### 1.9.2
+- [x] show file_name while file edit
+- [x] change online edit templates
+- [x] change codemirror
+
+### 1.9.0
+- [x] add source code editor for `html|txt|js|css|md`
+
+### 1.8.1
+- [x] enable preview for `rtf|doc|docx|odt`
+
+### 1.8.0
+- [x] online editor for `html|rtf|doc|docx|odt`
+
+### 1.7.0
+- [x] top buttons operations
+- [x] api/copy
+- [x] api/rename
+- [ ] "edit" still planning
+- [ ] "share" still planning
+
+
+<hr>
+
 ### 1.6.0
 - [x] add file crypt support
 
