@@ -223,7 +223,8 @@ http-here /tmp
 
 ## Automatic TLS keys generate
 
-- For start HTTPS server you need `easyrsa` (easy-rsa package) linux package
+- From version v1.12.0 for start HTTPS server you need set `--tls` option only
+- For start HTTPS server for OLD VERSIONS you need `easyrsa` (easy-rsa) linux package
 - When you start server with `--tls` option, all keys generate automatically
 
 ```console
@@ -252,7 +253,7 @@ For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, doc
 
 
 - `libreoffice` - for doc thumbnails, for doc files online edit
-- `easyrsa` (easy-rsa) - package for certs build
+- `easyrsa` (easy-rsa) - package for certs build (for versions before v1.12.0)
 - `openssl` - encrypt file support
 
 
