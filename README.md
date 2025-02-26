@@ -29,6 +29,11 @@ git clone --branch v1.12.0 https://github.com/western/http-here
 cd http-here
 make build
 ```
+or
+```console
+go install github.com/western/http-here/cmd/http-here@v1.12.0
+```
+
 
 Install v1.9.2 (last version without database)
 ```console
