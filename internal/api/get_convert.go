@@ -9,6 +9,7 @@ import (
 	"path"
 	_ "path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/western/http-here/internal/model"
@@ -71,53 +72,106 @@ func GetConvert(c *fiber.Ctx) error {
 	if is_office_match {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
+		/*
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
 
-		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-		if err != nil {
+				//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
 
-			//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-			model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+				}, "application/json")
+			}
+		*/
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
+		if runtime.GOOS == "windows" {
+
+			_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice not found",
+				}, "application/json")
+			}
+
+		} else {
+
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice not found",
+				}, "application/json")
+			}
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		if runtime.GOOS == "windows" {
+
+			filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
+
+			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
+				panic(err)
+			}
+
+			model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+arg_fold_path)
+
+			return c.JSON(fiber.Map{
+				"code":      200,
+				"file_data": template.HTML(string(b)),
 			}, "application/json")
+
+		} else {
+
+			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			arg_fold_path := path.Join(arg_fold, c_path)
+
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
+			cmd.Dir = arg_fold
+
+			stderr, _ := cmd.StderrPipe()
+			if err := cmd.Start(); err != nil {
+				panic(err)
+			}
+
+			scanner := bufio.NewScanner(stderr)
+			for scanner.Scan() {
+				//fmt.Println("libreoffice:", scanner.Text())
+			}
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
+				panic(err)
+			}
+
+			model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+arg_fold_path)
+
+			return c.JSON(fiber.Map{
+				"code":      200,
+				"file_data": template.HTML(string(b)),
+			}, "application/json")
+
 		}
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
-
-		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
-		cmd.Dir = arg_fold
-
-		stderr, _ := cmd.StderrPipe()
-		if err := cmd.Start(); err != nil {
-			panic(err)
-		}
-
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			//fmt.Println("libreoffice:", scanner.Text())
-		}
-
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
-		if err != nil {
-
-			//util.LogPrefix(c, "500", "Error libreoffice, open file "+err.Error())
-			model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
-
-			panic(err)
-		}
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		//util.LogPrefix(c, "200", "Convert file to html "+path.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+path.Join(arg_fold, c_path))
-
-		return c.JSON(fiber.Map{
-			"code":      200,
-			"file_data": template.HTML(string(b)),
-		}, "application/json")
 
 	}
 

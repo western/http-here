@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	_ "strconv"
 	"strings"
 	"sync"
@@ -51,6 +52,11 @@ func CleanDirtyPath(p string) string {
 	//p = filepath.Clean(p)
 
 	return p
+}
+
+// change all slashes \ to /
+func RotateSlash(p string) string {
+	return strings.Replace(p, "\\", "/", -1)
 }
 
 /*
@@ -145,6 +151,39 @@ func CopyFile(src, dst string) error {
 	if srcinfo, err = os.Stat(src); err != nil {
 		return err
 	}
+	return os.Chmod(dst, srcinfo.Mode())
+}
+
+func MoveFile(src, dst string) error {
+	var err error
+	var srcfd *os.File
+	var dstfd *os.File
+	var srcinfo os.FileInfo
+
+	if srcfd, err = os.Open(src); err != nil {
+		return err
+	}
+	defer srcfd.Close()
+
+	if dstfd, err = os.Create(dst); err != nil {
+		return err
+	}
+	defer dstfd.Close()
+
+	if _, err = io.Copy(dstfd, srcfd); err != nil {
+		return err
+	}
+	srcfd.Close()
+	dstfd.Close()
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
+	} else {
+
+		if err = os.Remove(src); err != nil {
+			return err
+		}
+	}
+
 	return os.Chmod(dst, srcinfo.Mode())
 }
 
@@ -272,6 +311,55 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 	}
 }
 */
+
+func RunAnyCommandUnderWin(c string) error {
+
+	homepath, err := os.UserHomeDir()
+	if err != nil {
+		return errors.New("homepath detect error")
+	}
+
+	filepath_tmp := path.Join(homepath, ".httphere", "temp")
+
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
+		if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	pid := strconv.Itoa(os.Getpid())
+	cmd_filename := path.Join(filepath_tmp, "run"+pid+".cmd")
+
+	myf, err := os.Create(cmd_filename)
+	if err != nil {
+		return err
+	}
+
+	myf.WriteString("@echo off\r\n")
+	myf.WriteString("chcp 65001\r\n")
+
+	myf.WriteString(c)
+	myf.WriteString("\r\n")
+	myf.Close()
+
+	cmd := exec.Command(cmd_filename)
+
+	stderr, _ := cmd.StderrPipe()
+	if err := cmd.Start(); err != nil {
+
+		fmt.Println("RunAnyCommandUnderWin 1:", err)
+		//panic(err)
+	}
+	//fmt.Println("stderr:", stderr)
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		fmt.Println("RunAnyCommandUnderWin 2:", scanner.Text())
+		//panic("xxx")
+	}
+
+	return nil
+}
 
 func WalkAndClearOld(path_ string) {
 

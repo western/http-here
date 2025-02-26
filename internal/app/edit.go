@@ -2,6 +2,7 @@ package app
 
 import (
 	"bufio"
+	_ "fmt"
 	"html/template"
 	"net/url"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"path"
 	_ "path/filepath"
 	"regexp"
+	"runtime"
+	_ "strconv"
 	"strings"
 
 	"github.com/western/http-here/internal/model"
@@ -30,7 +33,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetEditDoc", "Error hmepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -39,7 +41,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetEditDoc", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -51,7 +52,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		
 		model.EventLogAdd(db, c, "404", "GetEditDoc", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
@@ -66,56 +66,109 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-		if err != nil {
+		/*
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
 
-			
-			model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice not found "+err.Error())
 
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+		*/
+
+		if runtime.GOOS == "windows" {
+
+			_, err := os.Stat("C:/Program Files/LibreOffice/program/soffice.exe")
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+
+		} else {
+
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
 		}
 
-		// --------------------------------------------------------------------------------------------------------------------------------
+		if runtime.GOOS == "windows" {
 
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			// --------------------------------------------------------------------------------------------------------------------------------
 
-		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
-		cmd.Dir = arg_fold
+			//filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			//arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
 
-		stderr, _ := cmd.StderrPipe()
-		if err := cmd.Start(); err != nil {
-			panic(err)
+			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			arg_fold_path := path.Join(arg_fold, c_path)
+
+			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
+
+			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice, open file "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			model.EventLogAdd(db, c, "200", "GetEditDoc", "Open for edit "+path.Join(arg_fold, c_path))
+
+			return c.Render("view/edit/edit_doc", fiber.Map{
+				"file_name": orig_filename + "." + file_ext,
+				"full_path": c_path,
+
+				"file_data": template.HTML(string(b)),
+			}, "view/layout/default")
+
+		} else {
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
+			cmd.Dir = arg_fold
+
+			stderr, _ := cmd.StderrPipe()
+			if err := cmd.Start(); err != nil {
+				panic(err)
+			}
+
+			scanner := bufio.NewScanner(stderr)
+			for scanner.Scan() {
+				//fmt.Println("libreoffice:", scanner.Text())
+			}
+
+			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice, open file "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			model.EventLogAdd(db, c, "200", "GetEditDoc", "Open for edit "+path.Join(arg_fold, c_path))
+
+			return c.Render("view/edit/edit_doc", fiber.Map{
+				"file_name": orig_filename + "." + file_ext,
+				"full_path": c_path,
+
+				"file_data": template.HTML(string(b)),
+			}, "view/layout/default")
 		}
-
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			//fmt.Println("libreoffice:", scanner.Text())
-		}
-
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
-		if err != nil {
-
-			
-			model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice, open file "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		
-		model.EventLogAdd(db, c, "200", "GetEditDoc", "Open for edit "+path.Join(arg_fold, c_path))
-
-		return c.Render("view/edit/edit_doc", fiber.Map{
-			"file_name": orig_filename + "." + file_ext,
-			"full_path": c_path,
-
-			"file_data": template.HTML(string(b)),
-		}, "view/layout/default")
-
 	}
 
-	
 	model.EventLogAdd(db, c, "500", "GetEditDoc", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -135,7 +188,6 @@ func GetEditCode(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetEditCode", "Error homepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -144,7 +196,6 @@ func GetEditCode(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetEditCode", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -156,7 +207,6 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		
 		model.EventLogAdd(db, c, "404", "GetEditCode", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
@@ -181,7 +231,6 @@ func GetEditCode(c *fiber.Ctx) error {
 		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
 
-			
 			model.EventLogAdd(db, c, "500", "GetEditCode", "Error open temp source file: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -189,7 +238,6 @@ func GetEditCode(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		
 		model.EventLogAdd(db, c, "200", "GetEditCode", "Open for edit "+path.Join(arg_fold, c_path))
 
 		return c.Render("view/edit/edit_code", fiber.Map{
@@ -201,7 +249,6 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	}
 
-	
 	model.EventLogAdd(db, c, "500", "GetEditCode", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
@@ -221,7 +268,6 @@ func PostEdit(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "PostEdit", "Error homepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -233,7 +279,6 @@ func PostEdit(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, full_path)); err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "PostEdit", path.Join(arg_fold, full_path))
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -258,6 +303,11 @@ func PostEdit(c *fiber.Ctx) error {
 		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
 
+		if runtime.GOOS == "windows" {
+			filepath_tmp = util.RotateSlash(filepath_tmp)
+			source_temp_file = util.RotateSlash(source_temp_file)
+		}
+
 		f, err := os.Create(source_temp_file)
 		if err != nil {
 			panic(err)
@@ -269,19 +319,20 @@ func PostEdit(c *fiber.Ctx) error {
 		}
 		f.Close()
 
-		
 		model.EventLogAdd(db, c, "200", "PostEdit", "Update "+source_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		target_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
 		target_file := path.Join(arg_fold, full_path)
 
-		err = os.Rename(target_temp_file, target_file)
+		if runtime.GOOS == "windows" {
+			target_file = util.RotateSlash(target_file)
+		}
+
+		err = util.MoveFile(source_temp_file, target_file)
 
 		if err != nil {
 
-			
 			model.EventLogAdd(db, c, "500", "PostEdit", "Rename error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -293,8 +344,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 			go model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
-			
-			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+target_temp_file+" => "+target_file)
+			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+source_temp_file+" => "+target_file)
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -316,6 +366,11 @@ func PostEdit(c *fiber.Ctx) error {
 		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 		html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
+		if runtime.GOOS == "windows" {
+			filepath_tmp = util.RotateSlash(filepath_tmp)
+			html_temp_file = util.RotateSlash(html_temp_file)
+		}
+
 		f, err := os.Create(html_temp_file)
 		if err != nil {
 			panic(err)
@@ -327,21 +382,49 @@ func PostEdit(c *fiber.Ctx) error {
 		}
 		f.Close()
 
-		
 		model.EventLogAdd(db, c, "200", "PostEdit", "Update "+html_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		_, err = exec.Command("bash", "-c", "libreoffice --help").Output()
-		if err != nil {
+		/*
+			_, err = exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
 
-			
-			model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Libreoffice not found ",
-			}, "application/json")
+				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Libreoffice not found ",
+				}, "application/json")
+			}
+		*/
+
+		if runtime.GOOS == "windows" {
+
+			_, err := os.Stat("C:/Program Files/LibreOffice/program/soffice.exe")
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Libreoffice not found ",
+				}, "application/json")
+			}
+
+		} else {
+
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Libreoffice not found ",
+				}, "application/json")
+			}
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -364,29 +447,50 @@ func PostEdit(c *fiber.Ctx) error {
 		//filepath_tmp := path.Join(homepath, ".httphere", "temp")
 		//html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
-		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to \""+convert_format+"\" --outdir "+filepath_tmp+" \""+html_temp_file+"\"")
-		cmd.Dir = filepath_tmp
+		if runtime.GOOS == "windows" {
 
-		stderr, _ := cmd.StderrPipe()
-		if err := cmd.Start(); err != nil {
-			panic(err)
-		}
+			// --------------------------------------------------------------------------------------------------------------------------------
 
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			//fmt.Println("libreoffice:", scanner.Text())
+			//filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			//html_temp_file := util.RotateSlash(path.Join(filepath_tmp, orig_filename+".html"))
+
+			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to "` + convert_format + `" --outdir "` + filepath_tmp + `" "` + html_temp_file + `"`)
+
+		} else {
+
+			// --------------------------------------------------------------------------------------------------------------------------------
+
+			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to \""+convert_format+"\" --outdir "+filepath_tmp+" \""+html_temp_file+"\"")
+			cmd.Dir = filepath_tmp
+
+			stderr, _ := cmd.StderrPipe()
+			if err := cmd.Start(); err != nil {
+				panic(err)
+			}
+
+			scanner := bufio.NewScanner(stderr)
+			for scanner.Scan() {
+				//fmt.Println("libreoffice:", scanner.Text())
+			}
+
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		target_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
+		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
 		target_file := path.Join(arg_fold, full_path)
 
-		err = os.Rename(target_temp_file, target_file)
+		/*
+			if runtime.GOOS == "windows" {
+			    source_temp_file = util.RotateSlash(source_temp_file)
+			    target_file = util.RotateSlash(target_file)
+			}
+		*/
+
+		err = util.MoveFile(source_temp_file, target_file)
 
 		if err != nil {
 
-			
 			model.EventLogAdd(db, c, "500", "PostEdit", "Rename error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -406,9 +510,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 			model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
-			
-			
-			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+target_temp_file+" => "+target_file)
+			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+source_temp_file+" => "+target_file)
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -419,7 +521,6 @@ func PostEdit(c *fiber.Ctx) error {
 
 	}
 
-	
 	model.EventLogAdd(db, c, "500", "PostEdit", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

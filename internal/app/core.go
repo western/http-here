@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -149,6 +150,10 @@ func Core() {
 		}
 	}
 	arg_fold = filepath.Clean(arg_fold)
+
+	if runtime.GOOS == "windows" {
+		arg_fold = util.RotateSlash(arg_fold)
+	}
 
 	if fileInfo, err := os.Stat(arg_fold); err == nil {
 
@@ -348,6 +353,7 @@ func Core() {
 				fmt.Println(err4)
 				return
 			}
+
 		}
 	}
 
@@ -455,6 +461,11 @@ func Core() {
 
 	crt_filename := path.Join(homepath, ".httphere", "tls", "server.pem")
 	key_filename := path.Join(homepath, ".httphere", "tls", "server.key")
+
+	if runtime.GOOS == "windows" {
+		crt_filename = util.RotateSlash(crt_filename)
+		key_filename = util.RotateSlash(key_filename)
+	}
 
 	crt_is_exists := false
 

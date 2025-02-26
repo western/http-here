@@ -3,7 +3,7 @@ package app
 import (
 	"bufio"
 	"errors"
-	_ "fmt"
+	"fmt"
 	"io"
 	"log"
 	"net/url"
@@ -13,7 +13,9 @@ import (
 	_ "path/filepath"
 	"regexp"
 	"runtime"
+	_ "strconv"
 	"strings"
+	_ "syscall"
 	"time"
 
 	"github.com/western/http-here/internal/model"
@@ -264,16 +266,31 @@ func GetResize(c *fiber.Ctx) error {
 
 	if is_office_match {
 
-		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-		if err != nil {
+		if runtime.GOOS == "windows" {
 
-			//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-			model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
+			_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
+			if err != nil {
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error libreoffice not found",
-			}, "application/json")
+				model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice not found",
+				}, "application/json")
+			}
+
+		} else {
+
+			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+			if err != nil {
+
+				model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error libreoffice not found",
+				}, "application/json")
+			}
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -295,7 +312,6 @@ func GetResize(c *fiber.Ctx) error {
 
 			} else {
 
-				//util.LogPrefix(c, "200", "SendFile thumb/cache "+path.Join(c_path))
 				model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+path.Join(c_path))
 
 				return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
@@ -304,89 +320,56 @@ func GetResize(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
-		defer output.Close()
-
 		filepath_tmp := path.Join(homepath, ".httphere", "temp")
 
-		//var readerFile *os.File
-		readerFile, read_err := os.Open(path.Join(filepath_tmp, orig_filename+".png"))
+		if runtime.GOOS == "windows" {
+			filepath_tmp = util.RotateSlash(filepath_tmp)
+		}
+
+		var readerFile *os.File
+
 		read_err_cnt := 1
+		read_err := errors.New("read error 99")
 
 		for read_err != nil {
 
-			// libreoffice --headless --convert-to png --outdir /tmp "000_RR_fff ddd ttt.docx"
-			// --accept='socket,host=localhost,port=8103;urp;StarOffice.ComponentContext'
-
-			//libreoffice_prefix := "libreoffice"
-
 			if runtime.GOOS == "windows" {
-				// cmd.exe /c
-				// C:\Program Files\LibreOffice\program\soffice.exe
-				//libreoffice_prefix := "libreoffice"
-			}
 
-			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
-			cmd.Dir = arg_fold
-			//out, _ := cmd.Output()
-			//fmt.Println("out=", out)
+				arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
 
-			/*
-				stderr, err := cmd.StderrPipe()
-				if err != nil {
-					panic(err)
-				}
+				util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to png --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
+			} else {
+
+				cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
+				cmd.Dir = arg_fold
+				//out, _ := cmd.Output()
+				//fmt.Println("out=", out)
+
+				stderr, _ := cmd.StderrPipe()
 				if err := cmd.Start(); err != nil {
 					panic(err)
 				}
 
-				slurp, _ := io.ReadAll(stderr)
-				fmt.Printf("%s\n", slurp)
-
-				if err := cmd.Wait(); err != nil {
-
-					util.LogPrefix(c, "500", "Error libreoffice "+err.Error())
-
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"code": 500,
-						"msg":  "Error libreoffice",
-					}, "application/json")
-
+				scanner := bufio.NewScanner(stderr)
+				for scanner.Scan() {
+					fmt.Println("libreoffice:", scanner.Text())
 				}
-			*/
 
-			stderr, _ := cmd.StderrPipe()
-			if err := cmd.Start(); err != nil {
-				panic(err)
-			}
-
-			scanner := bufio.NewScanner(stderr)
-			for scanner.Scan() {
-				//fmt.Println("libreoffice:", scanner.Text())
 			}
 
 			readerFile, read_err = os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 			if read_err != nil {
-				//panic(err)
 
-				//util.LogPrefix(c, "500", "REPEAT Error libreoffice, open file "+err.Error())
-				model.EventLogAdd(db, c, "500", "GetResize", "REPEAT Error libreoffice, open file "+err.Error())
-
-				/*
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"code": 500,
-						"msg":  "Error libreoffice",
-					}, "application/json")
-				*/
+				model.EventLogAdd(db, c, "500", "GetResize", "REPEAT Error libreoffice, open file "+read_err.Error())
 
 				time.Sleep(2 * time.Second)
+				//time.Sleep(900 * time.Second)
 			}
 
 			if read_err_cnt > 5 {
 
-				//util.LogPrefix(c, "500", "SEVERAL Errors libreoffice, open file "+err.Error())
-				model.EventLogAdd(db, c, "500", "GetResize", "SEVERAL Errors libreoffice, open file "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetResize", "SEVERAL Errors libreoffice, open file "+read_err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -397,10 +380,11 @@ func GetResize(c *fiber.Ctx) error {
 			read_err_cnt++
 		}
 
+		output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
+
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "Error copy after libreoffice convert: "+err.Error())
 			model.EventLogAdd(db, c, "500", "GetResize", "Error copy after libreoffice convert: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -419,7 +403,6 @@ func GetResize(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Make office thumbnail and SendFile "+path.Join(c_path))
 		model.EventLogAdd(db, c, "200", "GetResize", "Make office thumbnail and SendFile "+path.Join(c_path))
 
 		return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
