@@ -44,7 +44,7 @@ func Core() {
 	arg_help := flag.Bool("help", false, "Show help")
 
 	arg_port := flag.Int("port", 8000, "Port to use")
-	arg_tls := flag.Bool("tls", false, "Start HTTPS (need easyrsa linux package)")
+	arg_tls := flag.Bool("tls", false, "Start HTTPS")
 	arg_tls_debug := flag.Bool("tls-debug", false, "Start HTTPS with verbosity")
 
 	arg_user := flag.String("user", "", "Login for user basic auth")
@@ -95,7 +95,7 @@ func Core() {
 			`options:`,
 			``,
 			`     --port                    Port to use [8000]`,
-			`     --tls                     Start HTTPS (need easy-rsa linux package)`,
+			`     --tls                     Start HTTPS`,
 			``,
 			``,
 			`     --user                    Login for basic authorization`,
