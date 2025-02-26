@@ -50,6 +50,10 @@ gzip -d http-here.gz
 chmod +x http-here
 ```
 
+windows / amd64
+```console
+https://github.com/western/http-here/releases/download/v1.12.0/http-here.zip
+```
 
 
 ## Run
@@ -263,6 +267,19 @@ https://github.com/western/http-here/issues
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
 - [ ] REST restructure
+
+### 1.12.0
+- [x] TLS keys generate without any external utils (not need any easy-rsa)
+- [x] control thumbnails and temporary html after edit
+- [x] edit: return 500 instead panic, some stable
+- [x] rewrited util.LogPrefix => model.EventLogAdd
+- [x] prepare windows build
+- [x] windows libreoffice support
+- [x] clear code
+- [x] fix breadcrumbs view for mobile and SPA
+- [x] spa fix: button overlay for mobile
+
+<hr>
 
 ### 1.11.4
 - [x] redirect if you try open folder during SPA application mode
