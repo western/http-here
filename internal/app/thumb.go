@@ -32,7 +32,7 @@ import (
 	"math"
 )
 
-func GetResize(c *fiber.Ctx) error {
+func GetThumb(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -44,8 +44,8 @@ func GetResize(c *fiber.Ctx) error {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		//fmt.Println(err)
-		model.EventLogAdd(db, c, "500", "GetResize", "Error homedir detect "+err.Error())
+		
+		model.EventLogAdd(db, c, "500", "GetThumb", "Error homedir detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -57,8 +57,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		if err := os.MkdirAll(path.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
 
-			//fmt.Println(err)
-			model.EventLogAdd(db, c, "500", "GetResize", "MkdirAll error "+err.Error())
+			
+			model.EventLogAdd(db, c, "500", "GetThumb", "MkdirAll error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -70,8 +70,8 @@ func GetResize(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetResize", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		
+		model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -80,42 +80,37 @@ func GetResize(c *fiber.Ctx) error {
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
-	c_path = strings.Replace(c_path, "/__resize", "", 1)
+	c_path = strings.Replace(c_path, "/__thumb", "", 1)
 
-	//c_width := "600"
+	
 	i_width := 600
 
-	//modtime_human := ""
-	//size_human := ""
+	
 
 	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
 
-		//modtime := fileInfo.ModTime()
-		//modtime_human = modtime.Format("2006-01-02 15:04:05")
-
-		//size := fileInfo.Size()
-		//size_human = PrettyByteSize(size)
+		
 
 		if fileInfo.IsDir() {
 
-			//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
-			model.EventLogAdd(db, c, "500", "GetResize", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
+			
+			model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"file": path.Join("/__resize/", c_path) + " It is a folder",
+				"file": path.Join("/__thumb/", c_path) + " It is a folder",
 				"msg":  "It is a folder",
 			}, "application/json")
 		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetResize", path.Join(arg_fold, c_path))
+		
+		model.EventLogAdd(db, c, "404", "GetThumb", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			"file": path.Join("/__resize/", c_path),
+			"file": path.Join("/__thumb/", c_path),
 			"msg":  "Not found",
 		}, "application/json")
 	}
@@ -127,12 +122,12 @@ func GetResize(c *fiber.Ctx) error {
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 
-		//util.LogPrefix(c, "500", path.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
-		model.EventLogAdd(db, c, "500", "GetResize", path.Join("/__resize/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		
+		model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+" Only for JPEG, PNG, GIF and office files")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"file": path.Join("/__resize/", c_path),
+			"file": path.Join("/__thumb/", c_path),
 			"msg":  "Only for JPEG, PNG, GIF and office files",
 		}, "application/json")
 	}
@@ -149,8 +144,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			//util.LogPrefix(c, "200", "SendFile db thumb/cache "+path.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "SendFile db thumb/cache "+path.Join(c_path))
+			
+			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
@@ -165,8 +160,8 @@ func GetResize(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			//util.LogPrefix(c, "200", "SendFile thumb/cache "+path.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+path.Join(c_path))
+			
+			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 
@@ -213,8 +208,8 @@ func GetResize(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				//util.LogPrefix(c, "200", "SendFile original without resize "+path.Join(arg_fold, c_path))
-				model.EventLogAdd(db, c, "200", "GetResize", "SendFile original without resize "+path.Join(arg_fold, c_path))
+				
+				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile original without resize "+path.Join(arg_fold, c_path))
 
 				err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
 				if err != nil {
@@ -254,8 +249,8 @@ func GetResize(c *fiber.Ctx) error {
 			src = nil
 			dst = nil
 
-			//util.LogPrefix(c, "200", "Resize and SendFile "+path.Join(c_path))
-			model.EventLogAdd(db, c, "200", "GetResize", "Resize and SendFile "+path.Join(c_path))
+			
+			model.EventLogAdd(db, c, "200", "GetThumb", "Resize and SendFile "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
@@ -271,7 +266,7 @@ func GetResize(c *fiber.Ctx) error {
 			_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetThumb", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -284,7 +279,7 @@ func GetResize(c *fiber.Ctx) error {
 			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetResize", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetThumb", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -312,7 +307,7 @@ func GetResize(c *fiber.Ctx) error {
 
 			} else {
 
-				model.EventLogAdd(db, c, "200", "GetResize", "SendFile thumb/cache "+path.Join(c_path))
+				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
 				return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 			}
@@ -361,15 +356,14 @@ func GetResize(c *fiber.Ctx) error {
 			readerFile, read_err = os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 			if read_err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetResize", "REPEAT Error libreoffice, open file "+read_err.Error())
+				model.EventLogAdd(db, c, "500", "GetThumb", "REPEAT Error libreoffice, open file "+read_err.Error())
 
 				time.Sleep(2 * time.Second)
-				//time.Sleep(900 * time.Second)
 			}
 
 			if read_err_cnt > 5 {
 
-				model.EventLogAdd(db, c, "500", "GetResize", "SEVERAL Errors libreoffice, open file "+read_err.Error())
+				model.EventLogAdd(db, c, "500", "GetThumb", "SEVERAL Errors libreoffice, open file "+read_err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -385,7 +379,7 @@ func GetResize(c *fiber.Ctx) error {
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "GetResize", "Error copy after libreoffice convert: "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetThumb", "Error copy after libreoffice convert: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -403,7 +397,7 @@ func GetResize(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		model.EventLogAdd(db, c, "200", "GetResize", "Make office thumbnail and SendFile "+path.Join(c_path))
+		model.EventLogAdd(db, c, "200", "GetThumb", "Make office thumbnail and SendFile "+path.Join(c_path))
 
 		return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 	}

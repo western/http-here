@@ -14,7 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func PostFile(c *fiber.Ctx) error {
+func PostFileTouch(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -30,8 +30,8 @@ func PostFile(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "PostFile", "Error url parse "+referer+" "+err.Error())
+		
+		model.EventLogAdd(db, c, "500", "PostFileTouch", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -61,7 +61,7 @@ func PostFile(c *fiber.Ctx) error {
 
 	if len(name) == 0 {
 		//util.LogPrefix(c, "500", "name is empty")
-		model.EventLogAdd(db, c, "500", "PostFile", "name is empty")
+		model.EventLogAdd(db, c, "500", "PostFileTouch", "name is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -73,7 +73,7 @@ func PostFile(c *fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
-			model.EventLogAdd(db, c, "500", "PostFile", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
+			model.EventLogAdd(db, c, "500", "PostFileTouch", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -86,7 +86,7 @@ func PostFile(c *fiber.Ctx) error {
 	if err != nil {
 
 		//util.LogPrefix(c, "500", "Error file create "+path.Join(arg_fold, u_path, name)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "PostFile", "Error file create "+path.Join(arg_fold, u_path, name)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFileTouch", "Error file create "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -97,7 +97,7 @@ func PostFile(c *fiber.Ctx) error {
 	myfile.Close()
 
 	//util.LogPrefix(c, "200", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
-	model.EventLogAdd(db, c, "200", "PostFile", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
+	model.EventLogAdd(db, c, "200", "PostFileTouch", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

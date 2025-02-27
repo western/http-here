@@ -255,7 +255,7 @@ func GetEditCode(c *fiber.Ctx) error {
 
 }
 
-func PostEdit(c *fiber.Ctx) error {
+func PostFileEdit(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -268,7 +268,7 @@ func PostEdit(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostEdit", "Error homepath detect "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFileEdit", "Error homepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -279,7 +279,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, full_path)); err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostEdit", path.Join(arg_fold, full_path))
+		model.EventLogAdd(db, c, "500", "PostFileEdit", path.Join(arg_fold, full_path))
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -319,7 +319,7 @@ func PostEdit(c *fiber.Ctx) error {
 		}
 		f.Close()
 
-		model.EventLogAdd(db, c, "200", "PostEdit", "Update "+source_temp_file)
+		model.EventLogAdd(db, c, "200", "PostFileEdit", "Update "+source_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -333,7 +333,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostEdit", "Rename error "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostFileEdit", "Rename error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -344,7 +344,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 			go model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
-			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+source_temp_file+" => "+target_file)
+			model.EventLogAdd(db, c, "200", "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -382,7 +382,7 @@ func PostEdit(c *fiber.Ctx) error {
 		}
 		f.Close()
 
-		model.EventLogAdd(db, c, "200", "PostEdit", "Update "+html_temp_file)
+		model.EventLogAdd(db, c, "200", "PostFileEdit", "Update "+html_temp_file)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -391,7 +391,7 @@ func PostEdit(c *fiber.Ctx) error {
 			if err != nil {
 
 
-				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileEdit", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -405,7 +405,7 @@ func PostEdit(c *fiber.Ctx) error {
 			_, err := os.Stat("C:/Program Files/LibreOffice/program/soffice.exe")
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileEdit", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -418,7 +418,7 @@ func PostEdit(c *fiber.Ctx) error {
 			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "PostEdit", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileEdit", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -491,7 +491,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostEdit", "Rename error "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostFileEdit", "Rename error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -510,7 +510,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 			model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
-			model.EventLogAdd(db, c, "200", "PostEdit", "Move "+source_temp_file+" => "+target_file)
+			model.EventLogAdd(db, c, "200", "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -521,7 +521,7 @@ func PostEdit(c *fiber.Ctx) error {
 
 	}
 
-	model.EventLogAdd(db, c, "500", "PostEdit", "Error: format of file is not for edit")
+	model.EventLogAdd(db, c, "500", "PostFileEdit", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,

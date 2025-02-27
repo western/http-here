@@ -313,7 +313,7 @@ $(document).ready(function(){
         formData.append('name', val);
 
         $.ajax({
-            url: '/api/file',
+            url: '/api/file/touch',
             data: formData,
             type: 'POST',
             contentType: false,
@@ -821,7 +821,7 @@ function ev_target_files(files){
                 location.href = location.href;
             }
         };
-        xhr.open("POST", '/api/upload');
+        xhr.open("POST", '/api/file/upload');
         xhr.send(formData);
 
     };

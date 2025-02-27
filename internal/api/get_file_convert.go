@@ -18,7 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetConvert(c *fiber.Ctx) error {
+func GetFileConvert(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -31,8 +31,8 @@ func GetConvert(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error homepath detect "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetConvert", "Error homepath detect "+err.Error())
+		
+		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error homepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -42,8 +42,8 @@ func GetConvert(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
-		model.EventLogAdd(db, c, "500", "GetConvert", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		
+		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -52,12 +52,12 @@ func GetConvert(c *fiber.Ctx) error {
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	c_path = strings.ReplaceAll(c_path, "/__convert", "")
+	c_path = strings.ReplaceAll(c_path, "/api/file/convert", "")
 
 	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		//util.LogPrefix(c, "404", path.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "404", "GetConvert", path.Join(arg_fold, c_path))
+		
+		model.EventLogAdd(db, c, "404", "GetFileConvert", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -77,7 +77,7 @@ func GetConvert(c *fiber.Ctx) error {
 			if err != nil {
 
 				//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -90,7 +90,7 @@ func GetConvert(c *fiber.Ctx) error {
 			_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -103,7 +103,7 @@ func GetConvert(c *fiber.Ctx) error {
 			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice not found "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -126,11 +126,11 @@ func GetConvert(c *fiber.Ctx) error {
 			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice, open file "+err.Error())
 				panic(err)
 			}
 
-			model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+arg_fold_path)
+			model.EventLogAdd(db, c, "200", "GetFileConvert", "Convert file to html "+arg_fold_path)
 
 			return c.JSON(fiber.Map{
 				"code":      200,
@@ -160,11 +160,11 @@ func GetConvert(c *fiber.Ctx) error {
 			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetConvert", "Error libreoffice, open file "+err.Error())
+				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice, open file "+err.Error())
 				panic(err)
 			}
 
-			model.EventLogAdd(db, c, "200", "GetConvert", "Convert file to html "+arg_fold_path)
+			model.EventLogAdd(db, c, "200", "GetFileConvert", "Convert file to html "+arg_fold_path)
 
 			return c.JSON(fiber.Map{
 				"code":      200,
@@ -192,7 +192,7 @@ func GetConvert(c *fiber.Ctx) error {
 		if err != nil {
 
 			//util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
-			model.EventLogAdd(db, c, "500", "GetConvert", "Error open temp source file: "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetFileConvert", "Error open temp source file: "+err.Error())
 
 			panic(err)
 		}
@@ -200,7 +200,7 @@ func GetConvert(c *fiber.Ctx) error {
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		//util.LogPrefix(c, "200", "Convert for edit "+path.Join(arg_fold, c_path))
-		model.EventLogAdd(db, c, "200", "GetConvert", "Convert for edit "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "GetFileConvert", "Convert for edit "+path.Join(arg_fold, c_path))
 
 		return c.JSON(fiber.Map{
 			"code":      200,
@@ -210,7 +210,7 @@ func GetConvert(c *fiber.Ctx) error {
 	}
 
 	//util.LogPrefix(c, "500", "Error: format of file is not for edit")
-	model.EventLogAdd(db, c, "500", "GetConvert", "Error: format of file is not for edit")
+	model.EventLogAdd(db, c, "500", "GetFileConvert", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,

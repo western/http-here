@@ -360,7 +360,7 @@ func Core() {
 
 	if *arg_extend_mode {
 		//app.Get("/__resize/:width/:height/*", controller.GetResize)
-		app.Get("/__resize/*", GetResize)
+		app.Get("/__thumb/*", GetThumb)
 	}
 
 	app.Get("/__temp/*", func(c *fiber.Ctx) error {
@@ -405,19 +405,19 @@ func Core() {
 			app.Get("/__doc/*", GetEditDoc)
 			app.Get("/__code/*", GetEditCode)
 			app.Get("/__search/", GetSearch)
-			app.Get("/__convert/*", api.GetConvert)
-			app.Post("/api/edit", PostEdit)
+			app.Get("/api/file/convert/*", api.GetFileConvert)
+			app.Post("/api/file/edit", PostFileEdit)
 			app.Get("/api/list", api.GetList)
 		}
 	}
 
 	if !*arg_upload_disable {
-		app.Post("/api/upload", api.PostUpload)
+		app.Post("/api/file/upload", api.PostFileUpload)
 	}
 
 	if !*arg_folder_make_disable {
 		app.Post("/api/folder", api.PostFolder)
-		app.Post("/api/file", api.PostFile)
+		app.Post("/api/file/touch", api.PostFileTouch)
 	}
 
 	if *arg_extend_mode {
