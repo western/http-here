@@ -21,27 +21,15 @@ func ConnectToSQLite() (*gorm.DB, error) {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println(err)
-		/*
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error homedir detect",
-			}, "application/json")
-		*/
+		return nil, err
 	}
 
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "db")); err != nil {
-
+	if _, err := os.Stat(path.Join(homepath, ".httphere", "db")); os.IsNotExist(err) {
 		if err := os.MkdirAll(path.Join(homepath, ".httphere", "db"), os.ModePerm); err != nil {
-			fmt.Println(err)
-			/*
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"msg":  "Error db folder create",
-				}, "application/json")
-			*/
+			return nil, err
 		}
 	}
+	
 
 	db, err := gorm.Open(sqlite.Open(path.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
