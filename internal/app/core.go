@@ -72,12 +72,7 @@ func Core() {
 		panic(err)
 	}
 
-	if !fiber.IsChild() {
-
-		model.EventLogAdd(db, nil, "", "INIT", "run")
-
-		go model.FileChkAsync(db)
-	}
+	
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
@@ -165,6 +160,15 @@ func Core() {
 		fmt.Println(arg_fold + " is not exist")
 		return
 	}
+	
+	
+	if !fiber.IsChild() {
+
+		model.EventLogAdd(db, nil, "", "INIT", "run "+arg_fold)
+
+		go model.FileChkAsync(db)
+	}
+	
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
