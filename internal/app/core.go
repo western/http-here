@@ -17,12 +17,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	_ "github.com/gofiber/swagger"
+	//_ "github.com/gofiber/swagger"
 
 	"github.com/western/http-here/internal/api"
 	"github.com/western/http-here/internal/cert"
 	"github.com/western/http-here/internal/conf"
-	_ "github.com/western/http-here/internal/docs"
+	//_ "github.com/western/http-here/internal/docs"
 	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
