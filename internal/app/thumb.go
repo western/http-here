@@ -44,7 +44,7 @@ func GetThumb(c *fiber.Ctx) error {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		
+
 		model.EventLogAdd(db, c, "500", "GetThumb", "Error homedir detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -57,7 +57,6 @@ func GetThumb(c *fiber.Ctx) error {
 
 		if err := os.MkdirAll(path.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
 
-			
 			model.EventLogAdd(db, c, "500", "GetThumb", "MkdirAll error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -70,7 +69,6 @@ func GetThumb(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -82,18 +80,12 @@ func GetThumb(c *fiber.Ctx) error {
 	c_path = util.CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__thumb", "", 1)
 
-	
 	i_width := 600
-
-	
 
 	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
 
-		
-
 		if fileInfo.IsDir() {
 
-			
 			model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -105,7 +97,6 @@ func GetThumb(c *fiber.Ctx) error {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		
 		model.EventLogAdd(db, c, "404", "GetThumb", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -122,7 +113,6 @@ func GetThumb(c *fiber.Ctx) error {
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 
-		
 		model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+" Only for JPEG, PNG, GIF and office files")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -144,7 +134,6 @@ func GetThumb(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			
 			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
@@ -160,7 +149,6 @@ func GetThumb(c *fiber.Ctx) error {
 
 		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
-			
 			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
@@ -208,7 +196,6 @@ func GetThumb(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				
 				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile original without resize "+path.Join(arg_fold, c_path))
 
 				err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
@@ -249,7 +236,6 @@ func GetThumb(c *fiber.Ctx) error {
 			src = nil
 			dst = nil
 
-			
 			model.EventLogAdd(db, c, "200", "GetThumb", "Resize and SendFile "+path.Join(c_path))
 
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)

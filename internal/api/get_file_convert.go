@@ -31,7 +31,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error homepath detect "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -42,7 +41,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -56,7 +54,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
 
-		
 		model.EventLogAdd(db, c, "404", "GetFileConvert", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{

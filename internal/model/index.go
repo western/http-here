@@ -29,7 +29,6 @@ func ConnectToSQLite() (*gorm.DB, error) {
 			return nil, err
 		}
 	}
-	
 
 	db, err := gorm.Open(sqlite.Open(path.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),

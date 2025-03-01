@@ -25,7 +25,6 @@ func GetSearch(c *fiber.Ctx) error {
 
 	result_list := model.FileSearchResult(db, arg_fold, s)
 
-	
 	model.EventLogAdd(db, c, "200", "GetSearch", "Get api search '"+s+"'")
 
 	return c.JSON(fiber.Map{

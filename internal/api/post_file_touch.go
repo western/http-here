@@ -30,7 +30,6 @@ func PostFileTouch(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		
 		model.EventLogAdd(db, c, "500", "PostFileTouch", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

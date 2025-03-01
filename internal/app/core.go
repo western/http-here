@@ -17,10 +17,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	_ "github.com/gofiber/swagger"
 
 	"github.com/western/http-here/internal/api"
 	"github.com/western/http-here/internal/cert"
 	"github.com/western/http-here/internal/conf"
+	_ "github.com/western/http-here/internal/docs"
 	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
@@ -61,6 +63,9 @@ func Core() {
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
 
+	arg_silence := flag.Bool("silence", false, "Disable all console messages")
+	arg_nolog := flag.Bool("nolog", false, "Do not write any data to event_log table")
+
 	flag.Parse()
 
 	if *arg_tls_debug {
@@ -71,8 +76,6 @@ func Core() {
 	if err != nil {
 		panic(err)
 	}
-
-	
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
@@ -111,6 +114,10 @@ func Core() {
 			`     --crypt                   Enable encrypt file support`,
 			``,
 			`     --spa                     Enable frontend SPA (Single Page Application)`,
+			``,
+			``,
+			`     --silence                 Disable all console messages`,
+			`     --nolog                   Do not write any data to event_log table`,
 			``,
 			``,
 			`examples:`,
@@ -160,15 +167,13 @@ func Core() {
 		fmt.Println(arg_fold + " is not exist")
 		return
 	}
-	
-	
+
 	if !fiber.IsChild() {
 
 		model.EventLogAdd(db, nil, "", "INIT", "run "+arg_fold)
 
 		go model.FileChkAsync(db)
 	}
-	
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -233,6 +238,14 @@ func Core() {
 		if *arg_spa {
 
 			c.Locals("arg_spa", "1")
+		}
+		if *arg_silence {
+
+			c.Locals("arg_silence", "1")
+		}
+		if *arg_nolog {
+
+			c.Locals("arg_nolog", "1")
 		}
 
 		return c.Next()
@@ -324,6 +337,8 @@ func Core() {
 			fmt.Println("  Basic auth set: " + cian_clr(*arg_user) + " " + cian_clr(*arg_password))
 		}
 	}
+
+	//app.Get("/swagger/*", swagger.HandlerDefault)
 
 	app.Use("/__assets", filesystem.New(filesystem.Config{
 		Root:       http.FS(embedDirStatic),

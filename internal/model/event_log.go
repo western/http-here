@@ -61,6 +61,17 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 		pref += "[] "
 	}
 
+	arg_silence := ""
+	arg_nolog := ""
+	if c != nil {
+		if c.Locals("arg_silence") != nil {
+			arg_silence = c.Locals("arg_silence").(string)
+		}
+		if c.Locals("arg_nolog") != nil {
+			arg_nolog = c.Locals("arg_nolog").(string)
+		}
+	}
+
 	_user := ""
 	if c != nil && c.Locals("username") != nil {
 		_user = green_clr(c.Locals("username").(string))
@@ -82,11 +93,11 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	pref += msg
 
-	if tag != "INIT" {
+	if tag != "INIT" && arg_silence == "" {
 		fmt.Println(pref)
 	}
 
-	if db != nil {
+	if db != nil && arg_nolog == "" {
 
 		el := &EventLog{
 			Proc_id: os.Getpid(),
