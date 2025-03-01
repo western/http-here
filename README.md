@@ -256,7 +256,9 @@ For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, doc
 - `easyrsa` (easy-rsa) - package for certs build (for versions before v1.12.0)
 - `openssl` - encrypt file support
 
+## API
 
+[western/http-here/refs/heads/dev/internal/docs/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/western/http-here/refs/heads/dev/internal/docs/openapi.yaml)
 
 ## You can ask any question or suggest something
 
