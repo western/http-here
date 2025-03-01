@@ -1,0 +1,700 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "http-here",
+    "description": "Simple zero-configuration command line http server with lightweight interface to work with files\n\n[https://github.com/western/http-here](https://github.com/western/http-here)",
+    "version": "1.12.x"
+  },
+  "servers": [
+    {
+      "url": "http://0.0.0.0:8000/",
+      "description": "http"
+    },
+    {
+      "url": "https://0.0.0.0:8000/",
+      "description": "https"
+    },
+    {
+      "url": "http://192.168.0.103:8000/",
+      "description": "test server"
+    }
+  ],
+  "paths": {
+    "/__assets/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the file",
+          "schema": {
+            "type": "string",
+            "format": "path"
+          },
+          "example": "/assets/index.css"
+        }
+      ],
+      "get": {
+        "summary": "Get assets source data",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/__thumb/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the file",
+          "schema": {
+            "type": "string"
+          },
+          "example": "/folder1/file2.jpg"
+        }
+      ],
+      "get": {
+        "summary": "Get resize images or doc thumbnails",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Some error with format or convert"
+          }
+        }
+      }
+    },
+    "/__temp/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the file",
+          "schema": {
+            "type": "string"
+          },
+          "example": "/archive-20250102-123400.zip"
+        }
+      ],
+      "get": {
+        "summary": "Get zip file",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/__doc/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the document file",
+          "schema": {
+            "type": "string"
+          },
+          "example": "/folder2/file.docx"
+        }
+      ],
+      "get": {
+        "summary": "Open online editor for doc file edit",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format or convert"
+          }
+        }
+      }
+    },
+    "/__code/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the source file",
+          "schema": {
+            "type": "string"
+          },
+          "example": "/code/file.js"
+        }
+      ],
+      "get": {
+        "summary": "Open online editor for doc file edit",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format or convert"
+          }
+        }
+      }
+    },
+    "/__search/": {
+      "get": {
+        "summary": "Search result page",
+        "parameters": [
+          {
+            "name": "s",
+            "in": "query",
+            "description": "String for file or directory search",
+            "required": true,
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error during search"
+          }
+        }
+      }
+    },
+    "/api/file/convert/{filePath}": {
+      "parameters": [
+        {
+          "name": "filePath",
+          "in": "path",
+          "required": true,
+          "description": "Path to the file for html convert",
+          "schema": {
+            "type": "string"
+          },
+          "example": "/docs/file.rtf"
+        }
+      ],
+      "get": {
+        "summary": "Convert document to html",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format or convert"
+          }
+        }
+      }
+    },
+    "/api/file/edit/": {
+      "post": {
+        "summary": "Save edited file to disk",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/folder/": {
+      "post": {
+        "summary": "Make new folder",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of new folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/file/touch/": {
+      "post": {
+        "summary": "Make new file on disk",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of new file",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/delete/": {
+      "post": {
+        "summary": "Delete file or folder",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of file",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/move/": {
+      "post": {
+        "summary": "Move file or folder",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of file",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Path to move",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/copy/": {
+      "post": {
+        "summary": "Copy file or folder",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of file",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Path to move",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/rename/": {
+      "post": {
+        "summary": "Rename file or folder",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of file",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "New name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/zip/": {
+      "post": {
+        "summary": "Zip group files or folders",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of file for archive",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/search/": {
+      "get": {
+        "summary": "Search file of folder",
+        "parameters": [
+          {
+            "name": "s",
+            "in": "query",
+            "description": "Search string",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/list/": {
+      "get": {
+        "summary": "Get list of files/folders inside some folder",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Path to show",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    },
+    "/api/file/upload/": {
+      "post": {
+        "summary": "Upload files",
+        "parameters": [
+          {
+            "name": "fileBlob",
+            "in": "query",
+            "description": "Files for upload",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Current path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error with format, convert or fs operation"
+          }
+        }
+      }
+    }
+  }
+}
