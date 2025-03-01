@@ -291,7 +291,13 @@ $(document).ready(function(){
     
     $('#make_folder_dlg, #make_folder_dlg2').click(function (ev) {
         
-        const mkfolderModal = new bootstrap.Modal(document.getElementById('make_folder_modal'), {});
+        let folder_modal = document.getElementById('make_folder_modal');
+        
+        folder_modal.addEventListener('shown.bs.modal', () => {
+            $('#make_folder_input').focus()
+        })
+        
+        const mkfolderModal = new bootstrap.Modal(folder_modal, {});
         mkfolderModal.show();
     });
     
@@ -373,7 +379,13 @@ $(document).ready(function(){
     
     $('#new_file_dlg, #new_file_dlg2').click(function (ev) {
         
-        const mkfileModal = new bootstrap.Modal(document.getElementById('make_file_modal'), {});
+        let file_modal = document.getElementById('make_file_modal');
+        
+        file_modal.addEventListener('shown.bs.modal', () => {
+            $('#make_file_input').focus()
+        })
+        
+        const mkfileModal = new bootstrap.Modal(file_modal, {});
         mkfileModal.show();
     });
     
