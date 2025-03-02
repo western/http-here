@@ -446,5 +446,27 @@ paths:
                 type: string
         '500':
           description: Error with format, convert or fs operation
+  /{fullPath}:
+    parameters:
+    - name: fullPath
+      in: path
+      required: true
+      description: Path to the file or folder. If it folder - show list of files.
+      schema:
+        type: string
+        format: path
+      example: /folder1/file1.jpg
+    get:
+      summary: Get file or folder list. If it file - download it.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not found
   
   
