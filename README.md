@@ -2,11 +2,11 @@
 
 Simple zero-configuration command line http server with lightweight interface to work with files
 
-Share folder via http with upload
+> Share folder via http with upload
 
-Multiple files upload to current showed folder
+> Multiple files upload to current showed folder
 
-In extended mode you can doing more
+> In extended mode you can doing more
 
 <p align="center">
     <img src="https://github.com/western/http-here/blob/dev/doc/screen-top6.png?raw=true" />
