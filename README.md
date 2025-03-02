@@ -25,20 +25,16 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Install from github
 
 ```console
-git clone --branch v1.12.0 https://github.com/western/http-here
+git clone --branch v1.12.1 https://github.com/western/http-here
 cd http-here
 make build
 ```
 or
 ```console
-go install github.com/western/http-here/cmd/http-here@v1.12.0
+go install github.com/western/http-here/cmd/http-here@v1.12.1
 ```
 
 
-Install v1.9.2 (last version without database)
-```console
-go install github.com/western/http-here@v1.9.2
-```
 
 ## Manual download
 
@@ -49,7 +45,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.12.0/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.12.1/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -57,7 +53,7 @@ chmod +x http-here
 
 windows / amd64
 ```console
-https://github.com/western/http-here/releases/download/v1.12.0/http-here.zip
+https://github.com/western/http-here/releases/download/v1.12.1/http-here.zip
 ```
 
 
@@ -275,6 +271,14 @@ https://github.com/western/http-here/issues
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
 - [ ] REST restructure
+
+### 1.12.1
+- [x] new cmd argument --silence
+- [x] new cmd argument --nolog
+- [x] change API
+- [x] add API description
+- [x] set focus on input for dialogs
+- [x] set focus on input for dialogs SPA
 
 ### 1.12.0
 - [x] TLS keys generate without any external utils (not need any easy-rsa)
