@@ -3,7 +3,7 @@
   "info": {
     "title": "http-here",
     "description": "Simple zero-configuration command line http server with lightweight interface to work with files\n\n[https://github.com/western/http-here](https://github.com/western/http-here)",
-    "version": "1.12.x"
+    "version": "1.12.1"
   },
   "servers": [
     {

@@ -6,7 +6,7 @@ info:
     
     [https://github.com/western/http-here](https://github.com/western/http-here)
     
-  version: 1.12.x
+  version: 1.12.1
 
 servers:
   - url: http://0.0.0.0:8000/
