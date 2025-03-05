@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	_ "log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -80,9 +80,13 @@ func GetThumb(c *fiber.Ctx) error {
 	c_path = util.CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__thumb", "", 1)
 
+	// ------------------------------------------------------------------------------------------------------------------------------
+
 	i_width := 600
 
-	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
+	fileInfo, err := os.Stat(path.Join(arg_fold, c_path))
+
+	if err == nil {
 
 		if fileInfo.IsDir() {
 
@@ -122,6 +126,8 @@ func GetThumb(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
+	// ------------------------------------------------------------------------------------------------------------------------------
+
 	//hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
 	//hex_name := hex.EncodeToString(hash_name[:])
 	hex_name := ""
@@ -155,6 +161,8 @@ func GetThumb(c *fiber.Ctx) error {
 		hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
 	}
 
+	// ------------------------------------------------------------------------------------------------------------------------------
+
 	is_img_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 
 	if is_img_match {
@@ -166,6 +174,17 @@ func GetThumb(c *fiber.Ctx) error {
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 
 		} else if errors.Is(err, os.ErrNotExist) {
+
+			// ------------------------------------------------------------------------------------------------------------------------------
+
+			if fileInfo.Size() < 50*1024 {
+
+				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile orig without resize "+path.Join(c_path)+", size is small")
+
+				return c.SendFile(path.Join(arg_fold, c_path), false)
+			}
+
+			// ------------------------------------------------------------------------------------------------------------------------------
 
 			input, _ := os.Open(path.Join(arg_fold, c_path))
 			defer input.Close()
@@ -179,7 +198,7 @@ func GetThumb(c *fiber.Ctx) error {
 			if file_ext == "png" {
 				src, err = png.Decode(input)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
@@ -188,14 +207,14 @@ func GetThumb(c *fiber.Ctx) error {
 				// src, err = jpeg.Decode(input)
 				src, _, err = exiffix.Decode(input)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
 			if file_ext == "gif" {
 				src, err = gif.Decode(input)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
@@ -208,11 +227,11 @@ func GetThumb(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile original without resize "+path.Join(arg_fold, c_path))
+				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile orig without resize "+path.Join(arg_fold, c_path))
 
 				err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 
 				return c.SendFile(path.Join(arg_fold, c_path), false)
@@ -224,21 +243,21 @@ func GetThumb(c *fiber.Ctx) error {
 			if file_ext == "png" {
 				err = png.Encode(output, dst)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
 			if file_ext == "jpg" {
 				err = jpeg.Encode(output, dst, nil)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
 			if file_ext == "gif" {
 				err = gif.Encode(output, dst, nil)
 				if err != nil {
-					log.Fatal(err)
+					panic(err)
 				}
 			}
 
