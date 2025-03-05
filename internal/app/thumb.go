@@ -113,7 +113,6 @@ func GetThumb(c *fiber.Ctx) error {
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
 
-	//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 
@@ -142,7 +141,7 @@ func GetThumb(c *fiber.Ctx) error {
 
 		if len(hex_name) == 0 {
 
-			model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+" hex_name is empty")
+			model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -155,10 +154,18 @@ func GetThumb(c *fiber.Ctx) error {
 			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
+	}
 
-	} else {
+	hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
 
-		hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
+	if len(hex_name) == 0 {
+
+		model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty (2)")
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"file": path.Join("/__thumb/", c_path),
+		}, "application/json")
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------------------
