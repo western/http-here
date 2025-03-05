@@ -67,217 +67,223 @@ func GetAll(c *fiber.Ctx) error {
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	if fileInfo, err := os.Stat(path.Join(arg_fold, c_path)); err == nil {
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-		if fileInfo.IsDir() {
+	fileInfo, err := os.Stat(path.Join(arg_fold, c_path))
 
-			//fmt.Println("c_path=", c_path)
-
-			if arg_spa == "1" {
-
-				model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
-				return c.Redirect("/#!"+c_path, 302)
-			}
-
-			// check index.html inside
-			if _, err := os.Stat(path.Join(arg_fold, c_path, "index.html")); err == nil {
-
-				model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(arg_fold, c_path, "index.html"))
-				return c.SendFile(path.Join(arg_fold, c_path, "index.html"), false)
-			}
-
-			model.EventLogAdd(db, c, "200", "CORE", "Dir "+path.Join(arg_fold, c_path))
-
-			breadcrumb := ""
-			//separator := string(os.PathSeparator)
-			separator := "/"
-			//fmt.Println("os.PathSeparator=", separator)
-
-			res1 := strings.Split(c_path, separator)
-			pt := ""
-			for indx, el := range res1 {
-				if indx == 0 {
-					continue
-				}
-				pt += separator + el
-				breadcrumb += `<li class="breadcrumb-item"><a class="nodecor" href="` + pt + `">` + el + `</a></li>`
-			}
-
-			entries, err := os.ReadDir(path.Join(arg_fold, c_path))
-			if err != nil {
-
-				model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-
-			template_file := "index"
-
-			var rows []FileRow
-			var mode string
-			var s_sort string
-
-			if arg_extend_mode == "1" {
-
-				template_file = "index_extend"
-
-				mode = c.Cookies("mode")
-				if len(mode) == 0 {
-					mode = "list"
-				}
-
-				q_mode := c.Query("mode")
-				if len(q_mode) > 0 {
-					mode = q_mode
-				}
-
-				cookie := new(fiber.Cookie)
-				cookie.Name = "mode"
-				cookie.Value = mode
-				c.Cookie(cookie)
-
-				s_sort = c.Cookies("sort")
-				if len(s_sort) == 0 {
-					s_sort = "name"
-				}
-
-				q_sort := c.Query("sort")
-				if len(q_sort) > 0 {
-					s_sort = q_sort
-				}
-
-				cookie = new(fiber.Cookie)
-				cookie.Name = "sort"
-				cookie.Value = s_sort
-				c.Cookie(cookie)
-			}
-
-			rows = listGenerateView(arg_fold, c_path, entries, s_sort)
-
-			mode_thumb := false
-			if mode == "thumb" {
-				mode_thumb = true
-			}
-
-			mode_list := false
-			if mode == "list" {
-				mode_list = true
-			}
-
-			sort_name := false
-			if s_sort == "name" {
-				sort_name = true
-			}
-
-			sort_modified := false
-			if s_sort == "modified" {
-				sort_modified = true
-			}
-
-			sort_size := false
-			if s_sort == "size" {
-				sort_size = true
-			}
-
-			var folderTree_js []byte
-
-			if arg_extend_mode == "1" {
-				folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
-
-				folderTree_js, err = json.Marshal(folderTree)
-				if err != nil {
-
-					panic(err)
-					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-				}
-			}
-
-			return c.Render("view/"+template_file, fiber.Map{
-
-				"Breadcrumb":    template.HTML(breadcrumb),
-				"folderTree_js": template.HTML(folderTree_js),
-
-				"rows":            rows,
-				"arg_extend_mode": arg_extend_mode,
-				"arg_crypt":       arg_crypt,
-				"mode_thumb":      mode_thumb,
-				"mode_list":       mode_list,
-
-				"sort_name":     sort_name,
-				"sort_modified": sort_modified,
-				"sort_size":     sort_size,
-
-				"files_count_max":     conf.Files_count_max,
-				"fieldSize_max":       conf.FieldSize_max,
-				"fieldSize_max_human": conf.FieldSize_max_human,
-
-				"arg_upload_disable":      arg_upload_disable,
-				"arg_folder_make_disable": arg_folder_make_disable,
-			}, "view/layout/default")
-
-		} else {
-
-			code := c.Cookies("code")
-
-			q_code := c.Query("code")
-			if len(q_code) > 0 {
-				code = q_code
-			}
-
-			is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
-
-			if arg_crypt == "" && len(code) > 0 {
-
-				cookie := new(fiber.Cookie)
-				cookie.Name = "code"
-				c.Cookie(cookie)
-			}
-
-			if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
-
-				f, err := os.CreateTemp("", "httphere_decrypt*")
-				if err != nil {
-					panic(err)
-				}
-				defer os.Remove(f.Name())
-
-				readerFile, _ := os.Open(path.Join(arg_fold, c_path))
-				_, err = io.Copy(f, readerFile)
-				if err != nil {
-					panic(err)
-				}
-				f.Close()
-
-				isOk, err := util.DecryptFile(f.Name(), code)
-				if !isOk {
-
-					model.EventLogAdd(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
-					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-				}
-
-				model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+path.Join(arg_fold, c_path))
-
-				fname := filepath.Base(c_path)
-				fname = strings.Replace(fname, ".crypt", "", 1)
-				c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
-
-				return c.SendFile(f.Name(), false)
-
-			} else {
-
-				model.EventLogAdd(db, c, "200", "CORE", "SendFile "+path.Join(arg_fold, c_path))
-
-				return c.SendFile(path.Join(arg_fold, c_path), false)
-			}
-
-		}
-
-	} else if errors.Is(err, os.ErrNotExist) {
+	if errors.Is(err, os.ErrNotExist) {
 
 		model.EventLogAdd(db, c, "404", "CORE", path.Join(arg_fold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
 		}, "view/layout/error")
+	}
+
+	if err != nil {
+
+		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	}
+
+	if fileInfo.IsDir() {
+
+		if arg_spa == "1" {
+
+			model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
+			return c.Redirect("/#!"+c_path, 302)
+		}
+
+		// check index.html inside
+		if _, err := os.Stat(path.Join(arg_fold, c_path, "index.html")); err == nil {
+
+			model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(arg_fold, c_path, "index.html"))
+			return c.SendFile(path.Join(arg_fold, c_path, "index.html"), false)
+		}
+
+		model.EventLogAdd(db, c, "200", "CORE", "Dir "+path.Join(arg_fold, c_path))
+
+		breadcrumb := ""
+		//separator := string(os.PathSeparator)
+		separator := "/"
+		//fmt.Println("os.PathSeparator=", separator)
+
+		res1 := strings.Split(c_path, separator)
+		pt := ""
+		for indx, el := range res1 {
+			if indx == 0 {
+				continue
+			}
+			pt += separator + el
+			breadcrumb += `<li class="breadcrumb-item"><a class="nodecor" href="` + pt + `">` + el + `</a></li>`
+		}
+
+		entries, err := os.ReadDir(path.Join(arg_fold, c_path))
+		if err != nil {
+
+			model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		template_file := "index"
+
+		var rows []FileRow
+		var mode string
+		var s_sort string
+
+		if arg_extend_mode == "1" {
+
+			template_file = "index_extend"
+
+			mode = c.Cookies("mode")
+			if len(mode) == 0 {
+				mode = "list"
+			}
+
+			q_mode := c.Query("mode")
+			if len(q_mode) > 0 {
+				mode = q_mode
+			}
+
+			cookie := new(fiber.Cookie)
+			cookie.Name = "mode"
+			cookie.Value = mode
+			c.Cookie(cookie)
+
+			s_sort = c.Cookies("sort")
+			if len(s_sort) == 0 {
+				s_sort = "name"
+			}
+
+			q_sort := c.Query("sort")
+			if len(q_sort) > 0 {
+				s_sort = q_sort
+			}
+
+			cookie = new(fiber.Cookie)
+			cookie.Name = "sort"
+			cookie.Value = s_sort
+			c.Cookie(cookie)
+		}
+
+		rows = listGenerateView(arg_fold, c_path, entries, s_sort)
+
+		mode_thumb := false
+		if mode == "thumb" {
+			mode_thumb = true
+		}
+
+		mode_list := false
+		if mode == "list" {
+			mode_list = true
+		}
+
+		sort_name := false
+		if s_sort == "name" {
+			sort_name = true
+		}
+
+		sort_modified := false
+		if s_sort == "modified" {
+			sort_modified = true
+		}
+
+		sort_size := false
+		if s_sort == "size" {
+			sort_size = true
+		}
+
+		var folderTree_js []byte
+
+		if arg_extend_mode == "1" {
+			folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
+
+			folderTree_js, err = json.Marshal(folderTree)
+			if err != nil {
+
+				panic(err)
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+		}
+
+		return c.Render("view/"+template_file, fiber.Map{
+
+			"Breadcrumb":    template.HTML(breadcrumb),
+			"folderTree_js": template.HTML(folderTree_js),
+
+			"rows":            rows,
+			"arg_extend_mode": arg_extend_mode,
+			"arg_crypt":       arg_crypt,
+			"mode_thumb":      mode_thumb,
+			"mode_list":       mode_list,
+
+			"sort_name":     sort_name,
+			"sort_modified": sort_modified,
+			"sort_size":     sort_size,
+
+			"files_count_max":     conf.Files_count_max,
+			"fieldSize_max":       conf.FieldSize_max,
+			"fieldSize_max_human": conf.FieldSize_max_human,
+
+			"arg_upload_disable":      arg_upload_disable,
+			"arg_folder_make_disable": arg_folder_make_disable,
+		}, "view/layout/default")
+
+	} else {
+
+		code := c.Cookies("code")
+
+		q_code := c.Query("code")
+		if len(q_code) > 0 {
+			code = q_code
+		}
+
+		is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
+
+		if arg_crypt == "" && len(code) > 0 {
+
+			cookie := new(fiber.Cookie)
+			cookie.Name = "code"
+			c.Cookie(cookie)
+		}
+
+		if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
+
+			f, err := os.CreateTemp("", "httphere_decrypt*")
+			if err != nil {
+				panic(err)
+			}
+			defer os.Remove(f.Name())
+
+			readerFile, _ := os.Open(path.Join(arg_fold, c_path))
+			_, err = io.Copy(f, readerFile)
+			if err != nil {
+				panic(err)
+			}
+			f.Close()
+
+			isOk, err := util.DecryptFile(f.Name(), code)
+			if !isOk {
+
+				model.EventLogAdd(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+
+			model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+path.Join(arg_fold, c_path))
+
+			fname := filepath.Base(c_path)
+			fname = strings.Replace(fname, ".crypt", "", 1)
+			c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
+
+			return c.SendFile(f.Name(), false)
+
+		} else {
+
+			model.EventLogAdd(db, c, "200", "CORE", "SendFile "+path.Join(arg_fold, c_path))
+
+			return c.SendFile(path.Join(arg_fold, c_path), false)
+		}
+
 	}
 
 	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
