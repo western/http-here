@@ -128,16 +128,28 @@ func GetThumb(c *fiber.Ctx) error {
 
 	var row model.File
 
-	if result := db.Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row); result.Error == nil {
+	result := db.Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
+
+	if result.Error == nil {
 
 		hex_name = row.MD5
+
+		if len(hex_name) == 0 {
+
+			model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+" hex_name is empty")
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"file": path.Join("/__thumb/", c_path),
+			}, "application/json")
+		}
 
 		if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
 
 			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
-
 			return c.SendFile(path.Join(homepath, ".httphere", "thumb", hex_name), false)
 		}
+
 	} else {
 
 		hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
