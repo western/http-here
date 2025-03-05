@@ -430,8 +430,8 @@ $(document).ready(function(){
             $('#search_input').focus()
         })
         
-        const mkfileModal = new bootstrap.Modal(search_modal, {});
-        mkfileModal.show();
+        const searchModal = new bootstrap.Modal(search_modal, {});
+        searchModal.show();
     });
     
     
