@@ -39,6 +39,7 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	red_clr := color.New(color.FgRed).SprintFunc()
+	white_clr := color.New(color.FgWhite).SprintFunc()
 
 	pref := ""
 
@@ -95,9 +96,7 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	pref += "[" + tag + "] "
 
-	//arg_fold
-	//msg := strings.ReplaceAll(msg, arg_fold, green_clr(arg_fold))
-	msg = strings.Replace(msg, arg_fold, green_clr(arg_fold), 1)
+	msg = strings.Replace(msg, arg_fold, white_clr(arg_fold), 1)
 
 	pref += msg
 
