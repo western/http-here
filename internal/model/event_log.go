@@ -5,6 +5,7 @@ import (
 	"os"
 	_ "reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -61,9 +62,12 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 		pref += "[] "
 	}
 
+	arg_fold := ""
 	arg_silence := ""
 	arg_nolog := ""
 	if c != nil {
+
+		arg_fold = c.Locals("arg_fold").(string)
 		if c.Locals("arg_silence") != nil {
 			arg_silence = c.Locals("arg_silence").(string)
 		}
@@ -90,6 +94,10 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 	}
 
 	pref += "[" + tag + "] "
+
+	//arg_fold
+	//msg := strings.ReplaceAll(msg, arg_fold, green_clr(arg_fold))
+	msg = strings.Replace(msg, arg_fold, green_clr(arg_fold), 1)
 
 	pref += msg
 
