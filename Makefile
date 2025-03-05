@@ -11,8 +11,6 @@ run:
 	go run cmd/http-here/main.go
 
 build:
-	go build -o http-here cmd/http-here/main.go
-
-build2:
 	go build -o http-here -ldflags "-w -s" cmd/http-here/main.go
+
 
