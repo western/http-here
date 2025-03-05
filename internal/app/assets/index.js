@@ -421,8 +421,17 @@ $(document).ready(function(){
     
     $('#search_dlg, #search_dlg2').click(function (ev) {
         
-        const searchModal = new bootstrap.Modal(document.getElementById('search_modal'), {});
-        searchModal.show();
+        //const searchModal = new bootstrap.Modal(document.getElementById('search_modal'), {});
+        //searchModal.show();
+        
+        let search_modal = document.getElementById('search_modal');
+        
+        search_modal.addEventListener('shown.bs.modal', () => {
+            $('#search_input').focus()
+        })
+        
+        const mkfileModal = new bootstrap.Modal(search_modal, {});
+        mkfileModal.show();
     });
     
     
