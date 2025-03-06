@@ -238,7 +238,9 @@ func FileSearchResult(db *gorm.DB, arg_fold, s string) []FileSearch {
 		file.FullPath = strings.Replace(file.FullPath, arg_fold, "", 1)
 
 		OnlyFold := filepath.Dir(file.FullPath)
-		OnlyFoldHtml := strings.ReplaceAll(OnlyFold, s, `<span style="background-color:yellow">`+s+`</span>`)
+
+		re := regexp.MustCompile(`(?i)` + s)
+		OnlyFoldHtml := re.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+s+`</span>`)
 
 		NameHtml := strings.ReplaceAll(file.Name, s, `<span style="background-color:yellow">`+s+`</span>`)
 		NameHtml = string(NameHtml)
