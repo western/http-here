@@ -240,9 +240,11 @@ If you put inside folder file `index.html`, it will be return as context
 
 ## Thumbnails support
 
+For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, docx, xls, xlsx, odt, ods`.
 
+For `jpg, gif, png` you not need anything.
 
-For document preview you need `libreoffice` package. Formats `pdf, rtf, doc, docx, xls, xlsx, odt, ods`
+All previews generate during first view. One time.
 
 ## Linux packages needs for full functional
 
