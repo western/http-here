@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	_ "reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +40,7 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	red_clr := color.New(color.FgRed).SprintFunc()
-	white_clr := color.New(color.FgWhite).SprintFunc()
+	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
 
 	pref := ""
 
@@ -106,6 +107,8 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	if db != nil && arg_nolog == "" {
 
+		msg = StringClearColor(msg)
+
 		el := &EventLog{
 			Proc_id: os.Getpid(),
 			DT:      _dt,
@@ -126,6 +129,14 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 		}
 	}
 
+}
+
+func StringClearColor(msg string) string {
+
+	// /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''
+
+	re := regexp.MustCompile("[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]")
+	return re.ReplaceAllString(msg, "")
 }
 
 /*
