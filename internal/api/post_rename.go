@@ -10,6 +10,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostRename(c *fiber.Ctx) error {
@@ -19,16 +21,12 @@ func PostRename(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostRename", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -53,7 +51,7 @@ func PostRename(c *fiber.Ctx) error {
 	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		//util.LogPrefix(c, "500", "to is empty")
+
 		model.EventLogAdd(db, c, "500", "PostRename", "to is empty")
 
 		return c.JSON(fiber.Map{
@@ -64,7 +62,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(path.Join(arg_fold, to))
 	if err == nil {
-		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, to)+"' already exists ")
+
 		model.EventLogAdd(db, c, "500", "PostRename", "'"+path.Join(arg_fold, to)+"' already exists ")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -77,7 +75,7 @@ func PostRename(c *fiber.Ctx) error {
 	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		//util.LogPrefix(c, "500", "name is empty")
+
 		model.EventLogAdd(db, c, "500", "PostRename", "name is empty")
 
 		return c.JSON(fiber.Map{
@@ -88,7 +86,7 @@ func PostRename(c *fiber.Ctx) error {
 
 	_, err = os.Stat(path.Join(arg_fold, u_path, name))
 	if err != nil {
-		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
+
 		model.EventLogAdd(db, c, "500", "PostRename", "'"+path.Join(arg_fold, u_path, name)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -104,7 +102,6 @@ func PostRename(c *fiber.Ctx) error {
 
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Rename error "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostRename", "Rename error "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -114,7 +111,6 @@ func PostRename(c *fiber.Ctx) error {
 
 	} else {
 
-		//util.LogPrefix(c, "200", "Rename '"+src_file_path+"' => "+target_file_path)
 		model.EventLogAdd(db, c, "200", "PostRename", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
 

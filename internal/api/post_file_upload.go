@@ -13,6 +13,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostFileUpload(c *fiber.Ctx) error {
@@ -25,10 +27,7 @@ func PostFileUpload(c *fiber.Ctx) error {
 		arg_crypt = c.Locals("arg_crypt").(string)
 	}
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -97,8 +96,6 @@ func PostFileUpload(c *fiber.Ctx) error {
 		}
 
 		if arg_crypt == "1" && len(code) > 0 {
-
-			//panic(code)
 
 			f, err := os.CreateTemp("", "httphere_crypt*")
 			if err != nil {

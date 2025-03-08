@@ -12,6 +12,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostMove(c *fiber.Ctx) error {
@@ -21,16 +23,12 @@ func PostMove(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostMove", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -52,7 +50,7 @@ func PostMove(c *fiber.Ctx) error {
 	to = util.CleanDirtyPath(to)
 
 	if len(to) == 0 {
-		//util.LogPrefix(c, "500", "to is empty")
+
 		model.EventLogAdd(db, c, "500", "PostMove", "to is empty")
 
 		return c.JSON(fiber.Map{
@@ -63,7 +61,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	_, err = os.Stat(path.Join(arg_fold, to))
 	if err != nil {
-		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, to)+"' not exists "+err.Error())
+
 		model.EventLogAdd(db, c, "500", "PostMove", "'"+path.Join(arg_fold, to)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -77,7 +75,6 @@ func PostMove(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		//util.LogPrefix(c, "500", "form is empty")
 		model.EventLogAdd(db, c, "500", "PostMove", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -89,7 +86,6 @@ func PostMove(c *fiber.Ctx) error {
 	for _, val := range names {
 
 		if len(val) > 0 {
-			//fmt.Println("val="+val)
 
 			name := strings.ReplaceAll(val, "/", "")
 			//re := regexp.MustCompile("\\s+")
@@ -98,7 +94,7 @@ func PostMove(c *fiber.Ctx) error {
 			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				//util.LogPrefix(c, "500", "name is empty")
+
 				model.EventLogAdd(db, c, "500", "PostMove", "name is empty")
 				continue
 			}
@@ -112,7 +108,7 @@ func PostMove(c *fiber.Ctx) error {
 
 			_, err := os.Stat(src_file_path)
 			if err != nil {
-				//util.LogPrefix(c, "500", "Source '"+src_file_path+"' not exists")
+
 				model.EventLogAdd(db, c, "500", "PostMove", "Source '"+src_file_path+"' not exists")
 				continue
 			}
@@ -120,12 +116,10 @@ func PostMove(c *fiber.Ctx) error {
 			_, err = os.Stat(target_file_path)
 			if err == nil {
 
-				//util.LogPrefix(c, "200", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 				model.EventLogAdd(db, c, "200", "PostMove", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
 				if err := os.RemoveAll(target_file_path); err != nil {
 
-					//util.LogPrefix(c, "500", "'"+target_file_path+"' err "+err.Error())
 					model.EventLogAdd(db, c, "500", "PostMove", "'"+target_file_path+"' err "+err.Error())
 					continue
 				}
@@ -135,12 +129,10 @@ func PostMove(c *fiber.Ctx) error {
 
 			if err != nil {
 
-				//util.LogPrefix(c, "500", "Rename error "+fmt.Sprintf("%s", err))
 				model.EventLogAdd(db, c, "500", "PostMove", "Rename error "+fmt.Sprintf("%s", err))
 
 			} else {
 
-				//util.LogPrefix(c, "200", "Move '"+src_file_path+"' to "+target_file_path)
 				model.EventLogAdd(db, c, "200", "PostMove", "Move '"+src_file_path+"' to "+target_file_path)
 			}
 

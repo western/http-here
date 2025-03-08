@@ -12,6 +12,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostFileTouch(c *fiber.Ctx) error {
@@ -21,10 +23,7 @@ func PostFileTouch(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
@@ -59,7 +58,7 @@ func PostFileTouch(c *fiber.Ctx) error {
 	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		//util.LogPrefix(c, "500", "name is empty")
+
 		model.EventLogAdd(db, c, "500", "PostFileTouch", "name is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -71,7 +70,6 @@ func PostFileTouch(c *fiber.Ctx) error {
 	if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name)); err == nil {
 
 		if fileInfo.IsDir() {
-			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
 			model.EventLogAdd(db, c, "500", "PostFileTouch", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -84,7 +82,6 @@ func PostFileTouch(c *fiber.Ctx) error {
 	myfile, err := os.Create(path.Join(arg_fold, u_path, name))
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error file create "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostFileTouch", "Error file create "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -95,7 +92,6 @@ func PostFileTouch(c *fiber.Ctx) error {
 	myfile.WriteString("\n")
 	myfile.Close()
 
-	//util.LogPrefix(c, "200", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
 	model.EventLogAdd(db, c, "200", "PostFileTouch", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{

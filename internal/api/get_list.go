@@ -9,6 +9,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetList(c *fiber.Ctx) error {
@@ -16,10 +18,7 @@ func GetList(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -31,7 +30,6 @@ func GetList(c *fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(arg_fold, u_path)); err != nil {
 
-		//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path)+"' not exists")
 		model.EventLogAdd(db, c, "500", "GetList", "'"+path.Join(arg_fold, u_path)+"' not exists")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -43,7 +41,6 @@ func GetList(c *fiber.Ctx) error {
 	entries, err := os.ReadDir(path.Join(arg_fold, u_path))
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error "+path.Join(arg_fold, u_path)+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "GetList", "Error "+path.Join(arg_fold, u_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -59,9 +56,8 @@ func GetList(c *fiber.Ctx) error {
 		s_sort = "name"
 	}
 
-	rows := listGenerateView(arg_fold, u_path, entries, s_sort)
+	rows := listGenerateView(db, arg_fold, u_path, entries, s_sort)
 
-	//util.LogPrefix(c, "200", "Get list '"+path.Join(arg_fold, u_path)+"'")
 	model.EventLogAdd(db, c, "200", "GetList", "Get list '"+path.Join(arg_fold, u_path)+"'")
 
 	return c.JSON(fiber.Map{

@@ -2,9 +2,10 @@ package api
 
 import (
 	"github.com/western/http-here/internal/model"
-	_ "github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetSearch(c *fiber.Ctx) error {
@@ -12,10 +13,7 @@ func GetSearch(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 

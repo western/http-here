@@ -16,6 +16,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetFileConvert(c *fiber.Ctx) error {
@@ -23,10 +25,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -69,18 +68,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 	if is_office_match {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
-		/*
-			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-			if err != nil {
-
-				//util.LogPrefix(c, "500", "Error libreoffice not found "+err.Error())
-				model.EventLogAdd(db, c, "500", "GetFileConvert", "Error libreoffice not found "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-				}, "application/json")
-			}
-		*/
 
 		if runtime.GOOS == "windows" {
 
@@ -188,7 +175,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "Error open temp source file: "+err.Error())
 			model.EventLogAdd(db, c, "500", "GetFileConvert", "Error open temp source file: "+err.Error())
 
 			panic(err)
@@ -196,7 +182,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		//util.LogPrefix(c, "200", "Convert for edit "+path.Join(arg_fold, c_path))
 		model.EventLogAdd(db, c, "200", "GetFileConvert", "Convert for edit "+path.Join(arg_fold, c_path))
 
 		return c.JSON(fiber.Map{
@@ -206,7 +191,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	}
 
-	//util.LogPrefix(c, "500", "Error: format of file is not for edit")
 	model.EventLogAdd(db, c, "500", "GetFileConvert", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

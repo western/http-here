@@ -5,14 +5,13 @@ import (
 	_ "github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetSearch(c *fiber.Ctx) error {
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -21,7 +20,6 @@ func GetSearch(c *fiber.Ctx) error {
 
 	result_list := model.FileSearchResult(db, arg_fold, s)
 
-	//util.LogPrefix(c, "200", "Get search '"+s+"'")
 	model.EventLogAdd(db, c, "200", "GetSearch", "Get search '"+s+"'")
 
 	return c.Render("view/search", fiber.Map{

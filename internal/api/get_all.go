@@ -21,6 +21,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetAll(c *fiber.Ctx) error {
@@ -53,10 +55,7 @@ func GetAll(c *fiber.Ctx) error {
 		arg_spa = c.Locals("arg_spa").(string)
 	}
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -166,7 +165,7 @@ func GetAll(c *fiber.Ctx) error {
 			c.Cookie(cookie)
 		}
 
-		rows = listGenerateView(arg_fold, c_path, entries, s_sort)
+		rows = listGenerateView(db, arg_fold, c_path, entries, s_sort)
 
 		mode_thumb := false
 		if mode == "thumb" {
@@ -309,12 +308,7 @@ type FileRow struct {
 	Rndm         string
 }
 
-func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
-
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
 
 	var rows_dir []FileRow
 	var rows_file []FileRow
@@ -339,13 +333,9 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 			size := fileInfo2.Size()
 			size_human := util.PrettyByteSize(size)
 
-			//fmt.Println("path.Join=", path.Join(c_path, e.Name()))
-			//fmt.Println("path.Join=", path.Join(c_path, e.Name()))
-
 			if fileInfo2.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
-					IsDir: fileInfo2.IsDir(),
-					//FullPath: path.Join(c_path, e.Name()),
+					IsDir:    fileInfo2.IsDir(),
 					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 
@@ -364,8 +354,7 @@ func listGenerateView(arg_fold string, c_path string, entries []os.DirEntry, s_s
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
-					IsDir: fileInfo2.IsDir(),
-					//FullPath: path.Join(c_path, e.Name()),
+					IsDir:    fileInfo2.IsDir(),
 					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 

@@ -15,6 +15,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostZip(c *fiber.Ctx) error {
@@ -22,14 +24,11 @@ func PostZip(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
-		//fmt.Println(err2)
+
 		model.EventLogAdd(db, c, "500", "PostZip", "home detect error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -42,7 +41,6 @@ func PostZip(c *fiber.Ctx) error {
 
 		if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
 
-			//fmt.Println(err4)
 			model.EventLogAdd(db, c, "500", "PostZip", "mkdirall error: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -58,7 +56,6 @@ func PostZip(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostZip", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -84,7 +81,7 @@ func PostZip(c *fiber.Ctx) error {
 	archive, err := os.Create(path.Join(homepath, ".httphere", "temp", archive_name))
 
 	if err != nil {
-		//fmt.Println(err)
+
 		model.EventLogAdd(db, c, "500", "PostZip", "create error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -101,7 +98,6 @@ func PostZip(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		//util.LogPrefix(c, "500", "form is empty")
 		model.EventLogAdd(db, c, "500", "PostZip", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -117,14 +113,14 @@ func PostZip(c *fiber.Ctx) error {
 		name = util.CleanDirtyPath(name)
 
 		if len(name) == 0 {
-			//util.LogPrefix(c, "500", "name is empty")
+
 			model.EventLogAdd(db, c, "500", "PostZip", "name is empty")
 			continue
 		}
 
 		fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
 		if err != nil {
-			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+
 			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 			continue
 		}
@@ -132,7 +128,6 @@ func PostZip(c *fiber.Ctx) error {
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
 			continue
 		}

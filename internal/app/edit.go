@@ -18,6 +18,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func GetEditDoc(c *fiber.Ctx) error {
@@ -25,10 +27,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -65,17 +64,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 	if is_office_match {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
-
-		/*
-			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-			if err != nil {
-
-
-				model.EventLogAdd(db, c, "500", "GetEditDoc", "Error libreoffice not found "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-		*/
 
 		if runtime.GOOS == "windows" {
 
@@ -180,10 +168,7 @@ func GetEditCode(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -260,10 +245,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {

@@ -11,6 +11,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostDelete(c *fiber.Ctx) error {
@@ -20,16 +22,12 @@ func PostDelete(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostDelete", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -55,7 +53,6 @@ func PostDelete(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		//util.LogPrefix(c, "500", "form is empty")
 		model.EventLogAdd(db, c, "500", "PostDelete", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -67,7 +64,6 @@ func PostDelete(c *fiber.Ctx) error {
 	for _, val := range names {
 
 		if len(val) > 0 {
-			//fmt.Println("val="+val)
 
 			name := strings.ReplaceAll(val, "/", "")
 			//re := regexp.MustCompile("\\s+")
@@ -76,7 +72,6 @@ func PostDelete(c *fiber.Ctx) error {
 			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				//util.LogPrefix(c, "500", "name is empty")
 				model.EventLogAdd(db, c, "500", "PostDelete", "name is empty")
 				continue
 			}
@@ -84,7 +79,6 @@ func PostDelete(c *fiber.Ctx) error {
 			fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
 
 			if err != nil {
-				//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 				continue
 			}
@@ -94,13 +88,10 @@ func PostDelete(c *fiber.Ctx) error {
 				// remove fold and all inside data
 
 				if err := os.RemoveAll(path.Join(arg_fold, u_path, name)); err != nil {
-
-					//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				//util.LogPrefix(c, "200", "Remove fold '"+path.Join(arg_fold, u_path, name)+"'")
 				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+path.Join(arg_fold, u_path, name)+"'")
 
 			} else {
@@ -108,13 +99,10 @@ func PostDelete(c *fiber.Ctx) error {
 				// remove one file
 
 				if err := os.Remove(path.Join(arg_fold, u_path, name)); err != nil {
-
-					//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
-				//util.LogPrefix(c, "200", "Remove '"+path.Join(arg_fold, u_path, name)+"'")
 				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+path.Join(arg_fold, u_path, name)+"'")
 
 			}

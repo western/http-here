@@ -31,7 +31,8 @@ func ConnectToSQLite() (*gorm.DB, error) {
 	}
 
 	db, err := gorm.Open(sqlite.Open(path.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+		SkipDefaultTransaction: true,
+		Logger:                 logger.Default.LogMode(logger.Silent),
 	})
 
 	if err != nil {

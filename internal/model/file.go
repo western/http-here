@@ -13,10 +13,6 @@ import (
 	"regexp"
 	"strings"
 
-	_ "github.com/fatih/color"
-	_ "github.com/gofiber/fiber/v2"
-
-	_ "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -198,7 +194,7 @@ func FileDelMd5Async(db *gorm.DB, FullPath string) {
 func FileDelAsync(db *gorm.DB, FullPath string) {
 
 	if result := db.Where("full_path = ?", FullPath).Delete(&File{}); result.Error != nil {
-		fmt.Println("FileDelAsync", result.Error)
+		fmt.Println("FileDelAsync err=", result.Error)
 	}
 }
 
@@ -229,7 +225,7 @@ func FileSearchResult(db *gorm.DB, arg_fold, s string) []FileSearch {
 	}
 
 	if result := db.Order("full_path").Where("full_path like ? and full_path like ?", arg_fold+"%", "%"+s+"%").Find(&rows); result.Error != nil {
-		fmt.Println(result.Error)
+		fmt.Println("FileSearchResult err=", result.Error)
 		return ret
 	}
 

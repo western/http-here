@@ -25,6 +25,7 @@ import (
 
 	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
+	"gorm.io/gorm"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -37,10 +38,7 @@ func GetThumb(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -132,8 +130,7 @@ func GetThumb(c *fiber.Ctx) error {
 	hex_name := ""
 
 	var row model.File
-
-	result := db.Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
+	result := db.Select("md5, full_path").Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
 
 	if result.Error == nil {
 

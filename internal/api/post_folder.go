@@ -12,6 +12,8 @@ import (
 	"github.com/western/http-here/internal/util"
 
 	"github.com/gofiber/fiber/v2"
+
+	"gorm.io/gorm"
 )
 
 func PostFolder(c *fiber.Ctx) error {
@@ -21,16 +23,12 @@ func PostFolder(c *fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
+	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		//util.LogPrefix(c, "500", "Error url parse "+referer+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostFolder", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -60,7 +58,7 @@ func PostFolder(c *fiber.Ctx) error {
 	name = util.CleanDirtyPath(name)
 
 	if len(name) == 0 {
-		//util.LogPrefix(c, "500", "name is empty")
+
 		model.EventLogAdd(db, c, "500", "PostFolder", "name is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -72,7 +70,7 @@ func PostFolder(c *fiber.Ctx) error {
 	if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name)); err == nil {
 
 		if fileInfo.IsDir() {
-			//util.LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
+
 			model.EventLogAdd(db, c, "500", "PostFolder", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -84,7 +82,6 @@ func PostFolder(c *fiber.Ctx) error {
 
 	if err := os.Mkdir(path.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
 
-		//util.LogPrefix(c, "500", "Error mkdir "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+path.Join(arg_fold, u_path, name)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -93,7 +90,6 @@ func PostFolder(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	//util.LogPrefix(c, "200", "Mkdir '"+path.Join(arg_fold, u_path, name)+"'")
 	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+path.Join(arg_fold, u_path, name)+"'")
 
 	return c.JSON(fiber.Map{
