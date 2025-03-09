@@ -25,13 +25,13 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Install from github
 
 ```console
-git clone --branch v1.12.1 https://github.com/western/http-here
+git clone --branch v1.12.2 https://github.com/western/http-here
 cd http-here
 make build
 ```
 or
 ```console
-go install github.com/western/http-here/cmd/http-here@v1.12.1
+go install github.com/western/http-here/cmd/http-here@v1.12.2
 ```
 
 
@@ -45,7 +45,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.12.1/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.12.2/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -53,7 +53,7 @@ chmod +x http-here
 
 windows / amd64
 ```console
-https://github.com/western/http-here/releases/download/v1.12.1/http-here.zip
+https://github.com/western/http-here/releases/download/v1.12.2/http-here.zip
 ```
 
 
@@ -273,6 +273,13 @@ https://github.com/western/http-here/issues
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
 - [ ] REST restructure
+
+### 1.12.2
+- [x] modal dialogs set focus
+- [x] app/thumb: return without resize by file size
+- [x] app/thumb: add error 'hex_name is empty'
+- [x] conf: set Files_count_max to 200
+- [x] fix edit: 1) folderTree_src is null 2) edit files in root directory
 
 ### 1.12.1
 - [x] new cmd argument --silence
