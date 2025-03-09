@@ -32,7 +32,7 @@
         let folderTree_src = {{.folderTree_js}};
         let folderTree = [];
         
-        if( folderTree_src.length > 0 ){
+        if( folderTree_src && folderTree_src.length > 0 ){
             folderTree = JSON.parse(  folderTree_src  );
         }
         
