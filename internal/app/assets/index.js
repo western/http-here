@@ -111,6 +111,10 @@ $(document).ready(function(){
                     }else{
                         alert(data.msg);
                     }
+                }).fail(function(data) {
+                    if (data.responseJSON.msg) {
+                        alert(data.responseJSON.msg);
+                    }
                 });
                 
                 
@@ -223,6 +227,10 @@ $(document).ready(function(){
                         location.href = location.href;
                     }else{
                         alert(data.msg);
+                    }
+                }).fail(function(data) {
+                    if (data.responseJSON.msg) {
+                        alert(data.responseJSON.msg);
                     }
                 });
                 

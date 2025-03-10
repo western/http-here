@@ -1,6 +1,7 @@
 package api
 
 import (
+	_ "fmt"
 	"net/url"
 	"os"
 	"path"
@@ -68,6 +69,25 @@ func PostCopy(c *fiber.Ctx) error {
 			"msg":  "'" + path.Join(arg_fold, to) + "' not exists",
 		}, "application/json")
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	src_file_path := u_path
+	if len(from_path) > 0 {
+		src_file_path = from_path
+	}
+
+	if src_file_path == to {
+
+		model.EventLogAdd(db, c, "500", "PostCopy", "Source and target paths '"+to+"' are identical")
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Source and target paths '" + to + "' are identical",
+		}, "application/json")
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	form, _ := c.MultipartForm()
 	names := form.Value["name"]

@@ -70,6 +70,25 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	src_file_path := u_path
+	if len(from_path) > 0 {
+		src_file_path = from_path
+	}
+
+	if src_file_path == to {
+
+		model.EventLogAdd(db, c, "500", "PostMove", "Source and target paths '"+to+"' are identical")
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Source and target paths '" + to + "' are identical",
+		}, "application/json")
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
 	form, _ := c.MultipartForm()
 	names := form.Value["name"]
 
