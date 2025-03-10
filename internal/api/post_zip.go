@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	_ "path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -164,8 +165,12 @@ func PostZip(c *fiber.Ctx) error {
 	//return c.SendFile(path.Join(arg_fold, u_path, "archive.zip"), false)
 	//return c.Download(path.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
 
-	//util.LogPrefix(c, "200", "Temp file create "+path.Join(homepath, ".httphere", "temp", archive_name))
-	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+path.Join(homepath, ".httphere", "temp", archive_name))
+	zip_full_path := path.Join(homepath, ".httphere", "temp", archive_name)
+	if runtime.GOOS == "windows" {
+		zip_full_path = util.RotateSlash(zip_full_path)
+	}
+
+	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+zip_full_path)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
