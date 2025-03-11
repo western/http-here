@@ -255,6 +255,35 @@
     "/api/file/edit/": {
       "post": {
         "summary": "Save edited file to disk",
+        "parameters": [
+          {
+            "name": "full_path",
+            "in": "query",
+            "description": "Path to the file",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "body",
+            "in": "query",
+            "description": "HTML source from page editor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "save_as_source",
+            "in": "query",
+            "description": "Bool param that say save file as is",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -412,7 +441,7 @@
             }
           },
           {
-            "name": "path",
+            "name": "from_path",
             "in": "query",
             "description": "Current path",
             "required": true,
@@ -464,7 +493,7 @@
             }
           },
           {
-            "name": "path",
+            "name": "from_path",
             "in": "query",
             "description": "Current path",
             "required": true,
