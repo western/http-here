@@ -330,6 +330,12 @@ https://github.com/western/http-here/issues
 
 ### [other history here](HISTORY.md)
 
+## Mascot
+
+<p align="center">
+    <img src="https://github.com/western/http-here/blob/dev/doc/mascot.jpg?raw=true" width="40%"  />
+</p>
+
 ## Pirates hiding their http
 
 <p align="center">
