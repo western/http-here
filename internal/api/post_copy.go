@@ -21,6 +21,8 @@ func PostCopy(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
 	referer := c.Get("Referer")
@@ -165,7 +167,7 @@ func PostCopy(c *fiber.Ctx) error {
 		}
 	}
 
-	go model.FileChkAsync(db)
+	go model.FileChkAsync(db, prefix)
 
 	return c.JSON(fiber.Map{
 		"code": 200,

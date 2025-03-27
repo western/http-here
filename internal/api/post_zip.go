@@ -25,22 +25,25 @@ func PostZip(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostZip", "home detect error: "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostZip", "home detect error: "+err.Error())
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "Error homedir detect",
-		}, "application/json")
-	}
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error homedir detect",
+			}, "application/json")
+		}*/
 
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
+	if _, err := os.Stat(path.Join(prefix, "temp")); err != nil {
 
-		if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
 
 			model.EventLogAdd(db, c, "500", "PostZip", "mkdirall error: "+err.Error())
 
@@ -79,7 +82,7 @@ func PostZip(c *fiber.Ctx) error {
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-	archive, err := os.Create(path.Join(homepath, ".httphere", "temp", archive_name))
+	archive, err := os.Create(path.Join(prefix, "temp", archive_name))
 
 	if err != nil {
 
@@ -165,7 +168,7 @@ func PostZip(c *fiber.Ctx) error {
 	//return c.SendFile(path.Join(arg_fold, u_path, "archive.zip"), false)
 	//return c.Download(path.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
 
-	zip_full_path := path.Join(homepath, ".httphere", "temp", archive_name)
+	zip_full_path := path.Join(prefix, "temp", archive_name)
 	if runtime.GOOS == "windows" {
 		zip_full_path = util.RotateSlash(zip_full_path)
 	}

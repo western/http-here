@@ -72,11 +72,6 @@ func Core() {
 		*arg_tls = *arg_tls_debug
 	}
 
-	db, err := model.ConnectToSQLite()
-	if err != nil {
-		panic(err)
-	}
-
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
 
@@ -168,29 +163,36 @@ func Core() {
 		return
 	}
 
-	if !fiber.IsChild() {
-
-		model.EventLogAdd(db, nil, "", "INIT", "run "+arg_fold)
-
-		go model.FileChkAsync(db)
-	}
-
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("User homepath detect error: ", err)
 		return
 	}
 
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb")); err != nil {
-		if err := os.MkdirAll(path.Join(homepath, ".httphere", "thumb"), os.ModePerm); err != nil {
+	prefix := path.Join(homepath, ".httphere")
+
+	db, err := model.ConnectToSQLite(prefix)
+	if err != nil {
+		panic(err)
+	}
+
+	if !fiber.IsChild() {
+
+		model.EventLogAdd(db, nil, "", "INIT", "run "+arg_fold)
+
+		go model.FileChkAsync(db, prefix)
+	}
+
+	if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
+		if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
 
 			fmt.Println(err)
 			return
 		}
 	}
 
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "tls")); os.IsNotExist(err) {
-		if err := os.MkdirAll(path.Join(homepath, ".httphere", "tls"), os.ModePerm); err != nil {
+	if _, err := os.Stat(path.Join(prefix, "tls")); os.IsNotExist(err) {
+		if err := os.MkdirAll(path.Join(prefix, "tls"), os.ModePerm); err != nil {
 
 			fmt.Println(err)
 			return
@@ -199,8 +201,8 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		util.WalkAndClearZeroFile(path.Join(homepath, ".httphere", "thumb"), 0)
-		//go WalkAndClearOld(path.Join(homepath, ".httphere", "thumb"))
+		util.WalkAndClearZeroFile(path.Join(prefix, "thumb"), 0)
+		//go WalkAndClearOld(path.Join(prefix, "thumb"))
 	}
 
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -217,6 +219,7 @@ func Core() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
+		c.Locals("prefix", prefix)
 		c.Locals("arg_fold", arg_fold)
 
 		if *arg_upload_disable {
@@ -345,12 +348,12 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		if _, err3 := os.Stat(path.Join(homepath, ".httphere", "temp")); err3 != nil {
+		if _, err3 := os.Stat(path.Join(prefix, "temp")); err3 != nil {
 
 			fmt.Println("")
 			//fmt.Println("  Make temp folder")
 
-			if err4 := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
+			if err4 := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err4 != nil {
 				fmt.Println(err4)
 				return
 			}
@@ -359,12 +362,12 @@ func Core() {
 			fmt.Println("")
 			//fmt.Println(yellow("  Clear temp folder"))
 
-			if err := os.RemoveAll(path.Join(homepath, ".httphere", "temp")); err != nil {
+			if err := os.RemoveAll(path.Join(prefix, "temp")); err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			if err4 := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err4 != nil {
+			if err4 := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err4 != nil {
 				fmt.Println(err4)
 				return
 			}
@@ -372,7 +375,7 @@ func Core() {
 		}
 	}
 
-	//app.Static("/__temp", path.Join(homepath, ".httphere", "temp"))
+	//app.Static("/__temp", path.Join(prefix, "temp"))
 
 	if *arg_extend_mode {
 		//app.Get("/__resize/:width/:height/*", controller.GetResize)
@@ -386,12 +389,12 @@ func Core() {
 
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "__temp", "Error "+path.Join(homepath, ".httphere", "temp", c_path)+" "+err.Error())
+			model.EventLogAdd(db, c, "500", "__temp", "Error "+path.Join(prefix, "temp", c_path)+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		c_path = util.CleanDirtyPath(c_path)
-		full_filename := path.Join(homepath, ".httphere", "temp", c_path)
+		full_filename := path.Join(prefix, "temp", c_path)
 
 		if runtime.GOOS == "windows" {
 			full_filename = util.RotateSlash(full_filename)
@@ -470,8 +473,8 @@ func Core() {
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
 
-	crt_filename := path.Join(homepath, ".httphere", "tls", "server.pem")
-	key_filename := path.Join(homepath, ".httphere", "tls", "server.key")
+	crt_filename := path.Join(prefix, "tls", "server.pem")
+	key_filename := path.Join(prefix, "tls", "server.key")
 
 	if runtime.GOOS == "windows" {
 		crt_filename = util.RotateSlash(crt_filename)
@@ -494,7 +497,7 @@ func Core() {
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		cert.Run(path.Join(homepath, ".httphere", "tls"), "server")
+		cert.Run(path.Join(prefix, "tls"), "server")
 
 		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")

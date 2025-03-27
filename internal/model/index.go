@@ -17,20 +17,16 @@ type Tabler interface {
 	TableName() string
 }
 
-func ConnectToSQLite() (*gorm.DB, error) {
+func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "db")); os.IsNotExist(err) {
-		if err := os.MkdirAll(path.Join(homepath, ".httphere", "db"), os.ModePerm); err != nil {
+	if _, err := os.Stat(path.Join(prefix, "db")); os.IsNotExist(err) {
+		if err := os.MkdirAll(path.Join(prefix, "db"), os.ModePerm); err != nil {
 			return nil, err
 		}
 	}
 
-	db, err := gorm.Open(sqlite.Open(path.Join(homepath, ".httphere", "db", "registry.db."+conf.Version)), &gorm.Config{
+    // "?cache=shared&mode=rwc"
+	db, err := gorm.Open(sqlite.Open(path.Join(prefix, "db", "registry.db."+conf.Version )), &gorm.Config{
 		SkipDefaultTransaction: true,
 		Logger:                 logger.Default.LogMode(logger.Silent),
 	})
@@ -41,12 +37,12 @@ func ConnectToSQLite() (*gorm.DB, error) {
 
 	err = db.AutoMigrate(&EventLog{})
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("AutoMigrate EventLog err:", err)
 	}
 
 	err = db.AutoMigrate(&File{})
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("AutoMigrate File err:", err)
 	}
 
 	return db, nil

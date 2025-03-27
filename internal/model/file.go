@@ -102,7 +102,7 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 }
 
-func FileChkAsync(db *gorm.DB) {
+func FileChkAsync(db *gorm.DB, prefix string) {
 
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// chk from db
@@ -131,13 +131,14 @@ func FileChkAsync(db *gorm.DB) {
 
 	//EventLogAdd(db, nil, "", "FileChkAsync", "check from folder")
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println("User homepath detect error: ", err)
-		return
-	}
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println("User homepath detect error: ", err)
+			return
+		}*/
 
-	filepath_thumb := path.Join(homepath, ".httphere", "thumb")
+	filepath_thumb := path.Join(prefix, "thumb")
 
 	files, err := os.ReadDir(filepath_thumb)
 	if err != nil {
@@ -166,15 +167,16 @@ func FileChkAsync(db *gorm.DB) {
 
 // remove hash_thumb file if exist
 // physically
-func FileDelMd5Async(db *gorm.DB, FullPath string) {
+func FileDelMd5Async(db *gorm.DB, prefix, FullPath string) {
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println("User homepath detect error: ", err)
-		return
-	}
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println("User homepath detect error: ", err)
+			return
+		}*/
 
-	filepath_thumb := path.Join(homepath, ".httphere", "thumb")
+	filepath_thumb := path.Join(prefix, "thumb")
 
 	var rows []File
 

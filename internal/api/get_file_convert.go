@@ -25,17 +25,20 @@ func GetFileConvert(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error homepath detect "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetFileConvert", "Error homepath detect "+err.Error())
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-		}, "application/json")
-	}
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+			}, "application/json")
+		}*/
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -100,7 +103,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 		if runtime.GOOS == "windows" {
 
-			filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			filepath_tmp := util.RotateSlash(path.Join(prefix, "temp"))
 			arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
 
 			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
@@ -123,7 +126,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 		} else {
 
-			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			filepath_tmp := path.Join(prefix, "temp")
 			arg_fold_path := path.Join(arg_fold, c_path)
 
 			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
@@ -163,7 +166,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	if is_code_match {
 
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(prefix, "temp")
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 

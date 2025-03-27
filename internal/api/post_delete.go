@@ -20,6 +20,8 @@ func PostDelete(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	referer := c.Get("Referer")
 
 	db := c.Locals("db").(*gorm.DB)
@@ -110,7 +112,7 @@ func PostDelete(c *fiber.Ctx) error {
 		}
 	}
 
-	go model.FileChkAsync(db)
+	go model.FileChkAsync(db, prefix)
 
 	return c.JSON(fiber.Map{
 		"code": 200,

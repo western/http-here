@@ -27,15 +27,19 @@ func GetEditDoc(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetEditDoc", "Error hmepath detect "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetEditDoc", "Error hmepath detect "+err.Error())
 
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-	}
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+	*/
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -90,10 +94,10 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 			// --------------------------------------------------------------------------------------------------------------------------------
 
-			//filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			//filepath_tmp := util.RotateSlash(path.Join(prefix, "temp"))
 			//arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
 
-			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			filepath_tmp := path.Join(prefix, "temp")
 			arg_fold_path := path.Join(arg_fold, c_path)
 
 			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
@@ -121,7 +125,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 			// --------------------------------------------------------------------------------------------------------------------------------
 
-			filepath_tmp := path.Join(homepath, ".httphere", "temp")
+			filepath_tmp := path.Join(prefix, "temp")
 
 			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
 			cmd.Dir = arg_fold
@@ -168,15 +172,18 @@ func GetEditCode(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetEditCode", "Error homepath detect "+err.Error())
+			model.EventLogAdd(db, c, "500", "GetEditCode", "Error homepath detect "+err.Error())
 
-		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-	}
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}*/
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -204,7 +211,7 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	if is_code_match {
 
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(prefix, "temp")
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -245,17 +252,20 @@ func PostFileEdit(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	db := c.Locals("db").(*gorm.DB)
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostFileEdit", "Error homepath detect "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostFileEdit", "Error homepath detect "+err.Error())
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-		}, "application/json")
-	}
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+			}, "application/json")
+		}*/
 
 	full_path := c.FormValue("full_path")
 
@@ -282,7 +292,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(prefix, "temp")
 		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
 
 		if runtime.GOOS == "windows" {
@@ -345,7 +355,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		filepath_tmp := path.Join(prefix, "temp")
 		html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
 		if runtime.GOOS == "windows" {
@@ -426,14 +436,14 @@ func PostFileEdit(c *fiber.Ctx) error {
 			convert_format = "rtf:Rich Text Format"
 		}
 
-		//filepath_tmp := path.Join(homepath, ".httphere", "temp")
+		//filepath_tmp := path.Join(prefix, "temp")
 		//html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
 		if runtime.GOOS == "windows" {
 
 			// --------------------------------------------------------------------------------------------------------------------------------
 
-			//filepath_tmp := util.RotateSlash(path.Join(homepath, ".httphere", "temp"))
+			//filepath_tmp := util.RotateSlash(path.Join(prefix, "temp"))
 			//html_temp_file := util.RotateSlash(path.Join(filepath_tmp, orig_filename+".html"))
 
 			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to "` + convert_format + `" --outdir "` + filepath_tmp + `" "` + html_temp_file + `"`)
@@ -488,7 +498,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 				os.Remove(path.Join(filepath_tmp, orig_filename+".html"))
 			}
 
-			model.FileDelMd5Async(db, path.Join(arg_fold, full_path))
+			model.FileDelMd5Async(db, prefix, path.Join(arg_fold, full_path))
 
 			model.FileDelAsync(db, path.Join(arg_fold, full_path))
 

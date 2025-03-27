@@ -19,6 +19,8 @@ func PostRename(c *fiber.Ctx) error {
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
 
+	prefix := c.Locals("prefix").(string)
+
 	referer := c.Get("Referer")
 
 	db := c.Locals("db").(*gorm.DB)
@@ -114,7 +116,7 @@ func PostRename(c *fiber.Ctx) error {
 		model.EventLogAdd(db, c, "200", "PostRename", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
 
-	go model.FileChkAsync(db)
+	go model.FileChkAsync(db, prefix)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
