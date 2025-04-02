@@ -29,17 +29,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "GetFileConvert", "Error homepath detect "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-			}, "application/json")
-		}*/
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 

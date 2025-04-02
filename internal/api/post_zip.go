@@ -29,18 +29,6 @@ func PostZip(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "PostZip", "home detect error: "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error homedir detect",
-			}, "application/json")
-		}*/
-
 	if _, err := os.Stat(path.Join(prefix, "temp")); err != nil {
 
 		if err := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {

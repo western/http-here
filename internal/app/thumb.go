@@ -42,18 +42,6 @@ func GetThumb(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "GetThumb", "Error homedir detect "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error homedir detect",
-			}, "application/json")
-		}*/
-
 	if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
 
 		if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
@@ -132,27 +120,30 @@ func GetThumb(c *fiber.Ctx) error {
 	//hex_name := hex.EncodeToString(hash_name[:])
 	hex_name := ""
 
-	var row model.File
-	result := db.Select("md5, full_path").Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
+	if db != nil {
 
-	if result.Error == nil {
+		var row model.File
+		result := db.Select("md5, full_path").Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
 
-		hex_name = row.MD5
+		if result.Error == nil {
 
-		if len(hex_name) == 0 {
+			hex_name = row.MD5
 
-			model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
+			if len(hex_name) == 0 {
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"file": path.Join("/__thumb/", c_path),
-			}, "application/json")
-		}
+				model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
 
-		if _, err := os.Stat(path.Join(prefix, "thumb", hex_name)); err == nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"file": path.Join("/__thumb/", c_path),
+				}, "application/json")
+			}
 
-			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
-			return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+			if _, err := os.Stat(path.Join(prefix, "thumb", hex_name)); err == nil {
+
+				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
+				return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+			}
 		}
 	}
 

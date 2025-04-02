@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	_ "reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -33,6 +34,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
+
+	"gorm.io/gorm"
 )
 
 //go:embed view/*
@@ -65,6 +68,8 @@ func Core() {
 
 	arg_silence := flag.Bool("silence", false, "Disable all console messages")
 	arg_nolog := flag.Bool("nolog", false, "Do not write any data to event_log table")
+
+	arg_nodb := flag.Bool("nodb", false, "Disable database use")
 
 	flag.Parse()
 
@@ -171,9 +176,19 @@ func Core() {
 
 	prefix := path.Join(homepath, ".httphere")
 
-	db, err := model.ConnectToSQLite(prefix)
-	if err != nil {
-		panic(err)
+	/*
+		db, err := model.ConnectToSQLite(prefix)
+		if err != nil {
+			panic(err)
+		}*/
+
+	var db *gorm.DB
+
+	if !*arg_nodb {
+		db, err = model.ConnectToSQLite(prefix)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if !fiber.IsChild() {
@@ -249,6 +264,10 @@ func Core() {
 		if *arg_nolog {
 
 			c.Locals("arg_nolog", "1")
+		}
+		if *arg_nodb {
+
+			c.Locals("arg_nodb", "1")
 		}
 		c.Locals("db", db)
 

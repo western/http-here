@@ -31,16 +31,6 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "GetEditDoc", "Error hmepath detect "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}
-	*/
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
@@ -176,15 +166,6 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "GetEditCode", "Error homepath detect "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}*/
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
@@ -255,17 +236,6 @@ func PostFileEdit(c *fiber.Ctx) error {
 	prefix := c.Locals("prefix").(string)
 
 	db := c.Locals("db").(*gorm.DB)
-
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-
-			model.EventLogAdd(db, c, "500", "PostFileEdit", "Error homepath detect "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-			}, "application/json")
-		}*/
 
 	full_path := c.FormValue("full_path")
 

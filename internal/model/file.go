@@ -36,6 +36,10 @@ func (File) TableName() string {
 
 func FileAddAsync(db *gorm.DB, FullPath string) error {
 
+	if db == nil {
+		return nil
+	}
+
 	IsDir := 0
 
 	ext := filepath.Ext(FullPath)
@@ -104,6 +108,10 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 func FileChkAsync(db *gorm.DB, prefix string) {
 
+	if db == nil {
+		return
+	}
+
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// chk from db
 
@@ -130,13 +138,6 @@ func FileChkAsync(db *gorm.DB, prefix string) {
 	// chk from folder
 
 	//EventLogAdd(db, nil, "", "FileChkAsync", "check from folder")
-
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-			fmt.Println("User homepath detect error: ", err)
-			return
-		}*/
 
 	filepath_thumb := path.Join(prefix, "thumb")
 
@@ -169,12 +170,9 @@ func FileChkAsync(db *gorm.DB, prefix string) {
 // physically
 func FileDelMd5Async(db *gorm.DB, prefix, FullPath string) {
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-			fmt.Println("User homepath detect error: ", err)
-			return
-		}*/
+	if db == nil {
+		return
+	}
 
 	filepath_thumb := path.Join(prefix, "thumb")
 
@@ -194,6 +192,10 @@ func FileDelMd5Async(db *gorm.DB, prefix, FullPath string) {
 }
 
 func FileDelAsync(db *gorm.DB, FullPath string) {
+
+	if db == nil {
+		return
+	}
 
 	if result := db.Where("full_path = ?", FullPath).Delete(&File{}); result.Error != nil {
 		fmt.Println("FileDelAsync err=", result.Error)
@@ -221,6 +223,10 @@ func FileSearchResult(db *gorm.DB, arg_fold, s string) []FileSearch {
 
 	var rows []File
 	var ret []FileSearch
+
+	if db == nil {
+		return ret
+	}
 
 	if len(s) == 0 {
 		return ret
