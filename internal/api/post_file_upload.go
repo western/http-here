@@ -111,7 +111,7 @@ func PostFileUpload(c *fiber.Ctx) error {
 			}
 			f.Close()
 
-			isOk, err := util.CryptFile(f.Name(), code)
+			isOk, err := util.EncryptFile(f.Name(), code)
 			if !isOk {
 
 				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error CryptFile "+err.Error())

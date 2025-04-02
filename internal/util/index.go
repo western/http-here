@@ -4,11 +4,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"math"
 	"math/rand"
-	"mime/multipart"
 	"os"
 	"os/exec"
 	"path"
@@ -16,16 +13,9 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
-	_ "strconv"
 	"strings"
 	"sync"
 	"time"
-
-	_ "github.com/fatih/color"
-	_ "github.com/gofiber/fiber/v2"
-
-	"crypto/md5"
-	_ "encoding/hex"
 )
 
 func init() {
@@ -59,53 +49,6 @@ func RotateSlash(p string) string {
 	return strings.Replace(p, "\\", "/", -1)
 }
 
-/*
-func LogPrefix(c *fiber.Ctx, status, msg string) {
-
-	green_clr := color.New(color.FgGreen).SprintFunc()
-	red_clr := color.New(color.FgRed).SprintFunc()
-
-	pref := ""
-
-	if status != "200" {
-		pref += red_clr("| ")
-	} else {
-		pref += green_clr("| ")
-	}
-
-	pid := strconv.Itoa(os.Getpid())
-
-	pref += "[" + pid + "] "
-
-	pref += "[" + time.Now().Format("2006-01-02 15:04:05.000") + "] "
-
-	pref += "[" + c.IP() + "] "
-
-	_user := ""
-	if c.Locals("username") != nil {
-		_user = green_clr(c.Locals("username").(string))
-	}
-
-	if len(_user) > 0 {
-		pref += "[" + _user + "] "
-	} else {
-		pref += "[] "
-	}
-
-	if status != "200" {
-		pref += "[" + red_clr(status) + "] "
-	} else {
-		pref += "[" + green_clr(status) + "] "
-	}
-
-	//pref += "[" + tag + "] "
-
-	pref += msg
-
-	fmt.Println(pref)
-}
-*/
-
 // get ext and normalize
 func GetExtNorm(path string) string {
 
@@ -129,99 +72,6 @@ func GetFileName(path string) string {
 	return filename
 }
 
-func CopyFile(src, dst string) error {
-	var err error
-	var srcfd *os.File
-	var dstfd *os.File
-	var srcinfo os.FileInfo
-
-	if srcfd, err = os.Open(src); err != nil {
-		return err
-	}
-	defer srcfd.Close()
-
-	if dstfd, err = os.Create(dst); err != nil {
-		return err
-	}
-	defer dstfd.Close()
-
-	if _, err = io.Copy(dstfd, srcfd); err != nil {
-		return err
-	}
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	}
-	return os.Chmod(dst, srcinfo.Mode())
-}
-
-func MoveFile(src, dst string) error {
-	var err error
-	var srcfd *os.File
-	var dstfd *os.File
-	var srcinfo os.FileInfo
-
-	if srcfd, err = os.Open(src); err != nil {
-		return err
-	}
-	defer srcfd.Close()
-
-	if dstfd, err = os.Create(dst); err != nil {
-		return err
-	}
-	defer dstfd.Close()
-
-	if _, err = io.Copy(dstfd, srcfd); err != nil {
-		return err
-	}
-	srcfd.Close()
-	dstfd.Close()
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	} else {
-
-		if err = os.Remove(src); err != nil {
-			return err
-		}
-	}
-
-	return os.Chmod(dst, srcinfo.Mode())
-}
-
-func CopyDir(src string, dst string) error {
-	var err error
-	var fds []os.FileInfo
-	var srcinfo os.FileInfo
-
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	}
-
-	if err = os.MkdirAll(dst, srcinfo.Mode()); err != nil {
-		return err
-	}
-
-	if fds, err = ioutil.ReadDir(src); err != nil {
-		return err
-	}
-	for _, fd := range fds {
-		srcfp := path.Join(src, fd.Name())
-		dstfp := path.Join(dst, fd.Name())
-
-		if fd.IsDir() {
-			if err = CopyDir(srcfp, dstfp); err != nil {
-				fmt.Println(err)
-
-			}
-		} else {
-			if err = CopyFile(srcfp, dstfp); err != nil {
-				fmt.Println(err)
-
-			}
-		}
-	}
-	return nil
-}
-
 func PrettyByteSize(b int64) string {
 	bf := float64(b)
 	for _, unit := range []string{"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"} {
@@ -231,26 +81,6 @@ func PrettyByteSize(b int64) string {
 		bf /= 1024.0
 	}
 	return fmt.Sprintf("%.1fYiB", bf)
-}
-
-func GetMd5File(path string) string {
-
-	f, err := os.Open(path)
-	if err != nil {
-		//panic(err)
-		fmt.Println(err)
-		return ""
-	}
-	defer f.Close()
-
-	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
-		//panic(err)
-		fmt.Println(err)
-		return ""
-	}
-
-	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 /*
@@ -360,143 +190,6 @@ func RunAnyCommandUnderWin(c string) error {
 	}
 
 	return nil
-}
-
-func WalkAndClearOld(path_ string) {
-
-	files, err := os.ReadDir(path_)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	for _, file := range files {
-
-		full_name := path.Join(path_, file.Name())
-
-		if !file.IsDir() {
-
-			fileInfo, _ := os.Stat(full_name)
-
-			if time.Now().Sub(fileInfo.ModTime()) > 30*24*time.Hour {
-				//fmt.Println( "to del:", full_name )
-				os.Remove(full_name)
-			} else {
-				//fmt.Println( "file:", full_name )
-			}
-
-		} else if file.IsDir() {
-			WalkAndClearOld(full_name)
-		}
-	}
-}
-
-type TreeRow struct {
-	Text string `json:"text"`
-	Path string `json:"path"`
-
-	Expanded bool `json:"expanded"`
-
-	Nodes []TreeRow `json:"nodes"`
-}
-
-func WalkAndTreeBuild(path_ string, prev_path string, deep int) []TreeRow {
-
-	//fmt.Println("WalkAndTreeBuild ", path)
-
-	var node_list []TreeRow
-
-	files, err := os.ReadDir(path_)
-	if err != nil {
-		//fmt.Println(err)
-		return node_list
-	}
-
-	if deep > 5 {
-		return node_list
-	}
-
-	for _, file := range files {
-
-		if !file.IsDir() {
-
-			/*
-				        node_list = append( node_list, TreeRow{
-
-							Text:         file.Name(),
-
-						})
-			*/
-
-		} else if file.IsDir() {
-
-			nodes := WalkAndTreeBuild(path.Join(path_, file.Name()), path.Join(prev_path, file.Name()), deep+1)
-
-			node_list = append(node_list, TreeRow{
-
-				Text: file.Name(),
-				Path: path.Join(prev_path, file.Name()),
-
-				Nodes: nodes,
-			})
-
-		}
-	}
-
-	return node_list
-}
-
-func MultipartToFile(file *multipart.FileHeader) *os.File {
-
-	f, err := os.CreateTemp("", "becloud_convert*")
-	fmt.Println("MultipartToFile Temp file name:", f.Name())
-	defer os.Remove(f.Name())
-
-	readerFile, _ := file.Open()
-	_, err = io.Copy(f, readerFile)
-	if err != nil {
-		//return false, err
-		panic(err)
-	}
-	f.Close()
-
-	file2, _ := os.Open(f.Name())
-
-	return file2
-}
-
-func WalkAndClearZeroFile(path_ string, deep int) {
-
-	files, err := os.ReadDir(path_)
-	if err != nil {
-		return
-	}
-
-	if deep > 5 {
-		return
-	}
-
-	for _, file := range files {
-
-		if !file.IsDir() {
-
-			if NewFileInfo, err := os.Stat(path.Join(path_, file.Name())); err == nil {
-				if NewFileInfo.Size() == 0 {
-
-					//fmt.Println("WalkAndClearZeroFile", "remove=", path.Join(path_, file.Name())    )
-
-					if err2 := os.Remove(path.Join(path_, file.Name())); err2 != nil {
-						panic("Problem of remove zero file " + path.Join(path_, file.Name()) + " " + err2.Error())
-					}
-				}
-			}
-
-		} else if file.IsDir() {
-
-			WalkAndClearZeroFile(path.Join(path_, file.Name()), deep+1)
-
-		}
-	}
-
 }
 
 /*
@@ -658,106 +351,6 @@ func WalkAndMakeThumbnail(path string, deep int) {
 	return
 }
 */
-
-// openssl aes-256-cbc -a -salt -in file.txt -out file.txt.cr -pass pass:123
-func CryptFile(path_, pass string) (bool, error) {
-
-	_, err := exec.Command("bash", "-c", "openssl --help").Output()
-	if err != nil {
-		return false, err
-	}
-
-	if len(path_) == 0 {
-		return false, errors.New("Path of file is empty")
-	}
-
-	if len(pass) == 0 {
-		return false, errors.New("Pass is empty")
-	}
-
-	from_file := filepath.Base(path_)
-	to_file := filepath.Base(path_) + ".cr"
-
-	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -a -salt -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
-	cmd.Dir = filepath.Dir(path_)
-	//out, _ := cmd.Output()
-	//_ = out
-
-	stderr, _ := cmd.StderrPipe()
-	if err := cmd.Start(); err != nil {
-		//panic(err)
-		return false, err
-	}
-
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		//fmt.Println("openssl:", scanner.Text())
-	}
-
-	//fmt.Println("--------------------------------------------------------------------------------------------------")
-	//fmt.Println("out=", out)
-
-	if err = os.Remove(path_); err != nil {
-		return false, err
-	}
-
-	if err = os.Rename(path.Join(filepath.Dir(path_), to_file), path_); err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-// openssl aes-256-cbc -d -a -in file.txt.cr -out file.txt.new -pass pass:123
-func DecryptFile(path_, pass string) (bool, error) {
-
-	_, err := exec.Command("bash", "-c", "openssl --help").Output()
-	if err != nil {
-		return false, err
-	}
-
-	if len(path_) == 0 {
-		return false, errors.New("Path of file is empty")
-	}
-
-	if len(pass) == 0 {
-		return false, errors.New("Pass is empty")
-	}
-
-	from_file := filepath.Base(path_)
-	to_file := filepath.Base(path_)
-	to_file = strings.Replace(to_file, ".cr", "", 1)
-	to_file += ".decrypt"
-
-	cmd := exec.Command("bash", "-c", "openssl aes-256-cbc -d -a  -in "+from_file+" -out "+to_file+" -pass pass:"+pass)
-	cmd.Dir = filepath.Dir(path_)
-	//out, _ := cmd.Output()
-	//_ = out
-
-	stderr, _ := cmd.StderrPipe()
-	if err := cmd.Start(); err != nil {
-		//panic(err)
-		return false, err
-	}
-
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		//fmt.Println("openssl:", scanner.Text())
-	}
-
-	//fmt.Println("--------------------------------------------------------------------------------------------------")
-	//fmt.Println("out=", out)
-
-	if err = os.Remove(path_); err != nil {
-		return false, err
-	}
-
-	if err = os.Rename(path.Join(filepath.Dir(path_), to_file), path_); err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
 
 func MutexUnLocked(m *sync.Mutex) bool {
 	state := reflect.ValueOf(m).Elem().FieldByName("state")

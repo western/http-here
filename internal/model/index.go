@@ -25,8 +25,8 @@ func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 		}
 	}
 
-    // "?cache=shared&mode=rwc"
-	db, err := gorm.Open(sqlite.Open(path.Join(prefix, "db", "registry.db."+conf.Version )), &gorm.Config{
+	// "?cache=shared&mode=rwc"
+	db, err := gorm.Open(sqlite.Open(path.Join(prefix, "db", "registry.db."+conf.Version)), &gorm.Config{
 		SkipDefaultTransaction: true,
 		Logger:                 logger.Default.LogMode(logger.Silent),
 	})
