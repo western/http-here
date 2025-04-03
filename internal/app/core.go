@@ -118,6 +118,7 @@ func Core() {
 			``,
 			`     --silence                 Disable all console messages`,
 			`     --nolog                   Do not write any data to event_log table`,
+			`     --nodb                    Disable database use`,
 			``,
 			``,
 			`examples:`,
