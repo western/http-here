@@ -195,7 +195,16 @@ func GetAll(c *fiber.Ctx) error {
 		var folderTree_js []byte
 
 		if arg_extend_mode == "1" {
-			folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
+
+			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold+" start")
+
+			//folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
+			folderTree := util.WalkAndTreeBuild2(arg_fold, 1)
+			//folderTree := util.WalkAndTreeBuild3(arg_fold, "/", 1)
+
+			//PrintPrettify("folderTree", folderTree)
+
+			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold)
 
 			folderTree_js, err = json.Marshal(folderTree)
 			if err != nil {
