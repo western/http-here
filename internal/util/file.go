@@ -1,15 +1,16 @@
 package util
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io"
+	_ "io/fs"
 	"io/ioutil"
 	"mime/multipart"
 	"os"
 	"path"
+	_ "path/filepath"
 	"time"
-
-	"crypto/md5"
 )
 
 func CopyFile(src, dst string) error {
@@ -153,80 +154,6 @@ func WalkAndClearOld(path_ string) {
 	}
 }
 
-type TreeRow struct {
-	Text string `json:"text"`
-	Path string `json:"path"`
-
-	Expanded bool `json:"expanded"`
-
-	Nodes []TreeRow `json:"nodes"`
-}
-
-func WalkAndTreeBuild(path_ string, prev_path string, deep int) []TreeRow {
-
-	//fmt.Println("WalkAndTreeBuild ", path)
-
-	var node_list []TreeRow
-
-	files, err := os.ReadDir(path_)
-	if err != nil {
-		//fmt.Println(err)
-		return node_list
-	}
-
-	if deep > 5 {
-		return node_list
-	}
-
-	for _, file := range files {
-
-		if !file.IsDir() {
-
-			/*
-				        node_list = append( node_list, TreeRow{
-
-							Text:         file.Name(),
-
-						})
-			*/
-
-		} else if file.IsDir() {
-
-			nodes := WalkAndTreeBuild(path.Join(path_, file.Name()), path.Join(prev_path, file.Name()), deep+1)
-
-			node_list = append(node_list, TreeRow{
-
-				Text: file.Name(),
-				Path: path.Join(prev_path, file.Name()),
-
-				Nodes: nodes,
-			})
-
-		}
-	}
-
-	return node_list
-}
-
-func MultipartToFile(file *multipart.FileHeader) *os.File {
-
-	f, err := os.CreateTemp("", "becloud_convert*")
-	fmt.Println("MultipartToFile Temp file name:", f.Name())
-	defer os.Remove(f.Name())
-
-	readerFile, _ := file.Open()
-	_, err = io.Copy(f, readerFile)
-	if err != nil {
-		//return false, err
-		panic(err)
-	}
-	f.Close()
-
-	file2, _ := os.Open(f.Name())
-
-	return file2
-}
-
 func WalkAndClearZeroFile(path_ string, deep int) {
 
 	files, err := os.ReadDir(path_)
@@ -260,4 +187,23 @@ func WalkAndClearZeroFile(path_ string, deep int) {
 		}
 	}
 
+}
+
+func MultipartToFile(file *multipart.FileHeader) *os.File {
+
+	f, err := os.CreateTemp("", "becloud_convert*")
+	fmt.Println("MultipartToFile Temp file name:", f.Name())
+	defer os.Remove(f.Name())
+
+	readerFile, _ := file.Open()
+	_, err = io.Copy(f, readerFile)
+	if err != nil {
+		//return false, err
+		panic(err)
+	}
+	f.Close()
+
+	file2, _ := os.Open(f.Name())
+
+	return file2
 }

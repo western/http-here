@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -359,4 +360,10 @@ func MutexUnLocked(m *sync.Mutex) bool {
 	//return atomic.CompareAndSwapInt32(&m.state, 0, mutexLocked)
 	//return false
 	return state.Int() == 0
+}
+
+func PrintPrettify(prefix string, payload interface{}) {
+
+	s, _ := json.MarshalIndent(payload, "", "\t")
+	fmt.Println(prefix, "= ", string(s))
 }
