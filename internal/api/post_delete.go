@@ -63,6 +63,8 @@ func PostDelete(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
+	var err_list []string
+
 	for _, val := range names {
 
 		if len(val) > 0 {
@@ -75,6 +77,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 			if len(name) == 0 {
 				model.EventLogAdd(db, c, "500", "PostDelete", "name is empty")
+				err_list = append(err_list, "name is empty")
 				continue
 			}
 
@@ -82,6 +85,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 			if err != nil {
 				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+				err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' not exists")
 				continue
 			}
 
@@ -91,6 +95,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.RemoveAll(path.Join(arg_fold, u_path, name)); err != nil {
 					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
@@ -102,6 +107,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 				if err := os.Remove(path.Join(arg_fold, u_path, name)); err != nil {
 					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+					err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
 					continue
 				}
 
@@ -113,6 +119,16 @@ func PostDelete(c *fiber.Ctx) error {
 	}
 
 	go model.FileChkAsync(db, prefix)
+
+	if len(err_list) > 0 {
+
+		//panic(err_list[0])
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  err_list[0],
+		}, "application/json")
+	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,

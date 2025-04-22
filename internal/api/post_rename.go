@@ -56,7 +56,7 @@ func PostRename(c *fiber.Ctx) error {
 
 		model.EventLogAdd(db, c, "500", "PostRename", "to is empty")
 
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to is empty",
 		}, "application/json")
@@ -80,7 +80,7 @@ func PostRename(c *fiber.Ctx) error {
 
 		model.EventLogAdd(db, c, "500", "PostRename", "name is empty")
 
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
 		}, "application/json")
