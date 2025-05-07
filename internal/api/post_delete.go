@@ -122,8 +122,6 @@ func PostDelete(c *fiber.Ctx) error {
 
 	if len(err_list) > 0 {
 
-		//panic(err_list[0])
-
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  err_list[0],

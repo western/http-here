@@ -103,6 +103,8 @@ func PostMove(c *fiber.Ctx) error {
 			"msg":  "form is empty",
 		}, "application/json")
 	}
+	
+	var err_list []string
 
 	for _, val := range names {
 
@@ -117,6 +119,7 @@ func PostMove(c *fiber.Ctx) error {
 			if len(name) == 0 {
 
 				model.EventLogAdd(db, c, "500", "PostMove", "name is empty")
+				err_list = append(err_list, "name is empty")
 				continue
 			}
 
@@ -131,6 +134,7 @@ func PostMove(c *fiber.Ctx) error {
 			if err != nil {
 
 				model.EventLogAdd(db, c, "500", "PostMove", "Source '"+src_file_path+"' not exists")
+				err_list = append(err_list, "Source '"+src_file_path+"' not exists")
 				continue
 			}
 
@@ -142,6 +146,7 @@ func PostMove(c *fiber.Ctx) error {
 				if err := os.RemoveAll(target_file_path); err != nil {
 
 					model.EventLogAdd(db, c, "500", "PostMove", "'"+target_file_path+"' err "+err.Error())
+					err_list = append(err_list, "'"+target_file_path+"' err "+err.Error())
 					continue
 				}
 			}
@@ -151,6 +156,7 @@ func PostMove(c *fiber.Ctx) error {
 			if err != nil {
 
 				model.EventLogAdd(db, c, "500", "PostMove", "Rename error "+fmt.Sprintf("%s", err))
+				err_list = append(err_list, "Rename error "+fmt.Sprintf("%s", err))
 
 			} else {
 
@@ -161,6 +167,14 @@ func PostMove(c *fiber.Ctx) error {
 	}
 
 	go model.FileChkAsync(db, prefix)
+	
+	if len(err_list) > 0 {
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  err_list[0],
+		}, "application/json")
+	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,
