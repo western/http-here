@@ -103,7 +103,7 @@ func PostMove(c *fiber.Ctx) error {
 			"msg":  "form is empty",
 		}, "application/json")
 	}
-	
+
 	var err_list []string
 
 	for _, val := range names {
@@ -167,7 +167,7 @@ func PostMove(c *fiber.Ctx) error {
 	}
 
 	go model.FileChkAsync(db, prefix)
-	
+
 	if len(err_list) > 0 {
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
