@@ -132,6 +132,9 @@ func Core() {
 			`     Powerful`,
 			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
+			`     Effective`,
+			`                        ` + green_clr(`http-here`) + ` --prefork --nodb ` + white_clr(`/tmp`),
+			``,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
