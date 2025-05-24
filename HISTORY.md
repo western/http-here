@@ -3,6 +3,31 @@
 
 
 
+### 1.11.4
+- [x] redirect if you try open folder during SPA application mode
+- [x] fix refresh doc thumbnails after edit
+- [x] change layouts for errors
+- [x] project code restructuring
+
+### 1.11.3
+- [x] run WalkAndTreeBuild only for extend mode
+- [x] change view for default mode
+- [x] fix for mobile upload
+
+### 1.11.0
+- [x] database support
+- [x] "make new file" button and API
+- [x] search button and API
+- [x] first TLS key files generate without verbosity
+- [x] body limit up to 14 GB
+- [x] max upload files up to 100
+- [x] add SPA version
+- [x] new API:  `/api/list`  `/__convert/filename.docx`  `/api/search`
+- [x] use clipboard for SPA client group operations
+
+
+<hr>
+
 ### 1.9.2
 - [x] show file_name while file edit
 - [x] change online edit templates
