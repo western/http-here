@@ -247,9 +247,7 @@ All previews generate during first view. One time.
 ## Linux packages needs for full functional
 
 
-
 - `libreoffice` - for doc thumbnails, for doc files online edit
-- `easyrsa` (easy-rsa) - package for certs build (for versions before v1.12.0)
 - `openssl` - encrypt file support
 
 ## API
