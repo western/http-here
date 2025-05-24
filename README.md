@@ -219,8 +219,6 @@ http-here /tmp
 
 ## Automatic TLS keys generate
 
-- For start HTTPS server you need `easyrsa` (easy-rsa) linux package
-- Since version v1.12.0 you not need `easyrsa`
 - When you start server with `--tls` option, all keys generate automatically
 
 ```console
