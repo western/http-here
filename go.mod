@@ -13,7 +13,7 @@ require (
 	github.com/wneessen/go-fileperm v0.2.1
 	golang.org/x/image v0.27.0
 	gorm.io/driver/sqlite v1.5.7
-	gorm.io/gorm v1.26.1
+	gorm.io/gorm v1.30.0
 )
 
 require (
