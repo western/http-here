@@ -314,6 +314,7 @@ type FileRow struct {
 	IsPreviewDoc bool
 	IsEditDoc    bool
 	IsEditCode   bool
+	IsEditMd     bool
 	Rndm         string
 }
 
@@ -333,6 +334,7 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 
 		is_edit_doc, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", ext)
 		is_edit_code, _ := regexp.MatchString("^(html|txt|js|css|md)$", ext)
+		is_edit_md, _ := regexp.MatchString("^(md)$", ext)
 
 		if fileInfo2, err := os.Stat(path.Join(arg_fold, c_path, e.Name())); err == nil {
 
@@ -359,6 +361,7 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 					IsPreviewDoc: false,
 					IsEditDoc:    false,
 					IsEditCode:   false,
+					IsEditMd:     false,
 					Rndm:         util.RandStringRunes(2),
 				})
 			} else {
@@ -378,6 +381,7 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
 					IsEditCode:   is_edit_code,
+					IsEditMd:     is_edit_md,
 					Rndm:         util.RandStringRunes(2),
 				})
 
