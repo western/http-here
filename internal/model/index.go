@@ -25,15 +25,42 @@ func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 		}
 	}
 
-	// "?cache=shared&mode=rwc"
-	db, err := gorm.Open(sqlite.Open(path.Join(prefix, "db", "registry.db."+conf.Version)), &gorm.Config{
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	dbPath := path.Join(prefix, "db", "registry.db."+conf.Version)
+
+	dsn := dbPath + "?cache=shared&mode=rwc&_journal_mode=WAL&_synchronous=NORMAL&_cache_size=10000&_temp_store=MEMORY&_mmap_size=268435456"
+
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
 		Logger:                 logger.Default.LogMode(logger.Silent),
+		//PrepareStmt:            true,
 	})
 
 	if err != nil {
 		return nil, err
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	// connection pool
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(0) // Connections don't expire
+
+	db.Exec("PRAGMA journal_mode=WAL")
+	db.Exec("PRAGMA synchronous=NORMAL")
+	db.Exec("PRAGMA cache_size=10000")
+	db.Exec("PRAGMA temp_store=MEMORY")
+	db.Exec("PRAGMA mmap_size=268435456") // 256MB
+	db.Exec("PRAGMA optimize")
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	err = db.AutoMigrate(&EventLog{})
 	if err != nil {
@@ -44,6 +71,10 @@ func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 	if err != nil {
 		fmt.Println("AutoMigrate File err:", err)
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_file_full_path ON file(full_path)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_file_md5 ON file(md5)")
 
 	return db, nil
 }
