@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	_ "fmt"
+	//"fmt"
 	"html/template"
 	"io"
 	"net/url"
@@ -14,6 +14,7 @@ import (
 	_ "runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/western/http-here/internal/conf"
@@ -24,6 +25,26 @@ import (
 
 	"gorm.io/gorm"
 )
+
+type FileRow struct {
+	IsDir    bool
+	FullPath string
+	Name     string
+
+	Size      int64
+	SizeHuman string
+
+	ModTime      time.Time
+	ModTimeHuman string
+	Md5          string
+
+	IsPreviewImg bool
+	IsPreviewDoc bool
+	IsEditDoc    bool
+	IsEditCode   bool
+	IsEditMd     bool
+	Rndm         string
+}
 
 func GetAll(c *fiber.Ctx) error {
 
@@ -66,13 +87,17 @@ func GetAll(c *fiber.Ctx) error {
 
 	c_path = util.CleanDirtyPath(c_path)
 
+	readFolder := path.Join(arg_fold, c_path)
+
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	fileInfo, err := os.Stat(path.Join(arg_fold, c_path))
+	fileInfo, err := os.Lstat(readFolder)
+
+	fileMode := fileInfo.Mode()
 
 	if errors.Is(err, os.ErrNotExist) {
 
-		model.EventLogAdd(db, c, "404", "CORE", path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "404", "CORE", readFolder)
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -81,11 +106,11 @@ func GetAll(c *fiber.Ctx) error {
 
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "CORE", "Error "+readFolder+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	if fileInfo.IsDir() {
+	if fileMode.IsDir() {
 
 		if arg_spa == "1" {
 
@@ -94,13 +119,13 @@ func GetAll(c *fiber.Ctx) error {
 		}
 
 		// check index.html inside
-		if _, err := os.Stat(path.Join(arg_fold, c_path, "index.html")); err == nil {
+		if _, err := os.Stat(path.Join(readFolder, "index.html")); err == nil {
 
-			model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(arg_fold, c_path, "index.html"))
-			return c.SendFile(path.Join(arg_fold, c_path, "index.html"), false)
+			model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readFolder, "index.html"))
+			return c.SendFile(path.Join(readFolder, "index.html"), false)
 		}
 
-		model.EventLogAdd(db, c, "200", "CORE", "Dir "+path.Join(arg_fold, c_path))
+		model.EventLogAdd(db, c, "200", "CORE", "Dir "+readFolder)
 
 		breadcrumb := ""
 		//separator := string(os.PathSeparator)
@@ -117,16 +142,18 @@ func GetAll(c *fiber.Ctx) error {
 			breadcrumb += `<li class="breadcrumb-item"><a class="nodecor" href="` + pt + `">` + el + `</a></li>`
 		}
 
-		entries, err := os.ReadDir(path.Join(arg_fold, c_path))
-		if err != nil {
+		/*
+			entries, err := os.ReadDir(readFolder)
+			if err != nil {
 
-			model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}
+				model.EventLogAdd(db, c, "500", "CORE", "Error "+readFolder+" "+err.Error())
+				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
+		*/
 
 		template_file := "index"
 
-		var rows []FileRow
+		//var rows []FileRow
 		var mode string
 		var s_sort string
 
@@ -165,7 +192,21 @@ func GetAll(c *fiber.Ctx) error {
 			c.Cookie(cookie)
 		}
 
-		rows = listGenerateView(db, arg_fold, c_path, entries, s_sort)
+		rows, err := generateRows(db, c, s_sort)
+		if err != nil {
+
+			if os.IsPermission(err) {
+
+				model.EventLogAdd(db, c, "403", "CORE", "Forbidden for read "+readFolder)
+				return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
+					"Title":   "403",
+					"Message": "Forbidden",
+				}, "view/layout/error")
+			}
+
+			model.EventLogAdd(db, c, "500", "CORE", "Read folder err: "+err.Error())
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
 
 		mode_thumb := false
 		if mode == "thumb" {
@@ -210,7 +251,7 @@ func GetAll(c *fiber.Ctx) error {
 			if err != nil {
 
 				panic(err)
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 		}
 
@@ -237,7 +278,9 @@ func GetAll(c *fiber.Ctx) error {
 			"arg_folder_make_disable": arg_folder_make_disable,
 		}, "view/layout/default")
 
-	} else {
+	}
+
+	if fileMode.IsRegular() {
 
 		code := c.Cookies("code")
 
@@ -263,7 +306,7 @@ func GetAll(c *fiber.Ctx) error {
 			}
 			defer os.Remove(f.Name())
 
-			readerFile, _ := os.Open(path.Join(arg_fold, c_path))
+			readerFile, _ := os.Open(readFolder)
 			_, err = io.Copy(f, readerFile)
 			if err != nil {
 				panic(err)
@@ -277,7 +320,7 @@ func GetAll(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 			}
 
-			model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+path.Join(arg_fold, c_path))
+			model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+readFolder)
 
 			fname := filepath.Base(c_path)
 			fname = strings.Replace(fname, ".crypt", "", 1)
@@ -287,41 +330,209 @@ func GetAll(c *fiber.Ctx) error {
 
 		} else {
 
-			model.EventLogAdd(db, c, "200", "CORE", "SendFile "+path.Join(arg_fold, c_path))
+			if fileMode.Perm()&0444 == 0444 {
 
-			return c.SendFile(path.Join(arg_fold, c_path), false)
+			} else {
+
+				model.EventLogAdd(db, c, "403", "CORE", "Forbidden for read "+readFolder)
+				return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
+					"Title":   "403",
+					"Message": "Forbidden",
+				}, "view/layout/error")
+			}
+
+			model.EventLogAdd(db, c, "200", "CORE", "SendFile "+readFolder)
+
+			return c.SendFile(readFolder, false)
 		}
 
 	}
 
-	return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
+	// FILE is not Regular and not Directory
+	// 400 Bad Request
+
+	/*
+		    model.EventLogAdd(db, c, "400", "CORE", "Bad Request "+readFolder+" is not file and not directory")
+			return c.Status(fiber.StatusBadRequest).Render("view/error", fiber.Map{
+				"Title":    "400",
+				"Message":  "Bad Request",
+			}, "view/layout/error")
+	*/
+
+	model.EventLogAdd(db, c, "500", "CORE", "Error "+readFolder+" is NOT file and NOT directory")
+	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 
 }
 
-type FileRow struct {
-	IsDir    bool
-	FullPath string
-	Name     string
+// -------------------------------------------------------------------------------------------------------------------------------------------
+// []FileRow
+// []os.DirEntry
+// var rows_dir []FileRow
+// var rows_file []FileRow
 
-	Size      int64
-	SizeHuman string
+var (
+	dirCache    = make(map[string]*cachedDir)
+	dirCacheMux sync.RWMutex
+	//cacheTimeout = 30 * time.Second
+)
 
-	ModTime      time.Time
-	ModTimeHuman string
-	Md5          string
-
-	IsPreviewImg bool
-	IsPreviewDoc bool
-	IsEditDoc    bool
-	IsEditCode   bool
-	IsEditMd     bool
-	Rndm         string
+type cachedDir struct {
+	rows_dir  []FileRow
+	rows_file []FileRow
+	timestamp time.Time
 }
 
-func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.DirEntry, s_sort string) []FileRow {
+func (cd *cachedDir) isExpired(sc int) bool {
+	//return time.Since(cd.timestamp) > cacheTimeout
+
+	//fmt.Println("isexpired sc change=", sc)
+
+	return time.Since(cd.timestamp) > time.Duration(sc)*time.Second
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------------------------------------------------------------
+
+func CleanupCache(sc int) {
+
+	//fmt.Println("CleanupCache run sc=", sc)
+
+	dirCacheMux.Lock()
+	for key, cached := range dirCache {
+		if cached.isExpired(sc) {
+			//fmt.Println("CleanupCache delete=",key)
+			delete(dirCache, key)
+		}
+	}
+	dirCacheMux.Unlock()
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------------
+
+var (
+	previewImgRegex = regexp.MustCompile("^(jpg|jpeg|png|gif)$")
+	previewDocRegex = regexp.MustCompile("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+
+	editDocRegex  = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
+	editCodeRegex = regexp.MustCompile("^(html|txt|js|css|md)$")
+	editMdRegex   = regexp.MustCompile("^(md)$")
+)
+
+func generateRows(db *gorm.DB, c *fiber.Ctx, s_sort string) ([]FileRow, error) {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	arg_extend_mode := ""
+	if c.Locals("arg_extend_mode") != nil {
+		arg_extend_mode = c.Locals("arg_extend_mode").(string)
+	}
+
+	arg_cache_dir := 30
+	if c.Locals("arg_cache_dir") != nil {
+		arg_cache_dir = c.Locals("arg_cache_dir").(int)
+	}
+	//fmt.Println("arg_cache_dir=", arg_cache_dir)
+
+	c_path, err := url.QueryUnescape(c.Path())
+	if err != nil {
+		panic(err.Error())
+	}
+
+	c_path = util.CleanDirtyPath(c_path)
+
+	readFolder := path.Join(arg_fold, c_path)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// FOR request with PARAM path=
+
+	u_path := c.FormValue("path")
+
+	u_path = util.CleanDirtyPath(u_path)
+
+	if len(u_path) > 0 {
+		readFolder = path.Join(arg_fold, u_path)
+	}
+
+	//fmt.Println("readFolder=", readFolder)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// CACHE
+
+	dirCacheMux.RLock()
+	cached, exists := dirCache[readFolder]
+	dirCacheMux.RUnlock()
+
+	if exists && !cached.isExpired(arg_cache_dir) {
+
+		rows_dir := cached.rows_dir
+		rows_file := cached.rows_file
+
+		//fmt.Println("read from CACHE rows_file[0]=", rows_file[0])
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+		// SORT AND RETURN
+
+		if s_sort == "name" {
+
+			sort.Slice(rows_dir, func(i, j int) bool {
+				return rows_dir[i].Name < rows_dir[j].Name
+			})
+
+			sort.Slice(rows_file, func(i, j int) bool {
+				return rows_file[i].Name < rows_file[j].Name
+			})
+		}
+
+		if s_sort == "modified" {
+
+			sort.Slice(rows_dir, func(i, j int) bool {
+				return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
+			})
+
+			sort.Slice(rows_file, func(i, j int) bool {
+				return rows_file[i].ModTime.Unix() < rows_file[j].ModTime.Unix()
+			})
+		}
+
+		if s_sort == "size" {
+
+			sort.Slice(rows_dir, func(i, j int) bool {
+				return rows_dir[i].Size < rows_dir[j].Size
+			})
+
+			sort.Slice(rows_file, func(i, j int) bool {
+				return rows_file[i].Size < rows_file[j].Size
+			})
+		}
+
+		return append(rows_dir, rows_file...), nil
+
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// entries []os.DirEntry
+
+	entries, err := os.ReadDir(readFolder)
+	if err != nil {
+
+		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+
+		return []FileRow{}, err
+	}
+
+	//fmt.Println("read NEW entries entries[0]=", entries[0])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	var rows_dir []FileRow
 	var rows_file []FileRow
+
+	// Pre-allocate slices with capacity for better performance
+	rows_dir = make([]FileRow, 0, len(entries)/2)
+	rows_file = make([]FileRow, 0, len(entries)/2)
 
 	for _, e := range entries {
 
@@ -329,24 +540,33 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 		ext = strings.ToLower(ext)
 		ext = strings.Replace(ext, ".", "", -1)
 
-		is_preview_img, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
-		is_preview_doc, _ := regexp.MatchString("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
+		/*
+			is_preview_img, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", ext)
+			is_preview_doc, _ := regexp.MatchString("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
 
-		is_edit_doc, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", ext)
-		is_edit_code, _ := regexp.MatchString("^(html|txt|js|css|md)$", ext)
-		is_edit_md, _ := regexp.MatchString("^(md)$", ext)
+			is_edit_doc, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", ext)
+			is_edit_code, _ := regexp.MatchString("^(html|txt|js|css|md)$", ext)
+			is_edit_md, _ := regexp.MatchString("^(md)$", ext)
+		*/
 
-		if fileInfo2, err := os.Stat(path.Join(arg_fold, c_path, e.Name())); err == nil {
+		is_preview_img := previewImgRegex.MatchString(ext)
+		is_preview_doc := previewDocRegex.MatchString(ext)
 
-			modtime := fileInfo2.ModTime()
+		is_edit_doc := editDocRegex.MatchString(ext)
+		is_edit_code := editCodeRegex.MatchString(ext)
+		is_edit_md := editMdRegex.MatchString(ext)
+
+		if fileInfo, err := os.Stat(path.Join(readFolder, e.Name())); err == nil {
+
+			modtime := fileInfo.ModTime()
 			modtime_human := modtime.Format("2006-01-02 15:04:05")
 
-			size := fileInfo2.Size()
+			size := fileInfo.Size()
 			size_human := util.PrettyByteSize(size)
 
-			if fileInfo2.IsDir() {
+			if fileInfo.IsDir() {
 				rows_dir = append(rows_dir, FileRow{
-					IsDir:    fileInfo2.IsDir(),
+					IsDir:    fileInfo.IsDir(),
 					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 
@@ -366,7 +586,7 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 				})
 			} else {
 				rows_file = append(rows_file, FileRow{
-					IsDir:    fileInfo2.IsDir(),
+					IsDir:    fileInfo.IsDir(),
 					FullPath: path.Join(c_path, e.Name()),
 					Name:     e.Name(),
 
@@ -376,7 +596,7 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
 
-					//Md5:       GetMd5File( path.Join(arg_fold, c_path, e.Name()) ),
+					//Md5:       GetMd5File( path.Join(readFolder, e.Name()) ),
 					IsPreviewImg: is_preview_img,
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
@@ -385,12 +605,28 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 					Rndm:         util.RandStringRunes(2),
 				})
 
-				go model.FileAddAsync(db, path.Join(arg_fold, c_path, e.Name()))
+				if arg_extend_mode == "1" {
+					go model.FileAddAsync(db, path.Join(readFolder, e.Name()))
+				}
 			}
 
 		}
 
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	dirCacheMux.Lock()
+	dirCache[readFolder] = &cachedDir{
+
+		rows_dir:  rows_dir,
+		rows_file: rows_file,
+
+		timestamp: time.Now(),
+	}
+	dirCacheMux.Unlock()
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	if s_sort == "name" {
 
@@ -425,5 +661,5 @@ func listGenerateView(db *gorm.DB, arg_fold string, c_path string, entries []os.
 		})
 	}
 
-	return append(rows_dir, rows_file...)
+	return append(rows_dir, rows_file...), nil
 }
