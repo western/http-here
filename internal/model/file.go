@@ -25,7 +25,7 @@ type File struct {
 	Name     string
 	EXT      string
 
-	IsDir   int
+	//IsDir   int
 	Size    int64
 	ModTime string
 }
@@ -39,8 +39,6 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 	if db == nil {
 		return nil
 	}
-
-	IsDir := 0
 
 	ext := filepath.Ext(FullPath)
 	ext = strings.ToLower(ext)
@@ -58,10 +56,6 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 		modtime_human = modtime.Format("2006-01-02 15:04:05")
 
 		size = fileInfo.Size()
-
-		if fileInfo.IsDir() {
-			IsDir = 1
-		}
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
@@ -93,7 +87,7 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 		Name:     name,
 		EXT:      ext,
 
-		IsDir:   IsDir,
+		//IsDir:   IsDir,
 		Size:    size,
 		ModTime: modtime_human,
 	}
@@ -203,7 +197,7 @@ func FileDelAsync(db *gorm.DB, FullPath string) {
 }
 
 type FileSearch struct {
-	IsDir    int
+	//IsDir    int
 	FullPath string
 	Name     string
 	EXT      string
@@ -252,7 +246,7 @@ func FileSearchResult(db *gorm.DB, arg_fold, s string) []FileSearch {
 
 		ret = append(ret, FileSearch{
 
-			IsDir:    0,
+			//IsDir:    0,
 			FullPath: file.FullPath,
 			Name:     file.Name,
 			EXT:      file.EXT,
