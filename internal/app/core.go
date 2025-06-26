@@ -57,7 +57,7 @@ func Core() {
 	arg_tls := flag.Bool("tls", false, "Start HTTPS")
 	arg_tls_debug := flag.Bool("tls-debug", false, "Start HTTPS with verbosity")
 
-	arg_user := flag.String("user", "", "Login for user basic auth")
+	arg_login := flag.String("login", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
 	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
 
@@ -109,7 +109,7 @@ func Core() {
 			`     --tls                     Start HTTPS`,
 			``,
 			``,
-			`     --user ` + white_clr(`[str]`) + `              Login for basic authorization`,
+			`     --login ` + white_clr(`[str]`) + `             Login for basic authorization`,
 			`     --password ` + white_clr(`[str]`) + `          Password for basic authorization`,
 			``,
 			`     --basic                   Set basic auth and generate several accounts every time`,
@@ -146,7 +146,7 @@ func Core() {
 			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
 			``,
 			`     Powerful`,
-			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
+			`                        ` + green_clr(`http-here`) + ` --tls --login ` + white_clr(`login`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
 			//`     Effective`,
 			//`                        ` + green_clr(`http-here`) + ` --prefork --nodb ` + white_clr(`/tmp`),
@@ -437,12 +437,12 @@ func Core() {
 
 	}
 
-	if len(*arg_user) > 0 && len(*arg_password) > 0 {
+	if len(*arg_login) > 0 && len(*arg_password) > 0 {
 
 		app.Use(basicauth.New(basicauth.Config{
 
 			Authorizer: func(user, pass string) bool {
-				if user == *arg_user && pass == *arg_password {
+				if user == *arg_login && pass == *arg_password {
 					return true
 				}
 
@@ -459,7 +459,7 @@ func Core() {
 
 		if !fiber.IsChild() {
 			fmt.Println("")
-			fmt.Println("  Basic auth set: " + cian_clr(*arg_user) + " " + cian_clr(*arg_password))
+			fmt.Println("  Basic auth set: " + cian_clr(*arg_login) + " " + cian_clr(*arg_password))
 		}
 	}
 
