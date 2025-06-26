@@ -12,10 +12,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	_ "reflect"
+	//_ "reflect"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	//_ "github.com/gofiber/swagger"
@@ -30,7 +31,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	//"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
@@ -46,6 +47,10 @@ var embedDirStatic embed.FS
 
 func Core() {
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 	arg_help := flag.Bool("help", false, "Show help")
 
 	arg_port := flag.Int("port", 8000, "Port to use")
@@ -58,6 +63,7 @@ func Core() {
 
 	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
+	arg_share_only := flag.Bool("share-only", false, "Set --upload-disable and --folder-make-disable")
 	arg_index_disable := flag.Bool("index-disable", false, "Disable current folder read")
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very careful. It disabled by default.")
@@ -69,12 +75,19 @@ func Core() {
 	arg_silence := flag.Bool("silence", false, "Disable all console messages")
 	arg_nolog := flag.Bool("nolog", false, "Do not write any data to event_log table")
 
-	arg_nodb := flag.Bool("nodb", false, "Disable database use")
+	//arg_nodb := flag.Bool("nodb", false, "Disable database use")
+	arg_usedb := flag.Bool("usedb", false, "Database enable")
+	arg_cache_dir := flag.Int("cache-dir", 30, "Cache timeout for readdir, seconds")
 
 	flag.Parse()
 
 	if *arg_tls_debug {
 		*arg_tls = *arg_tls_debug
+	}
+
+	if *arg_share_only {
+		*arg_upload_disable = true
+		*arg_folder_make_disable = true
 	}
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
@@ -102,9 +115,10 @@ func Core() {
 			`     --basic                   Set basic auth and generate several accounts every time`,
 			``,
 			``,
-			`     --upload-disable          Disable upload API and form controller`,
-			`     --folder-make-disable     Disable make folder API and form controller`,
+			//`     --upload-disable          Disable upload API and form controller`,
+			//`     --folder-make-disable     Disable make folder API and form controller`,
 			`     --index-disable           Disable current folder read`,
+			`     --share-only              Set --upload-disable and --folder-make-disable`,
 			``,
 			``,
 			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
@@ -118,7 +132,9 @@ func Core() {
 			``,
 			`     --silence                 Disable all console messages`,
 			`     --nolog                   Do not write any data to event_log table`,
-			`     --nodb                    Disable database use`,
+			//`     --nodb                    Disable database use`,
+			`     --usedb                   Database enable`,
+			`     --cache-dir ` + white_clr(`[int]`) + `         Cache timeout for readdir, seconds [30]`,
 			``,
 			``,
 			`examples:`,
@@ -132,14 +148,27 @@ func Core() {
 			`     Powerful`,
 			`                        ` + green_clr(`http-here`) + ` --tls --user ` + white_clr(`user`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
-			`     Effective`,
-			`                        ` + green_clr(`http-here`) + ` --prefork --nodb ` + white_clr(`/tmp`),
+			//`     Effective`,
+			//`                        ` + green_clr(`http-here`) + ` --prefork --nodb ` + white_clr(`/tmp`),
 			``,
 		}
 
 		fmt.Println(strings.Join(inf[:], "\n"))
 		return
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+
+		defer ticker.Stop()
+		for range ticker.C {
+			api.CleanupCache(*arg_cache_dir)
+		}
+	}()
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	arg_fold, err := os.Getwd()
 	if err != nil {
@@ -172,6 +201,8 @@ func Core() {
 		return
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 	homepath, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("User homepath detect error: ", err)
@@ -188,7 +219,7 @@ func Core() {
 
 	var db *gorm.DB
 
-	if !*arg_nodb {
+	if *arg_usedb {
 		db, err = model.ConnectToSQLite(prefix)
 		if err != nil {
 			panic(err)
@@ -202,19 +233,56 @@ func Core() {
 		go model.FileChkAsync(db, prefix)
 	}
 
-	if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
-		if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// FOLDERS
 
-			fmt.Println(err)
-			return
+	if !fiber.IsChild() {
+
+		if _, err := os.Stat(path.Join(prefix)); err != nil {
+			if err := os.MkdirAll(path.Join(prefix), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
-	}
 
-	if _, err := os.Stat(path.Join(prefix, "tls")); os.IsNotExist(err) {
-		if err := os.MkdirAll(path.Join(prefix, "tls"), os.ModePerm); err != nil {
+		if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
+			if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
 
-			fmt.Println(err)
-			return
+		if _, err := os.Stat(path.Join(prefix, "tls")); os.IsNotExist(err) {
+			if err := os.MkdirAll(path.Join(prefix, "tls"), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+
+		if _, err = os.Stat(path.Join(prefix, "temp")); err != nil {
+
+			fmt.Println("")
+			//fmt.Println("  Make temp folder")
+
+			if err = os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else {
+
+			fmt.Println("")
+			//fmt.Println(yellow_clr("  Clear temp folder"))
+
+			if err = os.RemoveAll(path.Join(prefix, "temp")); err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			if err = os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
+
 		}
 	}
 
@@ -224,6 +292,8 @@ func Core() {
 		//go WalkAndClearOld(path.Join(prefix, "thumb"))
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
 	config := fiber.Config{
@@ -232,6 +302,24 @@ func Core() {
 		ServerHeader:          "",
 		Views:                 engine,
 		BodyLimit:             conf.FieldSize_max,
+
+		// Timeouts
+		ReadTimeout:     30 * time.Second,  // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
+		WriteTimeout:    30 * time.Second,  // nil, The maximum duration before timing out writes of the response. The default timeout is unlimited.
+		IdleTimeout:     120 * time.Second, // nil, The maximum amount of time to wait for the next request when keep-alive is enabled. If IdleTimeout is zero, the value of ReadTimeout is used.
+		ReadBufferSize:  8192,              // 4096
+		WriteBufferSize: 8192,              // 4096
+
+		// Enable request/response pooling
+		//EnableTrustedProxyCheck: false,
+		//ProxyHeader:            "X-Forwarded-For",
+
+		// Optimize for high concurrency
+		//Concurrency:           256 * 1024, // 256K concurrent connections
+
+		// Disable features for better performance
+		//DisablePreParseMultipartForm: true, // false
+		//StreamRequestBody:            true, // false
 	}
 
 	app := fiber.New(config)
@@ -269,27 +357,36 @@ func Core() {
 
 			c.Locals("arg_nolog", "1")
 		}
-		if *arg_nodb {
+		if *arg_usedb {
 
-			c.Locals("arg_nodb", "1")
+			c.Locals("arg_usedb", "1")
 		}
+		if arg_cache_dir != nil {
+
+			c.Locals("arg_cache_dir", *arg_cache_dir)
+		}
+
 		c.Locals("db", db)
 
 		return c.Next()
 	})
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// MIDDLEWARE
+
 	app.Use(favicon.New())
 
-	app.Use(cors.New(cors.Config{
-		//AllowOrigins: "*",
-		AllowCredentials: true,
-		AllowOriginsFunc: func(origin string) bool {
-			return true
-		},
-		AllowMethods:  "*",
-		AllowHeaders:  "*",
-		ExposeHeaders: "*",
-	}))
+	/*
+		app.Use(cors.New(cors.Config{
+			//AllowOrigins: "*",
+			AllowCredentials: true,
+			AllowOriginsFunc: func(origin string) bool {
+				return true
+			},
+			AllowMethods:  "*",
+			AllowHeaders:  "*",
+			ExposeHeaders: "*",
+		}))*/
 
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
@@ -297,6 +394,9 @@ func Core() {
 
 	cian_clr := color.New(color.FgCyan).SprintFunc()
 	yellow_clr := color.New(color.FgYellow).SprintFunc()
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// BASIC AUTH
 
 	if *arg_basic && *arg_prefork {
 
@@ -363,40 +463,13 @@ func Core() {
 		}
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 	app.Use("/__assets", filesystem.New(filesystem.Config{
 		Root:       http.FS(embedDirStatic),
 		PathPrefix: "",
 		Browse:     false,
 	}))
-
-	if !fiber.IsChild() {
-
-		if _, err3 := os.Stat(path.Join(prefix, "temp")); err3 != nil {
-
-			fmt.Println("")
-			//fmt.Println("  Make temp folder")
-
-			if err4 := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err4 != nil {
-				fmt.Println(err4)
-				return
-			}
-		} else {
-
-			fmt.Println("")
-			//fmt.Println(yellow("  Clear temp folder"))
-
-			if err := os.RemoveAll(path.Join(prefix, "temp")); err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			if err4 := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err4 != nil {
-				fmt.Println(err4)
-				return
-			}
-
-		}
-	}
 
 	//app.Static("/__temp", path.Join(prefix, "temp"))
 
@@ -439,7 +512,10 @@ func Core() {
 		return c.SendFile(full_filename)
 	})
 
-	app.Options("/*", api.OptionsAll)
+	//app.Options("/*", api.OptionsAll)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// ROUTE
 
 	if !*arg_index_disable {
 
@@ -489,12 +565,17 @@ func Core() {
 		}
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// BAD REQUEST
+
 	app.Use(func(c *fiber.Ctx) error {
 
 		model.EventLogAdd(db, c, "404", "last_handle", path.Join(arg_fold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	crt_filename := path.Join(prefix, "tls", "server.pem")
 	key_filename := path.Join(prefix, "tls", "server.key")
