@@ -34,6 +34,8 @@ func (File) TableName() string {
 	return "file"
 }
 
+var makeMd5ForRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+
 func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 	if db == nil {
@@ -69,7 +71,8 @@ func FileAddAsync(db *gorm.DB, FullPath string) error {
 
 	md5_hash := ""
 
-	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
+	//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
+	is_match := makeMd5ForRegex.MatchString(file_ext)
 	if is_match {
 
 		md5_hash = GetMd5File(FullPath)
