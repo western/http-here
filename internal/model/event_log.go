@@ -34,13 +34,15 @@ func (EventLog) TableName() string {
 	return "event_log"
 }
 
+var (
+	green_clr = color.New(color.FgGreen).SprintFunc()
+	red_clr   = color.New(color.FgRed).SprintFunc()
+	white_clr = color.New(color.Bold, color.FgWhite).SprintFunc()
+)
+
 // model.EventLogAdd(db, c, "500", "CORE", "Error "+err.Error())
 // model.EventLogAdd(nil, nil, "500", "CORE", "Error "+err.Error())
 func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
-
-	green_clr := color.New(color.FgGreen).SprintFunc()
-	red_clr := color.New(color.FgRed).SprintFunc()
-	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
 
 	pref := ""
 
