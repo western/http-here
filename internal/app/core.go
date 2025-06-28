@@ -75,7 +75,6 @@ func Core() {
 	arg_silence := flag.Bool("silence", false, "Disable all console messages")
 	arg_nolog := flag.Bool("nolog", false, "Do not write any data to event_log table")
 
-	//arg_nodb := flag.Bool("nodb", false, "Disable database use")
 	arg_usedb := flag.Bool("usedb", false, "Database enable")
 	arg_cache_dir := flag.Int("cache-dir", 30, "Cache timeout for readdir, seconds")
 
@@ -115,8 +114,6 @@ func Core() {
 			`     --basic                   Set basic auth and generate several accounts every time`,
 			``,
 			``,
-			//`     --upload-disable          Disable upload API and form controller`,
-			//`     --folder-make-disable     Disable make folder API and form controller`,
 			`     --index-disable           Disable current folder read`,
 			`     --share-only              Set --upload-disable and --folder-make-disable`,
 			``,
@@ -132,7 +129,6 @@ func Core() {
 			``,
 			`     --silence                 Disable all console messages`,
 			`     --nolog                   Do not write any data to event_log table`,
-			//`     --nodb                    Disable database use`,
 			`     --usedb                   Database enable`,
 			`     --cache-dir ` + white_clr(`[int]`) + `         Cache timeout for readdir, seconds [30]`,
 			``,
@@ -148,8 +144,8 @@ func Core() {
 			`     Powerful`,
 			`                        ` + green_clr(`http-here`) + ` --tls --login ` + white_clr(`login`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
-			//`     Effective`,
-			//`                        ` + green_clr(`http-here`) + ` --prefork --nodb ` + white_clr(`/tmp`),
+			`     Effective`,
+			`                        ` + green_clr(`http-here`) + ` --prefork ` + white_clr(`/tmp`),
 			``,
 		}
 
@@ -304,11 +300,12 @@ func Core() {
 		BodyLimit:             conf.FieldSize_max,
 
 		// Timeouts
-		ReadTimeout:     30 * time.Second,  // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
-		WriteTimeout:    30 * time.Second,  // nil, The maximum duration before timing out writes of the response. The default timeout is unlimited.
-		IdleTimeout:     120 * time.Second, // nil, The maximum amount of time to wait for the next request when keep-alive is enabled. If IdleTimeout is zero, the value of ReadTimeout is used.
-		ReadBufferSize:  8192,              // 4096
-		WriteBufferSize: 8192,              // 4096
+		ReadTimeout:  30 * time.Second, // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
+		WriteTimeout: 30 * time.Second, // nil, The maximum duration before timing out writes of the response. The default timeout is unlimited.
+		//IdleTimeout:     120 * time.Second, // nil, The maximum amount of time to wait for the next request when keep-alive is enabled. If IdleTimeout is zero, the value of ReadTimeout is used.
+		IdleTimeout:     30 * time.Second,
+		ReadBufferSize:  8192, // 4096
+		WriteBufferSize: 8192, // 4096
 
 		// Enable request/response pooling
 		//EnableTrustedProxyCheck: false,
