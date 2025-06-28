@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	_ "path/filepath"
 
 	"github.com/western/http-here/internal/conf"
 
@@ -25,35 +24,45 @@ func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------------------------------------------------
-
 	dbPath := path.Join(prefix, "db", "registry.db."+conf.Version)
 
-	dsn := dbPath + "?cache=shared&mode=rwc&_journal_mode=WAL&_synchronous=NORMAL&_cache_size=10000&_temp_store=MEMORY&_mmap_size=268435456"
+	dsn := dbPath + "?cache=shared&mode=rwc"
+
+	//dsn := dbPath + "?cache=shared&mode=rwc&_journal_mode=WAL&_synchronous=NORMAL&_cache_size=10000&_temp_store=MEMORY&_mmap_size=268435456"
+	//dsn += "&_busy_timeout=500&_txlock=deferred"
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
 		Logger:                 logger.Default.LogMode(logger.Silent),
 		//PrepareStmt:            true,
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
-
 	// connection pool
+
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
 	}
 
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(0) // Connections don't expire
+	/*
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetMaxOpenConns(100)
+		sqlDB.SetConnMaxLifetime(0) // Connections don't expire
+	*/
 
-	db.Exec("PRAGMA journal_mode=WAL")
+	sqlDB.SetMaxOpenConns(1)
+	//sqlDB.SetConnMaxLifetime(0) // Connections don't expire
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// PRAGMA
+
+	//db.Exec("PRAGMA journal_mode=WAL")
 	db.Exec("PRAGMA synchronous=NORMAL")
 	db.Exec("PRAGMA cache_size=10000")
 	db.Exec("PRAGMA temp_store=MEMORY")
