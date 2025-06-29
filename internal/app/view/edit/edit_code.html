@@ -28,87 +28,137 @@
 
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+
 
 
 <script src="/__assets/assets/codemirror/cm6.bundle.min.js" crossorigin="anonymous"></script>
 
 
 <script>
-    $(document).ready(() => {
+    
+    
+if (typeof window.$$ != 'function') {
+    window.$$ = (arg0, arg1) => {
+        if (arg0 && arg1) {
+            return arg0.querySelectorAll(arg1);
+        }
+
+        if (arg0 && !arg1) {
+            return document.querySelectorAll(arg0);
+        }
+    };
+}
+
+if (typeof window.$ != 'function') {
+    window.$ = (arg0, arg1) => {
+        if (arg0 && arg1) {
+            return arg0.querySelector(arg1);
+        }
+
+        if (arg0 && !arg1) {
+            return document.querySelector(arg0);
+        }
+    };
+}
+
+
+
+ 
+    
+    (() => {
         
-        let val = `{{ .file_data }}`;
+        let decodeHtmlEntities = (str) => { 
+            const textarea = document.createElement('textarea'); 
+            textarea.innerHTML = str; 
+            return textarea.value; 
+        };
+        
+        
+        
+        let val = decodeHtmlEntities(`{{ .file_data }}`);
         
         const view = cm6.createEditorView(undefined, document.getElementById("editor1"));
         const initialState = cm6.createEditorState(val);
         view.setState(initialState);
 
         
+        
         let full_path = `{{.full_path}}`;
         
         
         
-        $('#save_button').on('click', () => {
-            
-            
-            let body = view.state.doc.toString();
-            
-            
-            
-            let formData = new FormData();
-            
-            formData.append('full_path', full_path);
-            formData.append('body', body);
-            formData.append('save_as_source', '1');
+        
+        
+        const save_button = $('#save_button');
+        if (save_button) {
+            save_button.addEventListener('click', (ev) => {
+                
+                let body = view.state.doc.toString();
+                
+                let formData = new FormData();
+                formData.append('full_path', full_path);
+                formData.append('body', body);
+                formData.append('save_as_source', '1');
 
-            $.ajax({
-                url: '/api/file/edit',
-                data: formData,
-                type: 'POST',
-                contentType: false,
-                processData: false,
-            }).done(function (data) {
-                if (data.code == 200) {
+                fetch('/api/file/edit', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then((r) => r.json())
+                    .then((js) => {
+                        if (js.code == '200') {
+                            
+                            let arr = full_path.split('/');
+                            arr.pop();
+                            
+                            let result_url = arr.join('/')
+                            if( result_url.length == 0 ){
+                                result_url = '/';
+                            }
+                            
+                            location.href = result_url;
+                            
+                        } else {
+                            if (js.msg) {
+                                alert(js.msg);
+                            }
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
                     
-                    
-                    let arr = full_path.split('/');
-                    arr.pop();
-                    
-                    let result_url = arr.join('/')
-                    if( result_url.length == 0 ){
-                        result_url = '/';
-                    }
-                    
-                    
-                    location.href = result_url;
-                    
-                }
-            }).fail(function(data) {
-                if (data.responseJSON.msg) {
-                    alert(data.responseJSON.msg);
-                }
             });
-            
-            
-        });
-        
-        $('#cancel_button').on('click', () => {
-            
-            
-            let arr = full_path.split('/');
-            arr.pop();
-            
-            let result_url = arr.join('/')
-            if( result_url.length == 0 ){
-                result_url = '/';
-            }
-            
-            
-            location.href = result_url;
-        });
+        }
         
         
         
-    });
+        
+        
+        const cancel_button = $('#cancel_button');
+        if (cancel_button) {
+            cancel_button.addEventListener('click', (ev) => {
+                
+                let arr = full_path.split('/');
+                arr.pop();
+                
+                let result_url = arr.join('/')
+                if( result_url.length == 0 ){
+                    result_url = '/';
+                }
+                
+                location.href = result_url;
+                    
+            });
+        }
+        
+        
+    
+    })();
+
+ 
+    
+    
+    
     
 </script>
