@@ -165,7 +165,7 @@ func PostZip(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-		"file": path.Join("/__temp/", archive_name),
+		"file": archive_name,
 	}, "application/json")
 
 }
