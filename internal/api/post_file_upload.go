@@ -55,6 +55,8 @@ func PostFileUpload(c *fiber.Ctx) error {
 		u_path = form_path
 	}
 
+	readTarget := path.Join(arg_fold, u_path)
+
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form, _ := c.MultipartForm()
@@ -76,11 +78,11 @@ func PostFileUpload(c *fiber.Ctx) error {
 
 		// -------------------------------------------------------------------------------------------------------------------------
 
-		if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, filename)); err == nil {
+		if fileInfo, err := os.Stat(path.Join(readTarget, filename)); err == nil {
 
 			if !fileInfo.IsDir() {
 
-				model.EventLogAdd(db, c, "200", "PostFileUpload", "'"+path.Join(arg_fold, u_path, filename)+"' already exists. It will be rewrite.")
+				model.EventLogAdd(db, c, "200", "PostFileUpload", "'"+path.Join(readTarget, filename)+"' already exists. It will be rewrite.")
 			}
 		}
 
@@ -90,9 +92,7 @@ func PostFileUpload(c *fiber.Ctx) error {
 
 		if arg_crypt == "" && len(code) > 0 {
 
-			cookie := new(fiber.Cookie)
-			cookie.Name = "code"
-			c.Cookie(cookie)
+			setCookie(c, "code", "")
 		}
 
 		if arg_crypt == "1" && len(code) > 0 {
@@ -122,14 +122,14 @@ func PostFileUpload(c *fiber.Ctx) error {
 				}, "application/json")
 			}
 
-			out, err := os.Create(path.Join(arg_fold, u_path, filename+".crypt"))
+			out, err := os.Create(path.Join(readTarget, filename+".crypt"))
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error create "+path.Join(arg_fold, u_path, filename+".crypt")+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error create "+path.Join(readTarget, filename+".crypt")+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + path.Join(arg_fold, u_path, filename+".crypt"),
+					"msg":  "Error create " + path.Join(readTarget, filename+".crypt"),
 				}, "application/json")
 			}
 			defer out.Close()
@@ -142,18 +142,18 @@ func PostFileUpload(c *fiber.Ctx) error {
 			}
 			f.Close()
 
-			model.EventLogAdd(db, c, "200", "PostFileUpload", "Save encrypted '"+path.Join(arg_fold, u_path, filename+".crypt")+"'")
+			model.EventLogAdd(db, c, "200", "PostFileUpload", "Save encrypted '"+path.Join(readTarget, filename+".crypt")+"'")
 
 		} else {
 
-			out, err := os.Create(path.Join(arg_fold, u_path, filename))
+			out, err := os.Create(path.Join(readTarget, filename))
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error create "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error create "+path.Join(readTarget, filename)+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + path.Join(arg_fold, u_path, filename),
+					"msg":  "Error create " + path.Join(readTarget, filename),
 				}, "application/json")
 			}
 			defer out.Close()
@@ -162,15 +162,15 @@ func PostFileUpload(c *fiber.Ctx) error {
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error copy "+path.Join(arg_fold, u_path, filename)+" "+err.Error())
+				model.EventLogAdd(db, c, "500", "PostFileUpload", "Error copy "+path.Join(readTarget, filename)+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error copy " + path.Join(arg_fold, u_path, filename),
+					"msg":  "Error copy " + path.Join(readTarget, filename),
 				}, "application/json")
 			}
 
-			model.EventLogAdd(db, c, "200", "PostFileUpload", "Save '"+path.Join(arg_fold, u_path, filename)+"'")
+			model.EventLogAdd(db, c, "200", "PostFileUpload", "Save '"+path.Join(readTarget, filename)+"'")
 
 		}
 
