@@ -96,19 +96,8 @@
         
 
 
-        <!--div class="row" style="padding:10px 0;">
-
-
-
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
-
-                    {{.Breadcrumb}}
-                </ol>
-            </nav>
-
-        </div-->
+        
+        
 
 
         <div class="row" style="padding:10px 0 100px 0;">
@@ -117,6 +106,14 @@
                 
                 
                     <div class='list-group'>
+                        
+                        {{if .rows}}
+                        {{else}}
+                            <a  class="list-group-item list-group-item-action ">
+                                Empty folder
+                            </a>
+                        {{end}}
+                        
                         
                         {{range .rows}}
                             

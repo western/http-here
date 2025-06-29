@@ -63,19 +63,7 @@
     
 
 
-    <!--div class="row" style="padding:10px 0;">
-
-
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i></a></li>
-
-                {{.Breadcrumb}}
-            </ol>
-        </nav>
-
-    </div-->
+    
 
 
 
@@ -209,7 +197,13 @@
                     </tr>
                 </thead>
                 <tbody>
-
+                    
+                    {{if .rows}}
+                    {{else}}
+                        <tr>
+                            <td colspan="5">Empty folder</td>
+                        </tr>
+                    {{end}}
 
                     {{range .rows}}
 
@@ -306,13 +300,7 @@
                 </tbody>
             </table>
 
-            <!--div class="d-grid gap-2 d-md-block">
-                <button type="button" class="btn btn-outline-danger btn-sm" id="group_del">Delete group</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="group_zip">Zip and download group</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="group_move">Move to</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="group_copy">Copy to</button>
-                
-            </div-->
+            
 
         </div>
 
@@ -401,7 +389,14 @@
 
 
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-
+                
+                {{if .rows}}
+                {{else}}
+                    <div class="col">
+                        Empty folder
+                    </div>
+                {{end}}
+                
 
                 {{range .rows}}
 
