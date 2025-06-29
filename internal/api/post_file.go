@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	_ "path/filepath"
 	"regexp"
 	"strings"
 
@@ -17,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func PostFileUpload(c *fiber.Ctx) error {
+func PostFile(c *fiber.Ctx) error {
 
 	arg_fold := ""
 	arg_fold = c.Locals("arg_fold").(string)
@@ -175,6 +174,8 @@ func PostFileUpload(c *fiber.Ctx) error {
 		}
 
 	}
+
+	RemoveCacheDir(readTarget)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
