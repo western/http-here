@@ -141,11 +141,11 @@ func Core() {
 			`     Only share`,
 			`                        ` + green_clr(`http-here`) + ` --upload-disable --folder-make-disable ` + white_clr(`/tmp/fold`),
 			``,
-			`     Powerful`,
+			`     For work`,
 			`                        ` + green_clr(`http-here`) + ` --tls --login ` + white_clr(`login`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork ` + white_clr(`/tmp/fold`),
 			``,
 			`     Effective`,
-			`                        ` + green_clr(`http-here`) + ` --prefork ` + white_clr(`/tmp`),
+			`                        ` + green_clr(`http-here`) + ` --prefork --silence ` + white_clr(`/tmp`),
 			``,
 		}
 
