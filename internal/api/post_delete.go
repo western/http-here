@@ -48,6 +48,8 @@ func PostDelete(c *fiber.Ctx) error {
 		u_path = form_path
 	}
 
+	readTarget := path.Join(arg_fold, u_path)
+
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form, _ := c.MultipartForm()
@@ -81,11 +83,11 @@ func PostDelete(c *fiber.Ctx) error {
 				continue
 			}
 
-			fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
+			fileInfo, err := os.Stat(path.Join(readTarget, name))
 
 			if err != nil {
-				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
-				err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' not exists")
+				err_list = append(err_list, "'"+path.Join(readTarget, name)+"' not exists")
 				continue
 			}
 
@@ -93,25 +95,25 @@ func PostDelete(c *fiber.Ctx) error {
 
 				// remove fold and all inside data
 
-				if err := os.RemoveAll(path.Join(arg_fold, u_path, name)); err != nil {
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
-					err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+				if err := os.RemoveAll(path.Join(readTarget, name)); err != nil {
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
+					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					continue
 				}
 
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+path.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+path.Join(readTarget, name)+"'")
 
 			} else {
 
 				// remove one file
 
-				if err := os.Remove(path.Join(arg_fold, u_path, name)); err != nil {
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
-					err_list = append(err_list, "'"+path.Join(arg_fold, u_path, name)+"' err "+err.Error())
+				if err := os.Remove(path.Join(readTarget, name)); err != nil {
+					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
+					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					continue
 				}
 
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+path.Join(arg_fold, u_path, name)+"'")
+				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+path.Join(readTarget, name)+"'")
 
 			}
 
@@ -119,6 +121,7 @@ func PostDelete(c *fiber.Ctx) error {
 	}
 
 	go model.FileChkAsync(db, prefix)
+	RemoveCacheDir(readTarget)
 
 	if len(err_list) > 0 {
 
