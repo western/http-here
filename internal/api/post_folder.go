@@ -47,6 +47,8 @@ func PostFolder(c *fiber.Ctx) error {
 		u_path = form_path
 	}
 
+	readTarget := path.Join(arg_fold, u_path)
+
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	name := c.FormValue("name")
@@ -67,11 +69,11 @@ func PostFolder(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	if fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name)); err == nil {
+	if fileInfo, err := os.Stat(path.Join(readTarget, name)); err == nil {
 
 		if fileInfo.IsDir() {
 
-			model.EventLogAdd(db, c, "500", "PostFolder", "'"+path.Join(arg_fold, u_path, name)+"' already exists")
+			model.EventLogAdd(db, c, "500", "PostFolder", "'"+path.Join(readTarget, name)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -80,17 +82,19 @@ func PostFolder(c *fiber.Ctx) error {
 		}
 	}
 
-	if err := os.Mkdir(path.Join(arg_fold, u_path, name), os.ModePerm); err != nil {
+	if err := os.Mkdir(path.Join(readTarget, name), os.ModePerm); err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+path.Join(arg_fold, u_path, name)+" "+err.Error())
+		model.EventLogAdd(db, c, "500", "PostFolder", "Error mkdir "+path.Join(readTarget, name)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error mkdir " + path.Join(arg_fold, u_path, name),
+			"msg":  "Error mkdir " + path.Join(readTarget, name),
 		}, "application/json")
 	}
 
-	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+path.Join(arg_fold, u_path, name)+"'")
+	model.EventLogAdd(db, c, "200", "PostFolder", "Mkdir '"+path.Join(readTarget, name)+"'")
+
+	RemoveCacheDir(readTarget)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
