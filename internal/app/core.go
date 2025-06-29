@@ -160,7 +160,7 @@ func Core() {
 
 		defer ticker.Stop()
 		for range ticker.C {
-			api.CleanupCache(*arg_cache_dir)
+			api.CleanupCacheDir(*arg_cache_dir)
 		}
 	}()
 
@@ -519,6 +519,7 @@ func Core() {
 		if *arg_extend_mode {
 			app.Get("/__doc/*", GetEditDoc)
 			app.Get("/__code/*", GetEditCode)
+			app.Get("/__md/*", GetEditMd)
 			app.Get("/__search/", GetSearch)
 			app.Get("/api/file/convert/*", api.GetFileConvert)
 			app.Post("/api/file/edit", PostFileEdit)
@@ -527,7 +528,7 @@ func Core() {
 	}
 
 	if !*arg_upload_disable {
-		app.Post("/api/file/upload", api.PostFileUpload)
+		app.Post("/api/file", api.PostFile)
 	}
 
 	if !*arg_folder_make_disable {
