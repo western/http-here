@@ -46,7 +46,7 @@ func GetList(c *fiber.Ctx) error {
 		s_sort = "name"
 	}
 
-	rows, err := generateRows(db, c, s_sort)
+	rows, err := generateRows(c, s_sort)
 	if err != nil {
 
 		if os.IsPermission(err) {
