@@ -37,7 +37,7 @@
                     {{if .arg_folder_make_disable}}
                     {{else}}
                     <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg2" title="New folder" ><i class="bi bi-folder-plus"></i></button>
-                    <button class="btn btn-outline-secondary" type="button" id="new_file_dlg2" title="New file" ><i class="bi bi-file-earmark"></i></button>
+                    <button class="btn btn-outline-secondary" type="button" id="make_file_dlg2" title="New file" ><i class="bi bi-file-earmark"></i></button>
                     {{end}}
                     
                     <button class="btn btn-outline-secondary" type="button" id="search_dlg2" title="Search" ><i class="bi bi-search"></i></button>
@@ -95,7 +95,7 @@
                     {{if .arg_folder_make_disable}}
                     {{else}}
                     <button class="btn btn-outline-secondary" type="button" id="make_folder_dlg" title="New folder" ><i class="bi bi-folder-plus"></i></button>
-                    <button class="btn btn-outline-secondary" type="button" id="new_file_dlg" title="New file" ><i class="bi bi-file-earmark"></i></button>
+                    <button class="btn btn-outline-secondary" type="button" id="make_file_dlg" title="New file" ><i class="bi bi-file-earmark"></i></button>
                     {{end}}
                     
                     <button class="btn btn-outline-secondary" type="button" id="search_dlg" title="Search" ><i class="bi bi-search"></i></button>
@@ -140,10 +140,42 @@
                         </div>
                         
                         
-                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
+                        
+                        <a class="btn btn-outline-danger group_del"  title="Delete group">
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_move"  title="Move group">
+                            <i class="bi bi-folder-symlink"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_copy"  title="Copy group">
+                            <i class="bi bi-copy"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_paste"  title="Paste group">
+                            <i class="bi bi-clipboard"></i>
+                        </a>
+                        
+                        
+                        <a class="btn btn-outline-secondary group_zip"  title="Zip group and download">
+                            <i class="bi bi-file-zip"></i>
+                        </a>
+                        
+                        
+                        
+                    </div>
+
+                </div>
+
+
+            </div>
+            
+            
+            <div class="row " _style="padding:10px 0;">
+                
+                <div class="col-4">
+
+                    <div class="btn-group " role="group" aria-label="">
+                        
+                        
                     </div>
 
                 </div>
@@ -181,7 +213,7 @@
                     </div>
 
                 </div>
-
+                
             </div>
 
 
@@ -273,12 +305,16 @@
 
                                             <li><a class="dropdown-item rename" href="javascript:void(0)" data-name="{{.Name}}"><i class="bi bi-cursor-text"></i> Rename</a></li>
                                             {{if .IsEditDoc}}
-                                            <li><a class="dropdown-item edit_doc" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-file-earmark-word"></i> Edit doc</a></li>
+                                            <li><a class="dropdown-item edit_doc" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-file-earmark-word"></i> Open as DOC</a></li>
                                             {{end}}
                                             
                                             
                                             {{if .IsEditCode}}
-                                            <li><a class="dropdown-item edit_code" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-pencil"></i> Edit source code</a></li>
+                                            <li><a class="dropdown-item edit_code" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-pencil"></i> Open as CODE</a></li>
+                                            {{end}}
+                                            
+                                            {{if .IsEditMd}}
+                                            <li><a class="dropdown-item edit_md" href="javascript:void(0)" data-name="{{.Name}}" data-full-path="{{.FullPath}}"><i class="bi bi-filetype-md"></i> Open as MARKDOWN</a></li>
                                             {{end}}
                                             
                                             <!--li><a class="dropdown-item" href="#">Something else here</a></li>
@@ -316,42 +352,61 @@
 
         <div class="container">
 
-            <div class="row " style="padding:0 0 20px 0;">
-
-                <!--div class="col-2" >
-                    
-                    <div class="btn-group">
-                        
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0 head-chk" type="checkbox"  >
-                        </div>
-                        
-                    </div>
-                    
-                </div-->
+            
+            <div class="row " style="padding:10px 0;">
 
 
                 <div class="col-4">
 
                     <div class="btn-group " role="group" aria-label="">
-
+                        
                         <div class="input-group-text">
                             <input class="form-check-input mt-0 head-chk" type="checkbox">
                         </div>
-
-                        <a class="btn btn-outline-danger " id="group_del" href="javascript:void(0)" title="Delete group"><i class="bi bi-trash3"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_move" href="javascript:void(0)" title="Move group"><i class="bi bi-folder-symlink"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_copy" href="javascript:void(0)" title="Copy group"><i class="bi bi-copy"></i></a>
-                        <a class="btn btn-outline-secondary " id="group_zip" href="javascript:void(0)" title="Zip group and download"><i class="bi bi-file-zip"></i></a>
+                        
+                        
+                        
+                        <a class="btn btn-outline-danger group_del"  title="Delete group">
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_move"  title="Move group">
+                            <i class="bi bi-folder-symlink"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_copy"  title="Copy group">
+                            <i class="bi bi-copy"></i>
+                        </a>
+                        <a class="btn btn-outline-secondary group_paste"  title="Paste group">
+                            <i class="bi bi-clipboard"></i>
+                        </a>
+                        
+                        
+                        <a class="btn btn-outline-secondary group_zip"  title="Zip group and download">
+                            <i class="bi bi-file-zip"></i>
+                        </a>
+                        
+                        
+                        
                     </div>
 
                 </div>
 
 
+            </div>
+            
+            
+            <div class="row " style="padding:10px 0;">
+                
+                <div class="col-4">
+
+                    <div class="btn-group " role="group" aria-label="">
+                        
+                        
+                    </div>
+
+                </div>
 
 
                 <div class="col-8 text-end">
-
 
                     <div class="btn-group btn-group-sm" role="group" aria-label="">
 
@@ -378,15 +433,18 @@
                             </ul>
                         </div>
 
-
                         <a class="btn btn-outline-secondary active" href="?mode=thumb" title="Folder and thumb"><i class="bi bi-image"></i></a>
                         <a class="btn btn-outline-secondary " href="?mode=list" title="List layout"><i class="bi bi-list"></i></a>
                     </div>
 
                 </div>
-
+                
             </div>
-
+            
+            
+            
+            
+            
 
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                 
@@ -489,13 +547,13 @@
                                             <div class="btn-group">
 
                                                 {{if .IsPreviewImg}}
-                                                    <a type="button" class="btn btn-sm btn-outline" href="/__thumb{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}">
+                                                    <a type="button" class="btn btn-sm btn-outline" href="/__thumb{{.FullPath}}" data-fslightbox data-lightbox="image-1" data-title="{{.Name}}">
                                                         <i class="bi bi-zoom-in"></i>
                                                     </a>
                                                 {{end}}
                                                 
                                                 {{if .IsPreviewDoc}}
-                                                    <a type="button" class="btn btn-sm btn-outline" href="/__thumb{{.FullPath}}" data-lightbox="image-1" data-title="{{.Name}}">
+                                                    <a type="button" class="btn btn-sm btn-outline" href="/__thumb{{.FullPath}}" data-fslightbox data-lightbox="image-1" data-title="{{.Name}}">
                                                         <i class="bi bi-zoom-in"></i>
                                                     </a>
                                                 {{end}}
