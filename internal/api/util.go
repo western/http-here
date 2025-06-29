@@ -113,7 +113,7 @@ func (cd *cachedDir) isExpired(sc int) bool {
 	return time.Since(cd.timestamp) > time.Duration(sc)*time.Second
 }
 
-func CleanupCache(sc int) {
+func CleanupCacheDir(sc int) {
 
 	dirCacheMux.Lock()
 	for key, cached := range dirCache {
@@ -123,6 +123,19 @@ func CleanupCache(sc int) {
 		}
 	}
 	dirCacheMux.Unlock()
+}
+
+func RemoveCacheDir(readTarget string) bool {
+	dirCacheMux.RLock()
+	_, exists := dirCache[readTarget]
+	if exists {
+		delete(dirCache, readTarget)
+		dirCacheMux.RUnlock()
+		return true
+	}
+
+	dirCacheMux.RUnlock()
+	return false
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
