@@ -2,18 +2,18 @@ package app
 
 import (
 	"bufio"
-	_ "fmt"
+	//"fmt"
 	"html/template"
 	"net/url"
 	"os"
 	"os/exec"
 	"path"
-	_ "path/filepath"
 	"regexp"
 	"runtime"
-	_ "strconv"
+	//"strconv"
 	"strings"
 
+	"github.com/western/http-here/internal/api"
 	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
 
@@ -228,6 +228,77 @@ func GetEditCode(c *fiber.Ctx) error {
 
 }
 
+func GetEditMd(c *fiber.Ctx) error {
+
+	arg_fold := ""
+	arg_fold = c.Locals("arg_fold").(string)
+
+	prefix := c.Locals("prefix").(string)
+
+	db := c.Locals("db").(*gorm.DB)
+
+	c_path, err := url.QueryUnescape(c.Path())
+	if err != nil {
+
+		model.EventLogAdd(db, c, "500", "GetEditMd", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	}
+
+	c_path = util.CleanDirtyPath(c_path)
+
+	c_path = strings.ReplaceAll(c_path, "/__md", "")
+
+	if _, err := os.Stat(path.Join(arg_fold, c_path)); err != nil {
+
+		model.EventLogAdd(db, c, "404", "GetEditMd", path.Join(arg_fold, c_path))
+
+		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
+	}
+
+	file_ext := util.GetExtNorm(c_path)
+	orig_filename := util.GetFileName(c_path)
+
+	is_code_match, _ := regexp.MatchString("^(md)$", file_ext)
+
+	if is_code_match {
+
+		filepath_tmp := path.Join(prefix, "temp")
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		util.CopyFile(
+			path.Join(arg_fold, c_path),
+			path.Join(filepath_tmp, orig_filename+"."+file_ext),
+		)
+
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+		if err != nil {
+
+			model.EventLogAdd(db, c, "500", "GetEditMd", "Error open temp source file: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		model.EventLogAdd(db, c, "200", "GetEditMd", "Open for edit "+path.Join(arg_fold, c_path))
+
+		return c.Render("view/edit/edit_md", fiber.Map{
+			"file_name": orig_filename + "." + file_ext,
+			"full_path": c_path,
+
+			"file_data": template.HTML(string(b)),
+		}, "view/layout/default")
+
+	}
+
+	model.EventLogAdd(db, c, "500", "GetEditMd", "Error: format of file is not for edit")
+
+	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+
+}
+
 func PostFileEdit(c *fiber.Ctx) error {
 
 	arg_fold := ""
@@ -307,6 +378,8 @@ func PostFileEdit(c *fiber.Ctx) error {
 			go model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
 			model.EventLogAdd(db, c, "200", "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
+
+			api.RemoveCacheDir(path.Dir(target_file))
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -473,6 +546,8 @@ func PostFileEdit(c *fiber.Ctx) error {
 			model.FileDelAsync(db, path.Join(arg_fold, full_path))
 
 			model.EventLogAdd(db, c, "200", "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
+
+			api.RemoveCacheDir(path.Dir(target_file))
 
 			return c.JSON(fiber.Map{
 				"code": 200,
