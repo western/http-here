@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"errors"
 	//"fmt"
 	"html/template"
@@ -232,32 +232,34 @@ func serveDirectory(c *fiber.Ctx) error {
 		sort_size = true
 	}
 
-	var folderTree_js []byte
+	//var folderTree_js []byte
 
-	if arg_extend_mode == "1" {
+	/*
+		if arg_extend_mode == "1" {
 
-		//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold+" start")
+			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold+" start")
 
-		//folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
-		folderTree := util.WalkAndTreeBuild2(arg_fold, 1)
-		//folderTree := util.WalkAndTreeBuild3(arg_fold, "/", 1)
+			//folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
+			folderTree := util.WalkAndTreeBuild2(arg_fold, 1)
+			//folderTree := util.WalkAndTreeBuild3(arg_fold, "/", 1)
 
-		//PrintPrettify("folderTree", folderTree)
+			//PrintPrettify("folderTree", folderTree)
 
-		//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold)
+			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold)
 
-		folderTree_js, err = json.Marshal(folderTree)
-		if err != nil {
+			folderTree_js, err = json.Marshal(folderTree)
+			if err != nil {
 
-			panic(err)
-			//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				panic(err)
+				//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			}
 		}
-	}
+	*/
 
 	return c.Render("view/"+template_file, fiber.Map{
 
-		"Breadcrumb":    template.HTML(breadcrumb),
-		"folderTree_js": template.HTML(folderTree_js),
+		"Breadcrumb": template.HTML(breadcrumb),
+		//"folderTree_js": template.HTML(folderTree_js),
 
 		"rows":            rows,
 		"arg_extend_mode": arg_extend_mode,
