@@ -6,7 +6,7 @@ info:
     
     [https://github.com/western/http-here](https://github.com/western/http-here)
     
-  version: 1.12.1
+  version: 1.14.0
 
 servers:
   - url: http://0.0.0.0:8000/
@@ -110,6 +110,26 @@ paths:
       schema:
         type: string
       example: /code/file.js
+    get:
+      summary: Open online editor for doc file edit
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Error with format or convert
+  /__md/{filePath}:
+    parameters:
+    - name: filePath
+      in: path
+      required: true
+      description: Path to the source file
+      schema:
+        type: string
+      example: /code/readme.md
     get:
       summary: Open online editor for doc file edit
       responses:
@@ -440,7 +460,7 @@ paths:
                 type: string
         '500':
           description: Error with format, convert or fs operation
-  /api/file/upload/:
+  /api/file/:
     post:
       summary: Upload files
       parameters:
