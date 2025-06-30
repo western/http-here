@@ -160,6 +160,16 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	if *arg_prefork && *arg_cache_dir == 30 {
+
+		*arg_cache_dir = 5
+
+		if !fiber.IsChild() {
+			fmt.Println()
+			fmt.Println("  For prefork automatic set cache-dir=", *arg_cache_dir)
+		}
+	}
+
 	go func() {
 		ticker := time.NewTicker(5 * time.Minute)
 
