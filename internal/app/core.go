@@ -134,6 +134,7 @@ func Core() {
 			`     --silence                 Disable all console messages`,
 			`     --nolog                   Do not write any data to event_log table`,
 			`     --usedb                   Database enable`,
+			``,
 			`     --cache-dir ` + white_clr(`[int]`) + `         Cache timeout for readdir, seconds [30]`,
 			``,
 			``,
