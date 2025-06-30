@@ -417,6 +417,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 	u_path = util.CleanDirtyPath(u_path)
 
 	if len(u_path) > 0 {
+		c_path = u_path
 		readTarget = path.Join(arg_fold, u_path)
 	}
 
