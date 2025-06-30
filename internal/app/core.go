@@ -160,6 +160,7 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	// if you not changed cache-dir arg from default 30, the app expect operate with it
 	if *arg_prefork && *arg_cache_dir == 30 {
 
 		*arg_cache_dir = 5
