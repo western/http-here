@@ -89,6 +89,10 @@ func Core() {
 		*arg_folder_make_disable = true
 	}
 
+	if *arg_spa {
+		*arg_extend_mode = true
+	}
+
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
 
@@ -546,12 +550,14 @@ func Core() {
 		app.Get("/api/search", api.GetSearch)
 	}
 
-	if *arg_spa && !*arg_extend_mode {
+	/*
+		if *arg_spa && !*arg_extend_mode {
 
-		fmt.Println("")
-		fmt.Println("You can not run --spa without --extend-mode")
-		return
-	}
+			fmt.Println("")
+			fmt.Println("You can not run --spa without --extend-mode")
+			return
+		}
+	*/
 
 	if !*arg_index_disable {
 
