@@ -148,7 +148,7 @@ func Core() {
 			`     For work`,
 			`                        ` + green_clr(`http-here`) + ` --tls --login ` + white_clr(`login`+util.RandStringRunes(2)) + ` --password ` + white_clr(util.RandStringRunes(12)) + ` --prefork --extend-mode ` + white_clr(`/tmp/fold`),
 			``,
-			`     Effective`,
+			`     Maximum performance`,
 			`                        ` + green_clr(`http-here`) + ` --prefork --silence ` + white_clr(`/tmp`),
 			``,
 		}
