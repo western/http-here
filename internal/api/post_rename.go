@@ -117,6 +117,7 @@ func PostRename(c *fiber.Ctx) error {
 	}
 
 	go model.FileChkAsync(db, prefix)
+	RemoveCacheDir(path.Join(arg_fold, u_path))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
