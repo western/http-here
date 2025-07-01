@@ -93,6 +93,7 @@ func PostFileTouch(c *fiber.Ctx) error {
 	myfile.Close()
 
 	model.EventLogAdd(db, c, "200", "PostFileTouch", "Create file '"+path.Join(arg_fold, u_path, name)+"'")
+	RemoveCacheDir(path.Join(arg_fold, u_path))
 
 	return c.JSON(fiber.Map{
 		"code": 200,
