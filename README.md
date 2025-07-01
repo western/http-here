@@ -25,13 +25,13 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Install from github
 
 ```console
-git clone --branch v1.13.1 https://github.com/western/http-here
+git clone --branch v1.14.0 https://github.com/western/http-here
 cd http-here
 make build
 ```
 or
 ```console
-go install github.com/western/http-here/cmd/http-here@v1.13.1
+go install github.com/western/http-here/cmd/http-here@v1.14.0
 ```
 
 
@@ -45,7 +45,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.13.1/http-here.gz
+wget https://github.com/western/http-here/releases/download/v1.14.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -53,7 +53,7 @@ chmod +x http-here
 
 windows / amd64
 ```console
-https://github.com/western/http-here/releases/download/v1.13.1/http-here.zip
+https://github.com/western/http-here/releases/download/v1.14.0/http-here.zip
 ```
 
 
@@ -76,7 +76,7 @@ http-here --extend-mode /tmp
 App will change main list view to table. And you can operate with files - delete, move, copy
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/panel_buttons.png?raw=true"  >
+    <img src="https://github.com/western/http-here/blob/dev/doc/panel_buttons2.png?raw=true"  >
 </p>
 
 Below you see display width more than 992 pix (1), less than (2) and mobile window (3):
@@ -115,7 +115,7 @@ http-here --basic .
 or only one basic auth specific user
 
 ```console
-http-here --user loginXX --password MugMf7AHs .
+http-here --login loginXX --password MugMf7AHs .
 ```
 
 ## The safest run
@@ -129,7 +129,7 @@ read for [TLS Support](#automatic-tls-keys-generate) below
 ## Only share
 
 ```console
-http-here --upload-disable --folder-make-disable /tmp/fold
+http-here --share-only /tmp/fold
 ```
 
 ## Run with prefork
@@ -148,8 +148,10 @@ You can online edit files `html, rtf, doc, docx, odt` as office files.
 
 Or `html, txt, js, css, md` formats as source code.
 
+Or `md` as markdown.
+
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_cmp.png?raw=true"  />
+    <img src="https://github.com/western/http-here/blob/dev/doc/online_editor_cmp2.png?raw=true"  />
     
 </p>
 
@@ -269,6 +271,17 @@ https://github.com/western/http-here/issues
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
 - [ ] REST restructure
+
+### 1.14.0
+- [x] add --usedb param (database disabled by default)
+- [x] cache readdir and --cache-dir param for timeout
+- [x] server connections optimization
+- [x] add --share-only param
+- [x] remove jquery
+- [x] remove tree_walk, remove bstreeview (rewrite to "clipboard style")
+- [x] add MARKDOWN editor (without SPA app)
+- [x] refresh SPA app - change upload api and checkbox reset
+- [x] rewrite code
 
 ### 1.13.0
 - [x] security fix Fiber panics when fiber.Ctx.BodyParser
