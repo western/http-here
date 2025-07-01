@@ -278,7 +278,7 @@ https://github.com/western/http-here/issues
 - [x] server connections optimization
 - [x] add --share-only param
 - [x] remove jquery
-- [x] remove tree_walk, remove bstreeview (rewrite to "clipboard style")
+- [x] disable WalkAndTreeBuild2, remove bstreeview (rewrite to "clipboard style")
 - [x] add MARKDOWN editor (without SPA app)
 - [x] refresh SPA app - change upload api and checkbox reset
 - [x] rewrite code
