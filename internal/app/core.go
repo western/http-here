@@ -362,18 +362,6 @@ func Core() {
 
 	app.Use(favicon.New())
 
-	/*
-		app.Use(cors.New(cors.Config{
-			//AllowOrigins: "*",
-			AllowCredentials: true,
-			AllowOriginsFunc: func(origin string) bool {
-				return true
-			},
-			AllowMethods:  "*",
-			AllowHeaders:  "*",
-			ExposeHeaders: "*",
-		}))*/
-
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
 	}))
@@ -457,10 +445,8 @@ func Core() {
 		Browse:     false,
 	}))
 
-	//app.Static("/__temp", path.Join(prefix, "temp"))
-
 	if *arg_extend_mode {
-		//app.Get("/__resize/:width/:height/*", controller.GetResize)
+
 		app.Get("/__thumb/*", GetThumb)
 	}
 
@@ -497,8 +483,6 @@ func Core() {
 
 		return c.SendFile(full_filename)
 	})
-
-	//app.Options("/*", api.OptionsAll)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// ROUTE
