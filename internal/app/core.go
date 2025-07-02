@@ -342,42 +342,15 @@ func Core() {
 		c.Locals("prefix", prefix)
 		c.Locals("arg_fold", arg_fold)
 
-		if *arg_upload_disable {
-
-			c.Locals("arg_upload_disable", "1")
-		}
-		if *arg_folder_make_disable {
-
-			c.Locals("arg_folder_make_disable", "1")
-		}
-		if *arg_extend_mode {
-
-			c.Locals("arg_extend_mode", "1")
-		}
-		if *arg_crypt {
-
-			c.Locals("arg_crypt", "1")
-		}
-		if *arg_spa {
-
-			c.Locals("arg_spa", "1")
-		}
-		if *arg_silence {
-
-			c.Locals("arg_silence", "1")
-		}
-		if *arg_nolog {
-
-			c.Locals("arg_nolog", "1")
-		}
-		if *arg_usedb {
-
-			c.Locals("arg_usedb", "1")
-		}
-		if arg_cache_dir != nil {
-
-			c.Locals("arg_cache_dir", *arg_cache_dir)
-		}
+		c.Locals("arg_upload_disable", *arg_upload_disable)
+		c.Locals("arg_folder_make_disable", *arg_folder_make_disable)
+		c.Locals("arg_extend_mode", *arg_extend_mode)
+		c.Locals("arg_crypt", *arg_crypt)
+		c.Locals("arg_spa", *arg_spa)
+		c.Locals("arg_silence", *arg_silence)
+		c.Locals("arg_nolog", *arg_nolog)
+		c.Locals("arg_usedb", *arg_usedb)
+		c.Locals("arg_cache_dir", *arg_cache_dir)
 
 		c.Locals("db", db)
 

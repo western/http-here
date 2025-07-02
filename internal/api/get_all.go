@@ -26,8 +26,7 @@ import (
 
 func GetAll(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -78,40 +77,18 @@ func GetAll(c *fiber.Ctx) error {
 
 	model.EventLogAdd(db, c, "500", "CORE", "Error "+readTarget+" is NOT regular file and NOT directory")
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
 func serveDirectory(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	arg_upload_disable := ""
-	if c.Locals("arg_upload_disable") != nil {
-		arg_upload_disable = c.Locals("arg_upload_disable").(string)
-	}
-
-	arg_folder_make_disable := ""
-	if c.Locals("arg_folder_make_disable") != nil {
-		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
-	}
-
-	arg_extend_mode := ""
-	if c.Locals("arg_extend_mode") != nil {
-		arg_extend_mode = c.Locals("arg_extend_mode").(string)
-	}
-
-	arg_crypt := ""
-	if c.Locals("arg_crypt") != nil {
-		arg_crypt = c.Locals("arg_crypt").(string)
-	}
-
-	arg_spa := ""
-	if c.Locals("arg_spa") != nil {
-		arg_spa = c.Locals("arg_spa").(string)
-	}
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	arg_upload_disable := GetBoolFromLocals(c, "arg_upload_disable")
+	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
+	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
+	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
+	arg_spa := GetBoolFromLocals(c, "arg_spa")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -128,7 +105,7 @@ func serveDirectory(c *fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if arg_spa == "1" {
+	if arg_spa {
 
 		model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
 		return c.Redirect("/#!"+c_path, 302)
@@ -162,7 +139,7 @@ func serveDirectory(c *fiber.Ctx) error {
 	var mode string
 	var s_sort string
 
-	if arg_extend_mode == "1" {
+	if arg_extend_mode {
 
 		template_file = "index_extend"
 
@@ -232,34 +209,9 @@ func serveDirectory(c *fiber.Ctx) error {
 		sort_size = true
 	}
 
-	//var folderTree_js []byte
-
-	/*
-		if arg_extend_mode == "1" {
-
-			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold+" start")
-
-			//folderTree := util.WalkAndTreeBuild(arg_fold, "/", 1)
-			folderTree := util.WalkAndTreeBuild2(arg_fold, 1)
-			//folderTree := util.WalkAndTreeBuild3(arg_fold, "/", 1)
-
-			//PrintPrettify("folderTree", folderTree)
-
-			//model.EventLogAdd(db, c, "200", "CORE", "WalkAndTreeBuild "+arg_fold)
-
-			folderTree_js, err = json.Marshal(folderTree)
-			if err != nil {
-
-				panic(err)
-				//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-		}
-	*/
-
 	return c.Render("view/"+template_file, fiber.Map{
 
 		"Breadcrumb": template.HTML(breadcrumb),
-		//"folderTree_js": template.HTML(folderTree_js),
 
 		"rows":            rows,
 		"arg_extend_mode": arg_extend_mode,
@@ -285,13 +237,8 @@ func serveDirectory(c *fiber.Ctx) error {
 
 func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	arg_crypt := ""
-	if c.Locals("arg_crypt") != nil {
-		arg_crypt = c.Locals("arg_crypt").(string)
-	}
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -318,12 +265,12 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 	is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
 
 	// reset code for safety
-	if arg_crypt == "" && len(code) > 0 {
+	if !arg_crypt && len(code) > 0 {
 
 		setCookie(c, "code", "")
 	}
 
-	if (is_crypt_ext && arg_crypt == "1" && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
+	if (is_crypt_ext && arg_crypt && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
 
 		f, err := os.CreateTemp("", "httphere_decrypt*")
 		if err != nil {
@@ -385,18 +332,9 @@ var (
 
 func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	arg_extend_mode := ""
-	if c.Locals("arg_extend_mode") != nil {
-		arg_extend_mode = c.Locals("arg_extend_mode").(string)
-	}
-
-	arg_cache_dir := 30
-	if c.Locals("arg_cache_dir") != nil {
-		arg_cache_dir = c.Locals("arg_cache_dir").(int)
-	}
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
+	arg_cache_dir := GetIntFromLocals(c, "arg_cache_dir", 30)
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -521,7 +459,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 					Rndm:         util.RandStringRunes(2),
 				})
 
-				if arg_extend_mode == "1" {
+				if arg_extend_mode {
 					go model.FileAddAsync(db, path.Join(readTarget, e.Name()))
 				}
 			}

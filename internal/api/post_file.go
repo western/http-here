@@ -18,13 +18,8 @@ import (
 
 func PostFile(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	arg_crypt := ""
-	if c.Locals("arg_crypt") != nil {
-		arg_crypt = c.Locals("arg_crypt").(string)
-	}
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -89,12 +84,12 @@ func PostFile(c *fiber.Ctx) error {
 
 		code := c.Cookies("code")
 
-		if arg_crypt == "" && len(code) > 0 {
+		if arg_crypt && len(code) > 0 {
 
 			setCookie(c, "code", "")
 		}
 
-		if arg_crypt == "1" && len(code) > 0 {
+		if arg_crypt && len(code) > 0 {
 
 			f, err := os.CreateTemp("", "httphere_crypt*")
 			if err != nil {

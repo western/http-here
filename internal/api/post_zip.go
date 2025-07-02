@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	_ "path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -22,10 +21,8 @@ import (
 
 func PostZip(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	prefix := c.Locals("prefix").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	prefix := GetStringFromLocals(c, "prefix", "")
 
 	db := c.Locals("db").(*gorm.DB)
 

@@ -27,8 +27,7 @@ var (
 
 func GetFileConvert(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -87,10 +86,8 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	prefix := c.Locals("prefix").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	prefix := GetStringFromLocals(c, "prefix", "")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -190,10 +187,8 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
 func slurpFile(c *fiber.Ctx, c_path string) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	prefix := c.Locals("prefix").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	prefix := GetStringFromLocals(c, "prefix", "")
 
 	filepath_tmp := path.Join(prefix, "temp")
 

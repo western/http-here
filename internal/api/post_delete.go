@@ -17,10 +17,8 @@ import (
 
 func PostDelete(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	prefix := c.Locals("prefix").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	prefix := GetStringFromLocals(c, "prefix", "")
 
 	referer := c.Get("Referer")
 

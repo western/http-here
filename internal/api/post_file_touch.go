@@ -18,8 +18,7 @@ import (
 
 func PostFileTouch(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 
 	referer := c.Get("Referer")
 

@@ -4,7 +4,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	_ "path/filepath"
 
 	"github.com/western/http-here/internal/model"
 	"github.com/western/http-here/internal/util"
@@ -16,10 +15,8 @@ import (
 
 func PostRename(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
-
-	prefix := c.Locals("prefix").(string)
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
+	prefix := GetStringFromLocals(c, "prefix", "")
 
 	referer := c.Get("Referer")
 
