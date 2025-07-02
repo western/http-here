@@ -296,34 +296,6 @@ https://github.com/western/http-here/issues
 - [x] switch to WalkAndTreeBuild2
 - [x] rewrite SPA app 
 
-### 1.12.2
-- [x] modal dialogs set focus
-- [x] app/thumb: return without resize by file size
-- [x] app/thumb: add error 'hex_name is empty'
-- [x] conf: set Files_count_max to 200
-- [x] fix edit: 1) folderTree_src is null 2) edit files in root directory
-
-### 1.12.1
-- [x] new cmd argument --silence
-- [x] new cmd argument --nolog
-- [x] change API
-- [x] add API description
-- [x] set focus on input for dialogs
-- [x] set focus on input for dialogs SPA
-
-### 1.12.0
-- [x] TLS keys generate without any external utils (not need any easy-rsa)
-- [x] control thumbnails and temporary html after edit
-- [x] edit: return 500 instead panic, some stable
-- [x] rewrited util.LogPrefix => model.EventLogAdd
-- [x] prepare windows build
-- [x] windows libreoffice support
-- [x] clear code
-- [x] fix breadcrumbs view for mobile and SPA
-- [x] spa fix: button overlay for mobile
-
-
-
 
 
 ### [other history here](HISTORY.md)
