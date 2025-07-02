@@ -2,6 +2,8 @@
 
 Simple zero-configuration command line http server with lightweight interface to work with files
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/western/http-here.svg)](https://pkg.go.dev/github.com/western/http-here)
+
 > Share folder via http with upload
 
 > Multiple files upload to current showed folder
