@@ -10,7 +10,6 @@ import (
 	"path"
 	"regexp"
 	"runtime"
-	//"strconv"
 	"strings"
 
 	"github.com/western/http-here/internal/api"
@@ -21,6 +20,8 @@ import (
 
 	"gorm.io/gorm"
 )
+
+var isOfficeRegex = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
 
 func GetEditDoc(c *fiber.Ctx) error {
 
@@ -53,7 +54,10 @@ func GetEditDoc(c *fiber.Ctx) error {
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
 
-	is_office_match, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", file_ext)
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	// html|rtf|doc|docx|odt
+	is_office_match := isOfficeRegex.MatchString(file_ext)
 
 	if is_office_match {
 
@@ -157,6 +161,8 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 }
 
+var isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md)$")
+
 func GetEditCode(c *fiber.Ctx) error {
 
 	arg_fold := ""
@@ -188,9 +194,12 @@ func GetEditCode(c *fiber.Ctx) error {
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
 
-	is_code_match, _ := regexp.MatchString("^(html|txt|js|css|md)$", file_ext)
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-	if is_code_match {
+	// html|txt|js|css|md
+	is_simple_source_match := isSimpleSourceRegex.MatchString(file_ext)
+
+	if is_simple_source_match {
 
 		filepath_tmp := path.Join(prefix, "temp")
 
@@ -259,9 +268,11 @@ func GetEditMd(c *fiber.Ctx) error {
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
 
-	is_code_match, _ := regexp.MatchString("^(md)$", file_ext)
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-	if is_code_match {
+	is_md_match, _ := regexp.MatchString("^(md)$", file_ext)
+
+	if is_md_match {
 
 		filepath_tmp := path.Join(prefix, "temp")
 
@@ -392,7 +403,8 @@ func PostFileEdit(c *fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	is_office_match, _ := regexp.MatchString("^(html|rtf|doc|docx|odt)$", file_ext)
+	// rtf|doc|docx|odt
+	is_office_match := isOfficeRegex.MatchString(file_ext)
 
 	if is_office_match {
 
