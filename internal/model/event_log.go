@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"os"
-	_ "reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -67,17 +66,13 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 	}
 
 	arg_fold := ""
-	arg_silence := ""
-	arg_nolog := ""
+	arg_silence := false
+	arg_nolog := false
 	if c != nil {
 
-		arg_fold = c.Locals("arg_fold").(string)
-		if c.Locals("arg_silence") != nil {
-			arg_silence = c.Locals("arg_silence").(string)
-		}
-		if c.Locals("arg_nolog") != nil {
-			arg_nolog = c.Locals("arg_nolog").(string)
-		}
+		arg_fold = GetStringFromLocals(c, "arg_fold", "")
+		arg_silence = GetBoolFromLocals(c, "arg_silence")
+		arg_nolog = GetBoolFromLocals(c, "arg_nolog")
 	}
 
 	_user := ""
@@ -103,11 +98,11 @@ func EventLogAdd(db *gorm.DB, c *fiber.Ctx, status, tag, msg string) {
 
 	pref += msg
 
-	if tag != "INIT" && arg_silence == "" {
+	if tag != "INIT" && !arg_silence {
 		fmt.Println(pref)
 	}
 
-	if db != nil && arg_nolog == "" {
+	if db != nil && !arg_nolog {
 
 		msg = StringClearColor(msg)
 

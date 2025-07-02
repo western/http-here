@@ -7,6 +7,8 @@ import (
 
 	"github.com/western/http-here/internal/conf"
 
+	"github.com/gofiber/fiber/v2"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -86,4 +88,27 @@ func ConnectToSQLite(prefix string) (*gorm.DB, error) {
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_file_md5 ON file(md5)")
 
 	return db, nil
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------------
+
+func GetBoolFromLocals(c *fiber.Ctx, key string) bool {
+	if val, ok := c.Locals(key).(bool); ok {
+		return val
+	}
+	return false
+}
+
+func GetStringFromLocals(c *fiber.Ctx, key string, defaultValue string) string {
+	if val, ok := c.Locals(key).(string); ok {
+		return val
+	}
+	return defaultValue
+}
+
+func GetIntFromLocals(c *fiber.Ctx, key string, defaultValue int) int {
+	if val, ok := c.Locals(key).(int); ok {
+		return val
+	}
+	return defaultValue
 }
