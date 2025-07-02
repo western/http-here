@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/wneessen/go-fileperm"
+	//"github.com/wneessen/go-fileperm"
 	//_ "github.com/western/http-here/internal/fastwalk2"
 )
 
@@ -43,7 +43,7 @@ func WalkAndTreeBuild3(path_, prev_path string, deep int) []TreeRow {
 
 	for _, file := range files {
 
-		full_path := path.Join(path_, file.Name())
+		//full_path := path.Join(path_, file.Name())
 
 		/*
 			        var fileInfo os.FileInfo
@@ -54,6 +54,7 @@ func WalkAndTreeBuild3(path_, prev_path string, deep int) []TreeRow {
 				    }
 		*/
 
+/*
 		up, err := fileperm.New(full_path)
 		if err != nil {
 			panic(err)
@@ -68,6 +69,7 @@ func WalkAndTreeBuild3(path_, prev_path string, deep int) []TreeRow {
 			fmt.Println("file is not UserReadExecutable ", file.Name())
 			continue
 		}
+*/
 
 		// fileInfo.Mode().Type() == fs.ModeSocket
 
