@@ -8,15 +8,9 @@ import (
 
 func GetSpa(c *fiber.Ctx) error {
 
-	arg_upload_disable := ""
-	if c.Locals("arg_upload_disable") != nil {
-		arg_upload_disable = c.Locals("arg_upload_disable").(string)
-	}
-
-	arg_folder_make_disable := ""
-	if c.Locals("arg_folder_make_disable") != nil {
-		arg_folder_make_disable = c.Locals("arg_folder_make_disable").(string)
-	}
+	arg_upload_disable := GetBoolFromLocals(c, "arg_upload_disable")
+	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
+	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 
 	return c.Render("view/spa", fiber.Map{
 
@@ -26,6 +20,7 @@ func GetSpa(c *fiber.Ctx) error {
 
 		"arg_upload_disable":      arg_upload_disable,
 		"arg_folder_make_disable": arg_folder_make_disable,
+		"arg_extend_mode":         arg_extend_mode,
 	})
 
 }
