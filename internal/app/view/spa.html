@@ -7,7 +7,7 @@
         <title></title>
         
         <script>
-        let root = {
+        let config_ = {
             files_count_max:     {{.files_count_max}},
             fieldSize_max:       {{.fieldSize_max}},
             fieldSize_max_human: "{{.fieldSize_max_human}}",
@@ -16,7 +16,9 @@
             arg_folder_make_disable: {{.arg_folder_make_disable}},
             arg_extend_mode:         {{.arg_extend_mode}},
         };
+        localStorage.setItem('config_', JSON.stringify(config_));
         </script>
+        
         
         
         
