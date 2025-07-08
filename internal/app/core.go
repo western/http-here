@@ -89,9 +89,10 @@ func Core() {
 		*arg_folder_make_disable = true
 	}
 
-	if *arg_spa {
-		*arg_extend_mode = true
-	}
+	/*
+		if *arg_spa {
+			*arg_extend_mode = true
+		}*/
 
 	green_clr := color.New(color.FgGreen).SprintFunc()
 	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
@@ -496,8 +497,9 @@ func Core() {
 			app.Get("/__search/", GetSearch)
 			app.Get("/api/file/convert/*", api.GetFileConvert)
 			app.Post("/api/file/edit", PostFileEdit)
-			app.Get("/api/list", api.GetList)
 		}
+
+		app.Get("/api/list", api.GetList)
 	}
 
 	if !*arg_upload_disable {
