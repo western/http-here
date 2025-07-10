@@ -22,7 +22,7 @@ import (
 var (
 	isOfficeRegex = regexp.MustCompile("^(rtf|doc|docx|odt)$")
 
-	isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md)$")
+	isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")
 )
 
 func GetFileConvert(c *fiber.Ctx) error {

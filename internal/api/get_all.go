@@ -326,7 +326,7 @@ var (
 	previewDocRegex = regexp.MustCompile("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 
 	editDocRegex  = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
-	editCodeRegex = regexp.MustCompile("^(html|txt|js|css|md)$")
+	editCodeRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")
 	editMdRegex   = regexp.MustCompile("^(md)$")
 )
 

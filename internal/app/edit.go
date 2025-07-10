@@ -161,7 +161,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 }
 
-var isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md)$")
+var isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")
 
 func GetEditCode(c *fiber.Ctx) error {
 
