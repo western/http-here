@@ -32,41 +32,35 @@ if (typeof window.$ != 'function') {
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 
-
 const getCookie = (name) => {
-    let matches = document.cookie.match(new RegExp(
-        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-    ));
+    let matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
     return matches ? decodeURIComponent(matches[1]) : undefined;
-}
+};
 
 const setCookie = (name, value, options = {}) => {
-
     options = {
         path: '/',
-        ...options
+        ...options,
     };
 
     if (options.expires instanceof Date) {
         options.expires = options.expires.toUTCString();
     }
 
-    let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+    let updatedCookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
 
     for (let optionKey in options) {
-        updatedCookie += "; " + optionKey;
+        updatedCookie += '; ' + optionKey;
         let optionValue = options[optionKey];
         if (optionValue !== true) {
-            updatedCookie += "=" + optionValue;
+            updatedCookie += '=' + optionValue;
         }
     }
 
     document.cookie = updatedCookie;
-}
-
+};
 
 // setCookie('user', 'John', {secure: true, 'max-age': 3600});
-
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 
@@ -329,9 +323,7 @@ const setCookie = (name, value, options = {}) => {
                 .then((r) => r.json())
                 .then((js) => {
                     if (js.code == '200') {
-                        
                         location.href = '/__temp/' + js.file;
-                        
                     } else {
                         if (js.msg) {
                             alert(js.msg);
@@ -398,8 +390,6 @@ const setCookie = (name, value, options = {}) => {
                     let is_edit_doc = ext.match(/^(rtf|doc|docx|odt)$/i);
                     let is_edit_code = ext.match(/^(html|txt|js|css|json|sh)$/i);
                     let is_edit_md = ext.match(/^(md)$/i);
-                    
-                    
 
                     if (is_edit_doc) {
                         location.href = '/__doc' + location.pathname + '/' + val;
@@ -413,10 +403,9 @@ const setCookie = (name, value, options = {}) => {
                         location.href = '/__md' + location.pathname + '/' + val;
                         return;
                     }
-                    
+
                     location.href = location.href;
                     return;
-                    
                 } else {
                     if (js.msg) {
                         alert(js.msg);
@@ -694,35 +683,32 @@ const setCookie = (name, value, options = {}) => {
             location.href = '/__player' + location.pathname + '/' + el.dataset.name;
         });
     });
-    
+
     // --------------------------------------------------------------------------------------------------------------------------------------
-    
-    if( getCookie('code') ){
-        
+
+    if (getCookie('code')) {
         const set_code_input = $('#set_code_input');
         if (set_code_input) {
             set_code_input.value = getCookie('code');
         }
     }
-    
+
     let change_code_cookie = () => {
-        
         const set_code_input = $('#set_code_input');
         if (set_code_input) {
-            
             setCookie('code', set_code_input.value, {});
-            
+
             location.href = location.href;
         }
     };
-    
+
     const set_code_button = $('#set_code_button');
     if (set_code_button) {
         set_code_button.addEventListener('click', (ev) => {
             change_code_cookie(ev);
         });
     }
-    
+
     const set_code_input = $('#set_code_input');
     if (set_code_input) {
         set_code_input.addEventListener('keypress', (ev) => {
@@ -734,13 +720,11 @@ const setCookie = (name, value, options = {}) => {
 
     // --------------------------------------------------------------------------------------------------------------------------------------
 
-    
     $$('#upload_file, #upload_file2').forEach((upl) => {
         upl.addEventListener('change', (ev) => {
             ev_target_files(ev.target.files);
         });
     });
-    
 
     // --------------------------------------------------------------------------------------------------------------------------------------
 })();
@@ -800,8 +784,5 @@ const ev_target_files = async (files) => {
 };
 
 // --------------------------------------------------------------------------------------------------------------------------------------
-
-
-
 
 // --------------------------------------------------------------------------------------------------------------------------------------
