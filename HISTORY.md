@@ -1,6 +1,14 @@
 
 ## History
 
+### 1.13.0
+- [x] security fix Fiber panics when fiber.Ctx.BodyParser
+- [x] new --nodb flag
+- [x] switch to WalkAndTreeBuild2
+- [x] rewrite SPA app 
+
+<hr>
+
 ### 1.12.2
 - [x] modal dialogs set focus
 - [x] app/thumb: return without resize by file size
