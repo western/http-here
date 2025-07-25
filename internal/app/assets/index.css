@@ -1,5 +1,3 @@
-
-
 /* index.css */
 
 a.nodecor {
@@ -28,8 +26,6 @@ li.list-group-item i{
 }
 */
 
-
-
 div.list-group {
     padding: 0 12px;
 }
@@ -39,7 +35,7 @@ div.list-group a {
     overflow: hidden;
 }
 
-div.list-group a i{
+div.list-group a i {
     margin-right: 10px;
 }
 
@@ -47,13 +43,10 @@ div.list-group a.file {
     background-color: #efefef;
 }
 
-
-
-
 #progress {
     display: none;
     width: 95%;
-    margin:0 auto;
+    margin: 0 auto;
 }
 
 .blink_me {
@@ -66,19 +59,15 @@ div.list-group a.file {
     }
 }
 
-
-
 .file-table {
     margin-bottom: 50px;
 }
-
 
 /*
 .table th:nth-child(1) {
     padding-left: 20px;
 }
 */
-
 
 /*
 .table>:not(caption)>*>* {
@@ -103,12 +92,11 @@ div.list-group a.file {
 }
 */
 
-
 .table.table-ellipsis tbody td {
     max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap
+    white-space: nowrap;
 }
 
 .table.table-ellipsis tbody td:hover {
@@ -116,15 +104,6 @@ div.list-group a.file {
     white-space: normal;
     word-break: break-all;
 }
-
-
-
-
-
-
-
-
-
 
 .bd-placeholder-img {
     font-size: 1.125rem;
@@ -140,10 +119,6 @@ div.list-group a.file {
     }
 }
 
-
-.input-group-text.font-reset{
-
+.input-group-text.font-reset {
     font-size: unset !important;
-
 }
-
