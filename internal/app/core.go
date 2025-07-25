@@ -141,7 +141,7 @@ func Core() {
 			``,
 			`examples:`,
 			``,
-			`     The safest simple run`,
+			`     The safest run`,
 			`                        ` + green_clr(`http-here`) + ` --tls --basic ` + white_clr(`/some/path`),
 			``,
 			`     Only share`,
