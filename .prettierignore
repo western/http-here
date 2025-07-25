@@ -1,0 +1,11 @@
+
+cmd
+doc
+.git
+
+internal/app/assets/bstreeview/
+internal/app/assets/codemirror/
+internal/app/assets/lightbox/
+internal/app/assets/fslightbox/
+
+internal/app/assets/spa/
