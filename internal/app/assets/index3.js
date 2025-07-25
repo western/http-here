@@ -396,18 +396,27 @@ const setCookie = (name, value, options = {}) => {
                     let ext = regx.slice(1)[0];
 
                     let is_edit_doc = ext.match(/^(rtf|doc|docx|odt)$/i);
-                    let is_edit_code = ext.match(/^(html|txt|js|css)$/i);
+                    let is_edit_code = ext.match(/^(html|txt|js|css|json|sh)$/i);
                     let is_edit_md = ext.match(/^(md)$/i);
+                    
+                    
 
                     if (is_edit_doc) {
                         location.href = '/__doc' + location.pathname + '/' + val;
+                        return;
                     }
                     if (is_edit_code) {
                         location.href = '/__code' + location.pathname + '/' + val;
+                        return;
                     }
                     if (is_edit_md) {
                         location.href = '/__md' + location.pathname + '/' + val;
+                        return;
                     }
+                    
+                    location.href = location.href;
+                    return;
+                    
                 } else {
                     if (js.msg) {
                         alert(js.msg);
