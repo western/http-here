@@ -403,7 +403,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	// rtf|doc|docx|odt
+	// html|rtf|doc|docx|odt
 	is_office_match := isOfficeRegex.MatchString(file_ext)
 
 	if is_office_match {
