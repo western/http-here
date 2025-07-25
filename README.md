@@ -290,11 +290,7 @@ https://github.com/western/http-here/issues
 - [x] refresh SPA app - change upload api and checkbox reset
 - [x] rewrite code
 
-### 1.13.0
-- [x] security fix Fiber panics when fiber.Ctx.BodyParser
-- [x] new --nodb flag
-- [x] switch to WalkAndTreeBuild2
-- [x] rewrite SPA app 
+
 
 
 
