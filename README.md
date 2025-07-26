@@ -279,6 +279,28 @@ https://github.com/western/http-here/issues
 - [ ] prepare frontend react code
 - [ ] REST restructure
 
+### 1.14.3
+- [x] refresh spa
+
+refresh codemirror - add json highlight, disable dark, disable autocomplete;
+
+MakeFileModal: add json, sh exts; add md editor redirect
+- [x] codemirror bundle update cm6.bundle-20250710.min.js
+
+codemirror:
+- [x] disable autocomplete
+- [x] disable black theme
+- [x] add highlight JSON
+
+editors:
+- [x] open SH as CODE
+- [x] for new SH file - open CODE online editor
+- [x] for new JSON file - open CODE online editor
+- [x] for new MD file - open in MARKDOWN editor
+
+### 1.14.2
+- [x] refresh spa, spa app can run in two modes - default and extend
+
 ### 1.14.0
 - [x] add --usedb param (database disabled by default)
 - [x] cache readdir and --cache-dir param for timeout
