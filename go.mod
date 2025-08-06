@@ -8,7 +8,7 @@ require (
 	github.com/charlievieth/fastwalk v1.0.12
 	github.com/edwvee/exiffix v0.0.0-20240229113213-0dbb146775be
 	github.com/fatih/color v1.18.0
-	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/html/v2 v2.1.3
 	golang.org/x/image v0.28.0
 	gorm.io/driver/sqlite v1.6.0
