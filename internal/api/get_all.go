@@ -89,6 +89,7 @@ func serveDirectory(c *fiber.Ctx) error {
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 	arg_spa := GetBoolFromLocals(c, "arg_spa")
+	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
 
 	db := c.Locals("db").(*gorm.DB)
 
@@ -229,6 +230,7 @@ func serveDirectory(c *fiber.Ctx) error {
 
 		"arg_upload_disable":      arg_upload_disable,
 		"arg_folder_make_disable": arg_folder_make_disable,
+		"arg_usedb":               arg_usedb,
 	}, "view/layout/default")
 
 }

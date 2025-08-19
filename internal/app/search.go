@@ -13,13 +13,8 @@ func GetSearch(c *fiber.Ctx) error {
 
 	db := c.Locals("db").(*gorm.DB)
 
-	arg_usedb := ""
-	if c.Locals("arg_usedb") != nil {
-		arg_usedb = c.Locals("arg_usedb").(string)
-	}
-
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
+	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
+	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 
 	s := c.Query("s")
 
