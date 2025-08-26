@@ -107,34 +107,44 @@ func PostZip(c *fiber.Ctx) error {
 			continue
 		}
 
-		fileInfo, err := os.Stat(path.Join(arg_fold, u_path, name))
+		readTarget := path.Join(arg_fold, u_path, name)
+
+		fileInfo, err := os.Stat(readTarget)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' not exists")
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+readTarget+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
+			model.EventLogAdd(db, c, "500", "PostZip", "'"+readTarget+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
 
 		if fileInfo.IsDir() {
 
-			addFilesToZip(zipWriter, path.Join(arg_fold, u_path, name), name)
+			addFilesToZip(zipWriter, readTarget, name)
 
 		} else {
 
-			f1, err := os.Open(path.Join(arg_fold, u_path, name))
+			f1, err := os.Open(readTarget)
 			if err != nil {
-				panic(err)
+				//panic(err)
+
+				if os.IsPermission(err) {
+
+					model.EventLogAdd(db, c, "403", "PostZip", "Forbidden for read "+readTarget)
+					continue
+				}
+
+				model.EventLogAdd(db, c, "500", "PostZip", "Read "+readTarget+" err: "+err.Error())
+				continue
 			}
 			defer f1.Close()
 
-			//w1, err := zipWriter.Create(name)
 			w1, err := zipWriter.CreateHeader(header)
 			if err != nil {
 				panic(err)
@@ -178,21 +188,18 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 
 		if !file.IsDir() {
 
-			dat, err := os.ReadFile(path.Join(basePath, file.Name()))
+			fullPath := path.Join(basePath, file.Name())
+
+			fileInfo, err := os.Stat(fullPath)
 			if err != nil {
 				fmt.Println(err)
-			}
-
-			fileInfo, err := os.Stat(path.Join(basePath, file.Name()))
-			if err != nil {
-				fmt.Println(err)
-
+				continue
 			}
 
 			header, err := zip.FileInfoHeader(fileInfo)
 			if err != nil {
 				fmt.Println(err)
-
+				continue
 			}
 			header.Method = zip.Store
 			header.Name = path.Join(baseInZip, file.Name())
@@ -200,11 +207,22 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 			f, err := w.CreateHeader(header)
 			if err != nil {
 				fmt.Println(err)
+				continue
 			}
-			_, err = f.Write(dat)
+
+			src, err := os.Open(fullPath)
+			defer src.Close()
 			if err != nil {
 				fmt.Println(err)
+			} else {
+				_, err = io.Copy(f, src)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
 			}
+
 		} else if file.IsDir() {
 
 			newBase := path.Join(basePath, file.Name()) + "/"
