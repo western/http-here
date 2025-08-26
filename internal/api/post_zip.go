@@ -214,6 +214,7 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 			defer src.Close()
 			if err != nil {
 				fmt.Println(err)
+				continue
 			} else {
 				_, err = io.Copy(f, src)
 				if err != nil {
