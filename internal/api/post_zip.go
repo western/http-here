@@ -168,17 +168,16 @@ func PostZip(c *fiber.Ctx) error {
 }
 
 func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
-	// Open the Directory
-	//files, err := ioutil.ReadDir(basePath)
+
 	files, err := os.ReadDir(basePath)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for _, file := range files {
-		//fmt.Println(  path.Join(basePath, file.Name())   )
+
 		if !file.IsDir() {
-			//dat, err := ioutil.ReadFile(basePath + file.Name())
+
 			dat, err := os.ReadFile(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
@@ -187,21 +186,17 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 			fileInfo, err := os.Stat(path.Join(basePath, file.Name()))
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+path.Join(basePath, file.Name())+"' not exists")
-				//continue
+
 			}
 
 			header, err := zip.FileInfoHeader(fileInfo)
 			if err != nil {
 				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
-				//continue
+
 			}
 			header.Method = zip.Store
 			header.Name = path.Join(baseInZip, file.Name())
 
-			// Add some files to the archive.
-			//f, err := w.Create(path.Join(baseInZip, file.Name()))
 			f, err := w.CreateHeader(header)
 			if err != nil {
 				fmt.Println(err)
@@ -212,13 +207,8 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
 			}
 		} else if file.IsDir() {
 
-			// Recurse
-			//newBase := basePath + file.Name() + "/"
 			newBase := path.Join(basePath, file.Name()) + "/"
-			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
-			//fmt.Println("Recursing and Adding SubDir: " + newBase)
 
-			//addFiles(w, newBase, baseInZip+file.Name()+"/")
 			addFilesToZip(w, newBase, path.Join(baseInZip, file.Name())+"/")
 		}
 	}
