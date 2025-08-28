@@ -35,6 +35,10 @@ Simple zero-configuration command line http server with lightweight interface to
 git clone --branch v1.14.5 https://github.com/western/http-here
 cd http-here
 make build
+
+# Then copy builded "http-here" binary file to the place you want.
+# Usually your home ~/bin
+
 ```
 or
 ```console
@@ -60,7 +64,11 @@ chmod +x http-here
 
 windows / amd64
 ```console
+# Download this archive
 https://github.com/western/http-here/releases/download/v1.14.5/http-here.zip
+
+# Unpack it
+# Open `cmd` and run
 ```
 
 
