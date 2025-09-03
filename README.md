@@ -320,7 +320,7 @@ editors:
 - [x] refresh SPA app - change upload api and checkbox reset
 - [x] rewrite code
 
-
+By default `cache-dir` timeout set to `30 seconds`. If you not set yours.
 
 
 
