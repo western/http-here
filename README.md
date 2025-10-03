@@ -29,7 +29,7 @@ Simple zero-configuration command line http server with lightweight interface to
 
 
 
-## Install from github
+## Build from sources
 
 ```console
 git clone --branch v1.14.5 https://github.com/western/http-here
@@ -47,7 +47,7 @@ go install github.com/western/http-here/cmd/http-here@v1.14.5
 
 
 
-## Manual download
+## Download ready binary file
 
 linux / amd64
 
