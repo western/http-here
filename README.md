@@ -38,6 +38,7 @@ make build
 
 # Then copy builded "http-here" binary file to the place you want.
 # Usually your home ~/bin
+cp http-here ~/bin
 
 ```
 or
