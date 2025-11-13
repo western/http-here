@@ -262,8 +262,9 @@ For `jpg, gif, png` you not need anything.
 
 All previews generate during first view. One time.
 
-## Linux packages needs for full functional
+## Dependencies
 
+Packages needs for full functional
 
 - `libreoffice` - for doc thumbnails, for doc files online edit
 - `openssl` - encrypt file support
