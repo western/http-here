@@ -264,11 +264,9 @@ All previews generate during first view. One time.
 
 ## Dependencies
 
-Packages needs for full functional
-
 - `libreoffice` - for doc thumbnails, for doc files online edit
 - `openssl` - encrypt file support
-- CDN cdn.jsdelivr.net
+- CDN `cdn.jsdelivr.net` - bootstrap and bootstrap icons
 
 ## API
 
