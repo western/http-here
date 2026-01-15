@@ -20,7 +20,8 @@ bicons1131:
 build_without_cdn: tinymce760 bootstrap533 bicons1131
 	cd $(TOPDIR)/internal/app/view/layout && \
 	mv default.html default.html_ && mv default.nocdn.html default.html && \
-	mv error.html error.html_ && mv error.nocdn.html error.html \
+	mv error.html error.html_ && mv error.nocdn.html error.html && \
+	cd $(TOPDIR) && make build
 
 fmt:
 	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/cert/* && go fmt internal/model/* && go fmt internal/util/*
