@@ -264,9 +264,9 @@ All previews generate during first view. One time.
 
 ## Dependencies
 
-- `libreoffice` - for doc thumbnails, for doc files online edit
-- `openssl` - encrypt file support
-- CDN `cdn.jsdelivr.net` - bootstrap and bootstrap icons
+- CDN `cdn.jsdelivr.net` - Bootstrap and Bootstrap icons
+- `libreoffice` (not mandatory if you not use) - for doc thumbnails, for doc files online edit
+- `openssl` (not mandatory if you not use) - encrypt file support
 
 ## API
 
