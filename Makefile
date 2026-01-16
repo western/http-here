@@ -21,8 +21,10 @@ without_cdn_build: tinymce760 bootstrap533 bicons1131
 	cd $(TOPDIR)/internal/app/view/layout && \
 	mv default.html default.html_ && mv default.nocdn.html default.html && \
 	mv error.html error.html_ && mv error.nocdn.html error.html && \
+	\
 	cd $(TOPDIR)/internal/app/view/edit && \
 	mv edit_doc.html edit_doc.html_ && mv edit_doc.nocdn.html edit_doc.html && \
+	\
 	cd $(TOPDIR) && make build
 
 without_cdn_clear:
