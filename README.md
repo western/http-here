@@ -268,6 +268,15 @@ All previews generate during first view. One time.
 - `libreoffice` (not mandatory if you not use) - for doc thumbnails, for doc files online edit
 - `openssl` (not mandatory if you not use) - encrypt file support
 
+## How to build without CDN
+
+```console
+git clone https://github.com/western/http-here
+cd http-here
+make without_cdn_build
+```
+
+
 ## API
 
 [western/http-here/refs/heads/dev/internal/docs/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/western/http-here/refs/heads/dev/internal/docs/openapi.yaml)
