@@ -296,6 +296,7 @@ https://github.com/western/http-here/issues
 - [x] make builder for configure compiler - add all libraries to local assets, Bootstrap, Bootstrap-icons (Makefile options added)
 - [x] prepare frontend REACT repo (repo already exist, but only local)
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
+- [ ] prepare tui.editor repo
 - [x] REST restructure
 
 ### 1.14.3
