@@ -295,7 +295,7 @@ https://github.com/western/http-here/issues
 - [ ] tests
 - [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
 - [ ] prepare frontend react code
-- [ ] REST restructure
+- [x] REST restructure
 
 ### 1.14.3
 - [x] refresh spa
