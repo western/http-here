@@ -26,16 +26,20 @@ without_cdn_build: tinymce760 bootstrap533 bicons1131
 	cd $(TOPDIR) && make build
 
 without_cdn_clear:
-	rm http-here && \
+	cd $(TOPDIR) && \
+	rm http-here ; \
 	rm internal/app/view/layout/default.html_ && \
 	rm internal/app/view/layout/error.html_ && \
+	rm internal/app/view/edit/edit_doc.html_ && \
 	\
 	cd $(ASSETS) && \
 	rm -rf bootstrap-5.3.3 && \
 	rm -rf bootstrap-icons-1.13.1 && \
 	rm -rf tinymce_7.6.0 && \
 	\
-	git restore internal/app/view/layout
+	cd $(TOPDIR) && \
+	git restore internal/app/view/layout && \
+	git restore internal/app/view/edit
 
 fmt:
 	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/cert/* && go fmt internal/model/* && go fmt internal/util/*
