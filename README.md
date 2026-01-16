@@ -291,10 +291,11 @@ https://github.com/western/http-here/issues
 - [ ] add --log and --tee args for save output (or database?)
 - [ ] change background actions for FS drivers (i need one abstraction layer)
 - [ ] problem: how decide to run md5sum inside some folder
-- [ ] database, separate branch without?
+- [x] ~~database, separate branch without?~~ (app have switch option for database)
 - [ ] tests
-- [ ] make builder for configure app compiler? as example - add all libraries to local assets, jquery, bootstrap, bootstrap-icons
-- [ ] prepare frontend react code
+- [x] make builder for configure compiler - add all libraries to local assets, Bootstrap, Bootstrap-icons (Makefile options added)
+- [x] prepare frontend REACT repo (repo already exist, but only local)
+- [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [x] REST restructure
 
 ### 1.14.3
