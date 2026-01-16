@@ -1,0 +1,171 @@
+
+<br>
+<div class="container">
+
+    <div class="row " _style="padding:50px 0;">
+        
+        <div class="col text-truncate">
+            <h2>
+                <i class="bi bi-file-earmark-word"></i> {{.file_name}}
+            </h2>
+        </div>
+        <div class="col text-end">
+            <h2>
+                <a href="javascript:void(0)" id="save_button" title="Save file"><i class="bi bi-floppy"></i></a>
+                &nbsp;&nbsp;
+                <a href="javascript:void(0)" id="cancel_button" title="Cancel"><i class="bi bi-x-circle"></i></a>
+            </h2>
+        </div>
+        
+        
+        
+        
+        
+        <textarea id="textarea1">{{ .file_data }}</textarea>
+        
+        
+        
+    </div>
+
+</div>
+
+
+
+
+<script src="/__assets/assets/tinymce_7.6.0/js/tinymce/tinymce.min.js" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script>
+    
+if (typeof window.$$ != 'function') {
+    window.$$ = (arg0, arg1) => {
+        if (arg0 && arg1) {
+            return arg0.querySelectorAll(arg1);
+        }
+
+        if (arg0 && !arg1) {
+            return document.querySelectorAll(arg0);
+        }
+    };
+}
+
+if (typeof window.$ != 'function') {
+    window.$ = (arg0, arg1) => {
+        if (arg0 && arg1) {
+            return arg0.querySelector(arg1);
+        }
+
+        if (arg0 && !arg1) {
+            return document.querySelector(arg0);
+        }
+    };
+}
+
+
+
+
+
+    
+    (() => {
+        
+        tinymce.init({
+            selector: '#textarea1',
+            
+            
+            height: 900,
+            width: "100%",
+            menubar: false,
+            branding: false,
+            convert_urls: false,
+            plugins:
+            "preview importcss searchreplace autolink autosave save directionality code  visualblocks visualchars fullscreen image link media  codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons",
+            toolbar1:
+            "undo redo | code  | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media  link anchor codesample | ltr rtl",
+
+            toolbar_sticky: false,
+            
+            extended_valid_elements : 'script[src|async|defer|type|charset]',
+            autosave_ask_before_unload: false,
+            license_key: 'gpl',
+
+            
+        });
+        
+        
+        let full_path = `{{.full_path}}`;
+        
+        
+        
+        const save_button = $('#save_button');
+        if (save_button) {
+            save_button.addEventListener('click', (ev) => {
+                
+                let body = tinymce.get("textarea1").getContent();
+                
+                let formData = new FormData();
+                formData.append('full_path', full_path);
+                formData.append('body', body);
+                
+
+                fetch('/api/file/edit', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then((r) => r.json())
+                    .then((js) => {
+                        if (js.code == '200') {
+                            
+                            let arr = full_path.split('/');
+                            arr.pop();
+                            
+                            let result_url = arr.join('/')
+                            if( result_url.length == 0 ){
+                                result_url = '/';
+                            }
+                            
+                            location.href = result_url;
+                            
+                        } else {
+                            if (js.msg) {
+                                alert(js.msg);
+                            }
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
+                    
+            });
+        }
+        
+        
+        
+        const cancel_button = $('#cancel_button');
+        if (cancel_button) {
+            cancel_button.addEventListener('click', (ev) => {
+                
+                let arr = full_path.split('/');
+                arr.pop();
+                
+                let result_url = arr.join('/')
+                if( result_url.length == 0 ){
+                    result_url = '/';
+                }
+                
+                location.href = result_url;
+                    
+            });
+        }
+        
+        
+        
+    })();
+
+    
+    
+    
+</script>
