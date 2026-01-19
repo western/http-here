@@ -371,6 +371,15 @@ func Core() {
 	yellow_clr := color.New(color.FgYellow).SprintFunc()
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// ASSETS
+
+	app.Use("/__assets", filesystem.New(filesystem.Config{
+		Root:       http.FS(embedDirStatic),
+		PathPrefix: "",
+		Browse:     false,
+	}))
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// BASIC AUTH
 
 	if *arg_basic && *arg_prefork {
@@ -439,12 +448,6 @@ func Core() {
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
-
-	app.Use("/__assets", filesystem.New(filesystem.Config{
-		Root:       http.FS(embedDirStatic),
-		PathPrefix: "",
-		Browse:     false,
-	}))
 
 	if *arg_extend_mode {
 
