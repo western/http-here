@@ -156,7 +156,10 @@ Prefork help to handle with multiple heavy query (big image gallery as example)
 http-here --prefork --extend-mode /tmp
 ```
 
-
+When you run server as `prefork`, every process has a `folder cache`.
+It is look good, if you use app only as read only.
+But, if you upload some files or delete some files - `folder cache` should be refreshed for every process as soon as possible.
+So, the app set small time for `--cache-dir` param by default together with `--prefork`.
 
 ## Online editor
 
