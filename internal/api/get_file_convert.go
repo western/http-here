@@ -11,12 +11,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -27,14 +26,10 @@ var (
 
 func GetFileConvert(c *fiber.Ctx) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-
-	db := c.Locals("db").(*gorm.DB)
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetFileConvert", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "GetFileConvert", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -45,11 +40,11 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/api/file/convert", "")
 
-	readTarget := path.Join(arg_fold, c_path)
+	readTarget := path.Join(conf.ArgFold, c_path)
 
 	if _, err := os.Stat(readTarget); err != nil {
 
-		model.EventLogAdd(db, c, "404", "GetFileConvert", readTarget)
+		model2.EventLogAdd(c, 404, "GetFileConvert", readTarget)
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -76,7 +71,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	model.EventLogAdd(db, c, "500", "GetFileConvert", "Error: format of file is not for edit")
+	model2.EventLogAdd(c, 500, "GetFileConvert", "Error: format of file is not for edit")
 
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,
@@ -85,11 +80,6 @@ func GetFileConvert(c *fiber.Ctx) error {
 }
 
 func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
-
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-	prefix := GetStringFromLocals(c, "prefix", "")
-
-	db := c.Locals("db").(*gorm.DB)
 
 	orig_filename := util.GetFileName(c_path)
 
@@ -100,7 +90,7 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 		_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "convertOfficeToHTML", "Error libreoffice not found "+err.Error())
+			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice not found "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -113,7 +103,7 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "convertOfficeToHTML", "Error libreoffice not found "+err.Error())
+			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice not found "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -126,8 +116,8 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
 	if runtime.GOOS == "windows" {
 
-		filepath_tmp := util.RotateSlash(path.Join(prefix, "temp"))
-		arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
+		filepath_tmp := util.RotateSlash(path.Join(conf.ConfigRoot, "temp"))
+		arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
 
 		util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
@@ -136,11 +126,11 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
+			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
 			panic(err)
 		}
 
-		model.EventLogAdd(db, c, "200", "convertOfficeToHTML", "Convert file to html "+arg_fold_path)
+		model2.EventLogAdd(c, 200, "convertOfficeToHTML", "Convert file to html "+arg_fold_path)
 
 		return c.JSON(fiber.Map{
 			"code":      200,
@@ -149,11 +139,11 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
 	} else {
 
-		filepath_tmp := path.Join(prefix, "temp")
-		arg_fold_path := path.Join(arg_fold, c_path)
+		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
+		arg_fold_path := path.Join(conf.ArgFold, c_path)
 
 		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
-		cmd.Dir = arg_fold
+		cmd.Dir = conf.ArgFold
 
 		stderr, _ := cmd.StderrPipe()
 		if err := cmd.Start(); err != nil {
@@ -170,11 +160,11 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
+			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
 			panic(err)
 		}
 
-		model.EventLogAdd(db, c, "200", "convertOfficeToHTML", "Convert file to html "+arg_fold_path)
+		model2.EventLogAdd(c, 200, "convertOfficeToHTML", "Convert file to html "+arg_fold_path)
 
 		return c.JSON(fiber.Map{
 			"code":      200,
@@ -187,12 +177,7 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
 func slurpFile(c *fiber.Ctx, c_path string) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-	prefix := GetStringFromLocals(c, "prefix", "")
-
-	filepath_tmp := path.Join(prefix, "temp")
-
-	db := c.Locals("db").(*gorm.DB)
+	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
@@ -200,21 +185,21 @@ func slurpFile(c *fiber.Ctx, c_path string) error {
 	// --------------------------------------------------------------------------------------------------------------------------------
 
 	util.CopyFile(
-		path.Join(arg_fold, c_path),
+		path.Join(conf.ArgFold, c_path),
 		path.Join(filepath_tmp, orig_filename+"."+file_ext),
 	)
 
 	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "slurpFile", "Error open temp source file: "+err.Error())
+		model2.EventLogAdd(c, 500, "slurpFile", "Error open temp source file: "+err.Error())
 
 		panic(err)
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	model.EventLogAdd(db, c, "200", "slurpFile", "Convert for edit "+path.Join(arg_fold, c_path))
+	model2.EventLogAdd(c, 200, "slurpFile", "Convert for edit "+path.Join(conf.ArgFold, c_path))
 
 	return c.JSON(fiber.Map{
 		"code":      200,

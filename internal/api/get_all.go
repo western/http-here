@@ -1,7 +1,6 @@
 package api
 
 import (
-	//"encoding/json"
 	"errors"
 	//"fmt"
 	"html/template"
@@ -15,31 +14,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/western/http-here/internal/conf"
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 func GetAll(c *fiber.Ctx) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-
-	db := c.Locals("db").(*gorm.DB)
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	readTarget := path.Join(arg_fold, c_path)
+	readTarget := path.Join(conf.ArgFold, c_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -47,7 +40,7 @@ func GetAll(c *fiber.Ctx) error {
 
 	if errors.Is(err, os.ErrNotExist) {
 
-		model.EventLogAdd(db, c, "404", "CORE", readTarget)
+		model2.EventLogAdd(c, 404, "CORE", readTarget)
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
 			"File": c_path,
@@ -56,7 +49,7 @@ func GetAll(c *fiber.Ctx) error {
 
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+readTarget+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Error "+readTarget+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
@@ -75,7 +68,7 @@ func GetAll(c *fiber.Ctx) error {
 	// FILE is not Regular and not Directory
 	// 500 Internal Server Error
 
-	model.EventLogAdd(db, c, "500", "CORE", "Error "+readTarget+" is NOT regular file and NOT directory")
+	model2.EventLogAdd(c, 500, "CORE", "Error "+readTarget+" is NOT regular file and NOT directory")
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 }
 
@@ -83,7 +76,6 @@ func GetAll(c *fiber.Ctx) error {
 
 func serveDirectory(c *fiber.Ctx) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 	arg_upload_disable := GetBoolFromLocals(c, "arg_upload_disable")
 	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
@@ -91,35 +83,33 @@ func serveDirectory(c *fiber.Ctx) error {
 	arg_spa := GetBoolFromLocals(c, "arg_spa")
 	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
 
-	db := c.Locals("db").(*gorm.DB)
-
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	readTarget := path.Join(arg_fold, c_path)
+	readTarget := path.Join(conf.ArgFold, c_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	if arg_spa {
 
-		model.EventLogAdd(db, c, "302", "CORE", "SPA application, redirect to /#!"+c_path)
+		model2.EventLogAdd(c, 302, "CORE", "SPA application, redirect to /#!"+c_path)
 		return c.Redirect("/#!"+c_path, 302)
 	}
 
 	// check index.html inside
 	if _, err := os.Stat(path.Join(readTarget, "index.html")); err == nil {
 
-		model.EventLogAdd(db, c, "200", "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readTarget, "index.html"))
+		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readTarget, "index.html"))
 		return c.SendFile(path.Join(readTarget, "index.html"), false)
 	}
 
-	model.EventLogAdd(db, c, "200", "CORE", "Dir "+readTarget)
+	model2.EventLogAdd(c, 200, "CORE", "Dir "+readTarget)
 
 	breadcrumb := ""
 	separator := "/"
@@ -174,14 +164,14 @@ func serveDirectory(c *fiber.Ctx) error {
 
 		if os.IsPermission(err) {
 
-			model.EventLogAdd(db, c, "403", "CORE", "Forbidden for read "+readTarget)
+			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+readTarget)
 			return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
 				"Title":   "403",
 				"Message": "Forbidden",
 			}, "view/layout/error")
 		}
 
-		model.EventLogAdd(db, c, "500", "CORE", "Read folder err: "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Read folder err: "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
@@ -224,9 +214,9 @@ func serveDirectory(c *fiber.Ctx) error {
 		"sort_modified": sort_modified,
 		"sort_size":     sort_size,
 
-		"files_count_max":     conf.Files_count_max,
-		"fieldSize_max":       conf.FieldSize_max,
-		"fieldSize_max_human": conf.FieldSize_max_human,
+		"files_count_max":     conf.FilesCountMax,
+		"fieldSize_max":       conf.FieldSizeMax,
+		"fieldSize_max_human": conf.FieldSizeMaxHuman,
 
 		"arg_upload_disable":      arg_upload_disable,
 		"arg_folder_make_disable": arg_folder_make_disable,
@@ -239,21 +229,18 @@ func serveDirectory(c *fiber.Ctx) error {
 
 func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
-
-	db := c.Locals("db").(*gorm.DB)
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "CORE", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	readTarget := path.Join(arg_fold, c_path)
+	readTarget := path.Join(conf.ArgFold, c_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -290,11 +277,11 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 		isOk, err := util.DecryptFile(f.Name(), code)
 		if !isOk {
 
-			model.EventLogAdd(db, c, "500", "CORE", "Error DecryptFile "+err.Error())
+			model2.EventLogAdd(c, 500, "CORE", "Error DecryptFile "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		model.EventLogAdd(db, c, "200", "CORE", "SendFile decrypt "+readTarget)
+		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+readTarget)
 
 		fname := filepath.Base(c_path)
 		fname = strings.Replace(fname, ".crypt", "", 1)
@@ -308,14 +295,14 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
 		} else {
 
-			model.EventLogAdd(db, c, "403", "CORE", "Forbidden for read "+readTarget)
+			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+readTarget)
 			return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
 				"Title":   "403",
 				"Message": "Forbidden",
 			}, "view/layout/error")
 		}
 
-		model.EventLogAdd(db, c, "200", "CORE", "SendFile "+readTarget)
+		model2.EventLogAdd(c, 200, "CORE", "SendFile "+readTarget)
 
 		return c.SendFile(readTarget, false)
 	}
@@ -334,11 +321,8 @@ var (
 
 func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_cache_dir := GetIntFromLocals(c, "arg_cache_dir", 30)
-
-	db := c.Locals("db").(*gorm.DB)
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -347,7 +331,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	readTarget := path.Join(arg_fold, c_path)
+	readTarget := path.Join(conf.ArgFold, c_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// FOR request with PARAM path=
@@ -358,7 +342,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 
 	if len(u_path) > 0 {
 		c_path = u_path
-		readTarget = path.Join(arg_fold, u_path)
+		readTarget = path.Join(conf.ArgFold, u_path)
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -385,7 +369,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 	entries, err := os.ReadDir(readTarget)
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "generateRows", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "generateRows", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 
 		return []FileRow{}, err
 	}
@@ -462,7 +446,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 				})
 
 				if arg_extend_mode {
-					go model.FileAddAsync(db, path.Join(readTarget, e.Name()))
+					go model2.FileAddAsync(path.Join(readTarget, e.Name()))
 				}
 			}
 

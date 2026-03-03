@@ -12,31 +12,26 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	//_ "reflect"
+	//"reflect"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/fatih/color"
-	//_ "github.com/gofiber/swagger"
 
-	"github.com/western/http-here/internal/api"
-	"github.com/western/http-here/internal/cert"
-	"github.com/western/http-here/internal/conf"
-	//_ "github.com/western/http-here/internal/docs"
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/api"
+	"github.com/western/http-here/v2/internal/cert"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
-	//"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
-
-	"gorm.io/gorm"
 )
 
 //go:embed view/*
@@ -44,6 +39,13 @@ var view_fs embed.FS
 
 //go:embed assets/*
 var embedDirStatic embed.FS
+
+var (
+	green_clr  = color.New(color.FgGreen).SprintFunc()
+	white_clr  = color.New(color.Bold, color.FgWhite).SprintFunc()
+	cian_clr   = color.New(color.FgCyan).SprintFunc()
+	yellow_clr = color.New(color.FgYellow).SprintFunc()
+)
 
 func Core() {
 
@@ -89,14 +91,6 @@ func Core() {
 		*arg_folder_make_disable = true
 	}
 
-	/*
-		if *arg_spa {
-			*arg_extend_mode = true
-		}*/
-
-	green_clr := color.New(color.FgGreen).SprintFunc()
-	white_clr := color.New(color.Bold, color.FgWhite).SprintFunc()
-
 	if *arg_help {
 
 		inf := []string{
@@ -123,7 +117,7 @@ func Core() {
 			`     --share-only              Set --upload-disable and --folder-make-disable`,
 			``,
 			``,
-			`     --extend-mode             Enable delete mechanics. Be very careful. It disabled by default.`,
+			`     --extend-mode             Enable extended mode`,
 			``,
 			`     --prefork                 Enable spawn multiple processes`,
 			``,
@@ -133,8 +127,9 @@ func Core() {
 			``,
 			``,
 			`     --silence                 Disable all console messages`,
-			`     --nolog                   Do not write any data to event_log table`,
+			``,
 			`     --usedb                   Database enable`,
+			`     --nolog                   Do not write any data to event_log table`,
 			``,
 			`     --cache-dir ` + white_clr(`[int]`) + `         Cache timeout for readdir, seconds [30]`,
 			``,
@@ -157,6 +152,36 @@ func Core() {
 
 		fmt.Println(strings.Join(inf[:], "\n"))
 		return
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	//fmt.Println("len(os.Args)=", len(os.Args))
+
+	if len(os.Args) > 1 {
+
+		//fmt.Println("os.Args=", os.Args)
+
+		if os.Args[1] == "user" {
+
+			model2.Open()
+
+			cmdSubcommandUser()
+		}
+
+		if os.Args[1] == "usermod" {
+
+			model2.Open()
+
+			cmdSubcommandUserMod()
+		}
+
+		if os.Args[1] == "log" {
+
+			model2.Open()
+
+			cmdSubcommandLog()
+		}
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -214,36 +239,22 @@ func Core() {
 		return
 	}
 
+	conf.ArgFold = arg_fold
+
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println("User homepath detect error: ", err)
-		return
-	}
-
-	prefix := path.Join(homepath, ".httphere")
-
-	/*
-		db, err := model.ConnectToSQLite(prefix)
-		if err != nil {
-			panic(err)
-		}*/
-
-	var db *gorm.DB
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	if *arg_usedb {
-		db, err = model.ConnectToSQLite(prefix)
-		if err != nil {
-			panic(err)
-		}
+
+		model2.Open()
 	}
 
 	if !fiber.IsChild() {
 
-		model.EventLogAdd(db, nil, "", "INIT", "run "+arg_fold)
+		model2.EventLogAdd(nil, 0, "INIT", "run "+conf.ArgFold)
 
-		go model.FileChkAsync(db, prefix)
+		go model2.FileChkAsync()
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -251,33 +262,33 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		if _, err := os.Stat(path.Join(prefix)); err != nil {
-			if err := os.MkdirAll(path.Join(prefix), os.ModePerm); err != nil {
+		if _, err := os.Stat(path.Join(conf.ConfigRoot)); err != nil {
+			if err := os.MkdirAll(path.Join(conf.ConfigRoot), os.ModePerm); err != nil {
 				fmt.Println(err)
 				return
 			}
 		}
 
-		if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
-			if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
+		if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb")); err != nil {
+			if err := os.MkdirAll(path.Join(conf.ConfigRoot, "thumb"), os.ModePerm); err != nil {
 				fmt.Println(err)
 				return
 			}
 		}
 
-		if _, err := os.Stat(path.Join(prefix, "tls")); os.IsNotExist(err) {
-			if err := os.MkdirAll(path.Join(prefix, "tls"), os.ModePerm); err != nil {
+		if _, err := os.Stat(path.Join(conf.ConfigRoot, "tls")); os.IsNotExist(err) {
+			if err := os.MkdirAll(path.Join(conf.ConfigRoot, "tls"), os.ModePerm); err != nil {
 				fmt.Println(err)
 				return
 			}
 		}
 
-		if _, err = os.Stat(path.Join(prefix, "temp")); err != nil {
+		if _, err = os.Stat(path.Join(conf.ConfigRoot, "temp")); err != nil {
 
 			fmt.Println("")
 			//fmt.Println("  Make temp folder")
 
-			if err = os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
+			if err = os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
 				fmt.Println(err)
 				return
 			}
@@ -286,12 +297,12 @@ func Core() {
 			fmt.Println("")
 			//fmt.Println(yellow_clr("  Clear temp folder"))
 
-			if err = os.RemoveAll(path.Join(prefix, "temp")); err != nil {
+			if err = os.RemoveAll(path.Join(conf.ConfigRoot, "temp")); err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			if err = os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
+			if err = os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
 				fmt.Println(err)
 				return
 			}
@@ -301,8 +312,8 @@ func Core() {
 
 	if !fiber.IsChild() {
 
-		util.WalkAndClearZeroFile(path.Join(prefix, "thumb"), 0)
-		//go WalkAndClearOld(path.Join(prefix, "thumb"))
+		util.WalkAndClearZeroFile(path.Join(conf.ConfigRoot, "thumb"), 0)
+		//go WalkAndClearOld(path.Join(conf.ConfigRoot, "thumb"))
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -314,7 +325,7 @@ func Core() {
 		DisableStartupMessage: true,
 		ServerHeader:          "",
 		Views:                 engine,
-		BodyLimit:             conf.FieldSize_max,
+		BodyLimit:             conf.FieldSizeMax,
 
 		// Timeouts
 		ReadTimeout:  30 * time.Second, // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
@@ -340,9 +351,6 @@ func Core() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		c.Locals("prefix", prefix)
-		c.Locals("arg_fold", arg_fold)
-
 		c.Locals("arg_upload_disable", *arg_upload_disable)
 		c.Locals("arg_folder_make_disable", *arg_folder_make_disable)
 		c.Locals("arg_extend_mode", *arg_extend_mode)
@@ -352,8 +360,6 @@ func Core() {
 		c.Locals("arg_nolog", *arg_nolog)
 		c.Locals("arg_usedb", *arg_usedb)
 		c.Locals("arg_cache_dir", *arg_cache_dir)
-
-		c.Locals("db", db)
 
 		return c.Next()
 	})
@@ -366,9 +372,6 @@ func Core() {
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
 	}))
-
-	cian_clr := color.New(color.FgCyan).SprintFunc()
-	yellow_clr := color.New(color.FgYellow).SprintFunc()
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// ASSETS
@@ -412,7 +415,7 @@ func Core() {
 
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				model.EventLogAdd(db, c, "401", "basicauth", path.Join(arg_fold, c.Path()))
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -434,7 +437,7 @@ func Core() {
 			},
 			Unauthorized: func(c *fiber.Ctx) error {
 
-				model.EventLogAdd(db, c, "401", "basicauth", path.Join(arg_fold, c.Path()))
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -461,12 +464,12 @@ func Core() {
 
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "__temp", "Error "+path.Join(prefix, "temp", c_path)+" "+err.Error())
+			model2.EventLogAdd(c, 500, "__temp", "Error "+path.Join(conf.ConfigRoot, "temp", c_path)+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
 		c_path = util.CleanDirtyPath(c_path)
-		full_filename := path.Join(prefix, "temp", c_path)
+		full_filename := path.Join(conf.ConfigRoot, "temp", c_path)
 
 		if runtime.GOOS == "windows" {
 			full_filename = util.RotateSlash(full_filename)
@@ -475,7 +478,7 @@ func Core() {
 		_, err = os.Stat(full_filename)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "404", "__temp", "'"+full_filename+"' not found")
+			model2.EventLogAdd(c, 404, "__temp", "'"+full_filename+"' not found")
 
 			return c.JSON(fiber.Map{
 				"code": 404,
@@ -483,7 +486,7 @@ func Core() {
 			}, "application/json")
 		}
 
-		model.EventLogAdd(db, c, "200", "__temp", "Temp get "+full_filename)
+		model2.EventLogAdd(c, 200, "__temp", "Temp get "+full_filename)
 
 		return c.SendFile(full_filename)
 	})
@@ -524,15 +527,6 @@ func Core() {
 		app.Get("/api/search", api.GetSearch)
 	}
 
-	/*
-		if *arg_spa && !*arg_extend_mode {
-
-			fmt.Println("")
-			fmt.Println("You can not run --spa without --extend-mode")
-			return
-		}
-	*/
-
 	if !*arg_index_disable {
 
 		if *arg_spa {
@@ -548,15 +542,15 @@ func Core() {
 
 	app.Use(func(c *fiber.Ctx) error {
 
-		model.EventLogAdd(db, c, "404", "last_handle", path.Join(arg_fold, c.Path()))
+		model2.EventLogAdd(c, 404, "last_handle", path.Join(conf.ArgFold, c.Path()))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	crt_filename := path.Join(prefix, "tls", "server.pem")
-	key_filename := path.Join(prefix, "tls", "server.key")
+	crt_filename := path.Join(conf.ConfigRoot, "tls", "server.pem")
+	key_filename := path.Join(conf.ConfigRoot, "tls", "server.key")
 
 	if runtime.GOOS == "windows" {
 		crt_filename = util.RotateSlash(crt_filename)
@@ -579,7 +573,7 @@ func Core() {
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		cert.Run(path.Join(prefix, "tls"), "server")
+		cert.Run(path.Join(conf.ConfigRoot, "tls"), "server")
 
 		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")
@@ -628,7 +622,7 @@ func Core() {
 
 		fmt.Println("")
 
-		fmt.Println("  Serve folder: " + cian_clr(arg_fold))
+		fmt.Println("  Serve folder: " + cian_clr(conf.ArgFold))
 		fmt.Println("")
 		fmt.Println(cian_clr("  [ Control + C ] ") + "Break Server")
 		fmt.Println("")
@@ -642,4 +636,235 @@ func Core() {
 
 		log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
 	}
+
+}
+
+func cmdSubcommandUser() {
+
+	userCmd := flag.NewFlagSet("user", flag.ExitOnError)
+	arg_help := userCmd.Bool("help", false, "Show help")
+
+	arg_login := userCmd.String("login", "", "Login for user basic auth")
+	arg_password := userCmd.String("password", "", "Password for user basic auth")
+	arg_label := userCmd.String("label", "", "Label for user account")
+	arg_disabled := userCmd.Bool("disabled", false, "Disabled for user account")
+
+	arg_generate := userCmd.Bool("generate", false, "Generate list of random accounts")
+	arg_list := userCmd.Bool("list", false, "Print all user accounts")
+	arg_clear := userCmd.Bool("clear", false, "Clear all user accounts")
+
+	userCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here user`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			`     --login ` + white_clr(`[str]`) + `               Login for NEW USER basic authorization`,
+			`     --password ` + white_clr(`[str]`) + `            Password for NEW USER basic authorization`,
+			`     --label ` + white_clr(`[str]`) + `               Label for NEW USER account`,
+			`     --disabled                  Disabled for NEW USER account`,
+			``,
+			`     --generate                  Generate and save list of random accounts`,
+			`     --list                      Print all user accounts`,
+			``,
+			`     --clear                     Clear all user accounts`,
+
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_login) > 0 {
+
+		model2.UserAdd(*arg_login, *arg_password, *arg_label, *arg_disabled)
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_generate {
+
+		model2.UserGenerate()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_list {
+
+		model2.UserList()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_clear {
+
+		model2.UserClear()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+}
+
+func cmdSubcommandUserMod() {
+
+	usermodCmd := flag.NewFlagSet("usermod", flag.ExitOnError)
+	arg_help := usermodCmd.Bool("help", false, "Show help")
+
+	arg_login := usermodCmd.String("login", "", "Login")
+	arg_newlogin := usermodCmd.String("newlogin", "", "New login for account")
+	arg_password := usermodCmd.String("password", "", "Password for account")
+	arg_label := usermodCmd.String("label", "", "Label for account")
+	arg_disable := usermodCmd.Bool("disable", false, "Disable for account")
+	arg_enable := usermodCmd.Bool("enable", false, "Enable for account")
+
+	usermodCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here usermod`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			`     --login ` + white_clr(`[str]`) + `                Login`,
+			`     --newlogin ` + white_clr(`[str]`) + `             New login for account`,
+			`     --password ` + white_clr(`[str]`) + `             Password for account`,
+			`     --label ` + white_clr(`[str]`) + `                Label for account`,
+			``,
+			`     --disable                    Disable for account`,
+			`     --enable                     Enable for account`,
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_login) > 0 {
+
+		user, isFound := model2.UserFind(*arg_login)
+
+		if !isFound {
+
+			fmt.Println(`User "` + *arg_login + `" nof found`)
+			os.Exit(0)
+		} else {
+
+			if len(*arg_newlogin) > 0 {
+				user.Login = *arg_newlogin
+			}
+
+			if len(*arg_password) > 0 {
+				user.Password = *arg_password
+			}
+
+			if len(*arg_label) > 0 {
+				user.Label = *arg_label
+			}
+
+			if *arg_disable {
+				user.Enabled = false
+			}
+
+			if *arg_enable {
+				user.Enabled = true
+			}
+
+			//fmt.Println("changed user=", user)
+			model2.UserSave(user)
+			os.Exit(0)
+		}
+
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+}
+
+func cmdSubcommandLog() {
+
+	logCmd := flag.NewFlagSet("log", flag.ExitOnError)
+	arg_help := logCmd.Bool("help", false, "Show help")
+
+	arg_dumpto := logCmd.String("dumpto", "", "Dump to file")
+	arg_dump := logCmd.Bool("dump", false, "Dump to stdout")
+
+	arg_clear := logCmd.Bool("clear", false, "Clear event log")
+
+	logCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here log`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			`     --dumpto ` + white_clr(`[str]`) + `              Filename for dump`,
+			`     --dump                      Dump to stdout`,
+			``,
+			`     --clear                     Clear event log`,
+
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_dumpto) > 0 {
+
+		model2.EventLogDumpTo(*arg_dumpto)
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_dump {
+
+		model2.EventLogDump()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_clear {
+
+		model2.EventLogClear()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 }

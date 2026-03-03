@@ -7,28 +7,22 @@ import (
 	_ "path/filepath"
 	"strings"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 func PostDelete(c *fiber.Ctx) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-	prefix := GetStringFromLocals(c, "prefix", "")
-
 	referer := c.Get("Referer")
-
-	db := c.Locals("db").(*gorm.DB)
 
 	// already decoded
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostDelete", "Error url parse "+referer+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostDelete", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -46,7 +40,7 @@ func PostDelete(c *fiber.Ctx) error {
 		u_path = form_path
 	}
 
-	readTarget := path.Join(arg_fold, u_path)
+	readTarget := path.Join(conf.ArgFold, u_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -55,7 +49,7 @@ func PostDelete(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		model.EventLogAdd(db, c, "500", "PostDelete", "form is empty")
+		model2.EventLogAdd(c, 500, "PostDelete", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -76,7 +70,7 @@ func PostDelete(c *fiber.Ctx) error {
 			name = util.CleanDirtyPath(name)
 
 			if len(name) == 0 {
-				model.EventLogAdd(db, c, "500", "PostDelete", "name is empty")
+				model2.EventLogAdd(c, 500, "PostDelete", "name is empty")
 				err_list = append(err_list, "name is empty")
 				continue
 			}
@@ -84,7 +78,7 @@ func PostDelete(c *fiber.Ctx) error {
 			fileInfo, err := os.Stat(path.Join(readTarget, name))
 
 			if err != nil {
-				model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' not exists")
+				model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' not exists")
 				err_list = append(err_list, "'"+path.Join(readTarget, name)+"' not exists")
 				continue
 			}
@@ -94,31 +88,31 @@ func PostDelete(c *fiber.Ctx) error {
 				// remove fold and all inside data
 
 				if err := os.RemoveAll(path.Join(readTarget, name)); err != nil {
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
+					model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					continue
 				}
 
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove fold '"+path.Join(readTarget, name)+"'")
+				model2.EventLogAdd(c, 200, "PostDelete", "Remove fold '"+path.Join(readTarget, name)+"'")
 
 			} else {
 
 				// remove one file
 
 				if err := os.Remove(path.Join(readTarget, name)); err != nil {
-					model.EventLogAdd(db, c, "500", "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
+					model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
 					continue
 				}
 
-				model.EventLogAdd(db, c, "200", "PostDelete", "Remove '"+path.Join(readTarget, name)+"'")
+				model2.EventLogAdd(c, 200, "PostDelete", "Remove '"+path.Join(readTarget, name)+"'")
 
 			}
 
 		}
 	}
 
-	go model.FileChkAsync(db, prefix)
+	go model2.FileChkAsync()
 	RemoveCacheDir(readTarget)
 
 	if len(err_list) > 0 {

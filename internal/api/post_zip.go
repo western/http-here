@@ -11,26 +11,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 func PostZip(c *fiber.Ctx) error {
 
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-	prefix := GetStringFromLocals(c, "prefix", "")
+	if _, err := os.Stat(path.Join(conf.ConfigRoot, "temp")); err != nil {
 
-	db := c.Locals("db").(*gorm.DB)
+		if err := os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
 
-	if _, err := os.Stat(path.Join(prefix, "temp")); err != nil {
-
-		if err := os.MkdirAll(path.Join(prefix, "temp"), os.ModePerm); err != nil {
-
-			model.EventLogAdd(db, c, "500", "PostZip", "mkdirall error: "+err.Error())
+			model2.EventLogAdd(c, 500, "PostZip", "mkdirall error: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -45,7 +39,7 @@ func PostZip(c *fiber.Ctx) error {
 	u, err := url.Parse(referer)
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostZip", "Error url parse "+referer+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostZip", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -67,11 +61,11 @@ func PostZip(c *fiber.Ctx) error {
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-	archive, err := os.Create(path.Join(prefix, "temp", archive_name))
+	archive, err := os.Create(path.Join(conf.ConfigRoot, "temp", archive_name))
 
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostZip", "create error: "+err.Error())
+		model2.EventLogAdd(c, 500, "PostZip", "create error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -87,7 +81,7 @@ func PostZip(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		model.EventLogAdd(db, c, "500", "PostZip", "form is empty")
+		model2.EventLogAdd(c, 500, "PostZip", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -103,23 +97,23 @@ func PostZip(c *fiber.Ctx) error {
 
 		if len(name) == 0 {
 
-			model.EventLogAdd(db, c, "500", "PostZip", "name is empty")
+			model2.EventLogAdd(c, 500, "PostZip", "name is empty")
 			continue
 		}
 
-		readTarget := path.Join(arg_fold, u_path, name)
+		readTarget := path.Join(conf.ArgFold, u_path, name)
 
 		fileInfo, err := os.Stat(readTarget)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+readTarget+"' not exists")
+			model2.EventLogAdd(c, 500, "PostZip", "'"+readTarget+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "PostZip", "'"+readTarget+"' err: "+err.Error())
+			model2.EventLogAdd(c, 500, "PostZip", "'"+readTarget+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
@@ -136,11 +130,11 @@ func PostZip(c *fiber.Ctx) error {
 
 				if os.IsPermission(err) {
 
-					model.EventLogAdd(db, c, "403", "PostZip", "Forbidden for read "+readTarget)
+					model2.EventLogAdd(c, 403, "PostZip", "Forbidden for read "+readTarget)
 					continue
 				}
 
-				model.EventLogAdd(db, c, "500", "PostZip", "Read "+readTarget+" err: "+err.Error())
+				model2.EventLogAdd(c, 500, "PostZip", "Read "+readTarget+" err: "+err.Error())
 				continue
 			}
 			defer f1.Close()
@@ -160,15 +154,15 @@ func PostZip(c *fiber.Ctx) error {
 	zipWriter.Close()
 	archive.Close()
 
-	//return c.SendFile(path.Join(arg_fold, u_path, "archive.zip"), false)
-	//return c.Download(path.Join(arg_fold, u_path, "archive.zip"), "archive.zip");
+	//return c.SendFile(path.Join(conf.ArgFold, u_path, "archive.zip"), false)
+	//return c.Download(path.Join(conf.ArgFold, u_path, "archive.zip"), "archive.zip");
 
-	zip_full_path := path.Join(prefix, "temp", archive_name)
+	zip_full_path := path.Join(conf.ConfigRoot, "temp", archive_name)
 	if runtime.GOOS == "windows" {
 		zip_full_path = util.RotateSlash(zip_full_path)
 	}
 
-	model.EventLogAdd(db, c, "200", "PostZip", "Temp file create "+zip_full_path)
+	model2.EventLogAdd(c, 200, "PostZip", "Temp file create "+zip_full_path)
 
 	return c.JSON(fiber.Map{
 		"code": 200,

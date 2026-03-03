@@ -44,7 +44,7 @@ without_cdn_clear:
 	git restore internal/app/view/edit
 
 fmt:
-	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/cert/* && go fmt internal/model/* && go fmt internal/util/*
+	go fmt internal/api/* && go fmt internal/app/*.go && go fmt internal/cert/* && go fmt internal/conf/* && go fmt internal/model2/* && go fmt internal/util/*
 
 tidy:
 	go mod tidy

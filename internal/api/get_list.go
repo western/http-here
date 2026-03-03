@@ -4,19 +4,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 func GetList(c *fiber.Ctx) error {
-
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-
-	db := c.Locals("db").(*gorm.DB)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -24,13 +19,13 @@ func GetList(c *fiber.Ctx) error {
 
 	u_path = util.CleanDirtyPath(u_path)
 
-	readTarget := path.Join(arg_fold, u_path)
+	readTarget := path.Join(conf.ArgFold, u_path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	if _, err := os.Stat(readTarget); err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetList", "'"+readTarget+"' not exists")
+		model2.EventLogAdd(c, 500, "GetList", "'"+readTarget+"' not exists")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -50,7 +45,7 @@ func GetList(c *fiber.Ctx) error {
 
 		if os.IsPermission(err) {
 
-			model.EventLogAdd(db, c, "403", "GetList", "Forbidden for read "+readTarget)
+			model2.EventLogAdd(c, 403, "GetList", "Forbidden for read "+readTarget)
 
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"code": 403,
@@ -58,7 +53,7 @@ func GetList(c *fiber.Ctx) error {
 			}, "application/json")
 		}
 
-		model.EventLogAdd(db, c, "500", "GetList", "generateRows err: "+err.Error())
+		model2.EventLogAdd(c, 500, "GetList", "generateRows err: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -66,7 +61,7 @@ func GetList(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	model.EventLogAdd(db, c, "200", "GetList", "Get list '"+readTarget+"'")
+	model2.EventLogAdd(c, 200, "GetList", "Get list '"+readTarget+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

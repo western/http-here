@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/western/http-here/internal/app"
+	"github.com/western/http-here/v2/internal/app"
 )
 
 func main() {

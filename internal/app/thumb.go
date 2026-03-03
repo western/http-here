@@ -5,27 +5,26 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	_ "log"
 	"net/url"
 	"os"
 	"os/exec"
 	"path"
-	_ "path/filepath"
+	//"path/filepath"
 	"regexp"
 	"runtime"
-	_ "strconv"
+	//"strconv"
 	"strings"
-	_ "syscall"
+	//"syscall"
 	"time"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
-	"gorm.io/gorm"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -35,18 +34,11 @@ import (
 
 func GetThumb(c *fiber.Ctx) error {
 
-	arg_fold := ""
-	arg_fold = c.Locals("arg_fold").(string)
+	if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb")); err != nil {
 
-	prefix := c.Locals("prefix").(string)
+		if err := os.MkdirAll(path.Join(conf.ConfigRoot, "thumb"), os.ModePerm); err != nil {
 
-	db := c.Locals("db").(*gorm.DB)
-
-	if _, err := os.Stat(path.Join(prefix, "thumb")); err != nil {
-
-		if err := os.MkdirAll(path.Join(prefix, "thumb"), os.ModePerm); err != nil {
-
-			model.EventLogAdd(db, c, "500", "GetThumb", "MkdirAll error "+err.Error())
+			model2.EventLogAdd(c, 500, "GetThumb", "MkdirAll error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -58,11 +50,11 @@ func GetThumb(c *fiber.Ctx) error {
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "GetThumb", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error " + path.Join(arg_fold, c_path),
+			"msg":  "Error " + path.Join(conf.ArgFold, c_path),
 		}, "application/json")
 	}
 
@@ -73,13 +65,13 @@ func GetThumb(c *fiber.Ctx) error {
 
 	i_width := 600
 
-	fileInfo, err := os.Stat(path.Join(arg_fold, c_path))
+	fileInfo, err := os.Stat(path.Join(conf.ArgFold, c_path))
 
 	if err == nil {
 
 		if fileInfo.IsDir() {
 
-			model.EventLogAdd(db, c, "500", "GetThumb", "Error "+path.Join(arg_fold, c_path)+" It is a folder")
+			model2.EventLogAdd(c, 500, "GetThumb", "Error "+path.Join(conf.ArgFold, c_path)+" It is a folder")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -90,7 +82,7 @@ func GetThumb(c *fiber.Ctx) error {
 
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		model.EventLogAdd(db, c, "404", "GetThumb", path.Join(arg_fold, c_path))
+		model2.EventLogAdd(c, 404, "GetThumb", path.Join(conf.ArgFold, c_path))
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -105,7 +97,7 @@ func GetThumb(c *fiber.Ctx) error {
 	is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", file_ext)
 	if !is_match {
 
-		model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+" Only for JPEG, PNG, GIF and office files")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -120,38 +112,41 @@ func GetThumb(c *fiber.Ctx) error {
 	//hex_name := hex.EncodeToString(hash_name[:])
 	hex_name := ""
 
-	if db != nil {
+	//if db != nil {
+	if model2.Dbse.BadgerEnable {
 
-		var row model.File
-		result := db.Select("md5, full_path").Where("full_path = ?", path.Join(arg_fold, c_path)).First(&row)
+		/*
+			var row model2.File
+			result := db.Select("md5, full_path").Where("full_path = ?", path.Join(conf.ArgFold, c_path)).First(&row)
 
-		if result.Error == nil {
+			if result.Error == nil {
 
-			hex_name = row.MD5
+				hex_name = row.MD5
 
-			if len(hex_name) == 0 {
+				if len(hex_name) == 0 {
 
-				model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
+					model2.EventLogAdd( c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
 
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"file": path.Join("/__thumb/", c_path),
-				}, "application/json")
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"code": 500,
+						"file": path.Join("/__thumb/", c_path),
+					}, "application/json")
+				}
+
+				if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err == nil {
+
+					model2.EventLogAdd( c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
+					return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
+				}
 			}
-
-			if _, err := os.Stat(path.Join(prefix, "thumb", hex_name)); err == nil {
-
-				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
-				return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
-			}
-		}
+		*/
 	}
 
-	hex_name = util.GetMd5File(path.Join(arg_fold, c_path))
+	hex_name = util.GetMd5File(path.Join(conf.ArgFold, c_path))
 
 	if len(hex_name) == 0 {
 
-		model.EventLogAdd(db, c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty (2)")
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty (2)")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -165,11 +160,11 @@ func GetThumb(c *fiber.Ctx) error {
 
 	if is_img_match {
 
-		if _, err := os.Stat(path.Join(prefix, "thumb", hex_name)); err == nil {
+		if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err == nil {
 
-			model.EventLogAdd(db, c, "200", "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
+			model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
-			return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+			return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
 
 		} else if errors.Is(err, os.ErrNotExist) {
 
@@ -177,17 +172,17 @@ func GetThumb(c *fiber.Ctx) error {
 
 			if fileInfo.Size() < 50*1024 {
 
-				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile orig without resize "+path.Join(c_path)+", size is small")
+				model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig without resize "+path.Join(c_path)+", size is small")
 
-				return c.SendFile(path.Join(arg_fold, c_path), false)
+				return c.SendFile(path.Join(conf.ArgFold, c_path), false)
 			}
 
 			// ------------------------------------------------------------------------------------------------------------------------------
 
-			input, _ := os.Open(path.Join(arg_fold, c_path))
+			input, _ := os.Open(path.Join(conf.ArgFold, c_path))
 			defer input.Close()
 
-			output, _ := os.Create(path.Join(prefix, "thumb", hex_name))
+			output, _ := os.Create(path.Join(conf.ConfigRoot, "thumb", hex_name))
 			defer output.Close()
 
 			var src image.Image
@@ -225,14 +220,14 @@ func GetThumb(c *fiber.Ctx) error {
 				dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 			} else {
 
-				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile orig without resize "+path.Join(arg_fold, c_path))
+				model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig without resize "+path.Join(conf.ArgFold, c_path))
 
-				err := os.Remove(path.Join(prefix, "thumb", hex_name))
+				err := os.Remove(path.Join(conf.ConfigRoot, "thumb", hex_name))
 				if err != nil {
 					panic(err)
 				}
 
-				return c.SendFile(path.Join(arg_fold, c_path), false)
+				return c.SendFile(path.Join(conf.ArgFold, c_path), false)
 			}
 
 			// Resize:
@@ -265,9 +260,9 @@ func GetThumb(c *fiber.Ctx) error {
 			src = nil
 			dst = nil
 
-			model.EventLogAdd(db, c, "200", "GetThumb", "Resize and SendFile "+path.Join(c_path))
+			model2.EventLogAdd(c, 200, "GetThumb", "Resize and SendFile "+path.Join(c_path))
 
-			return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+			return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
 		}
 
 	}
@@ -281,7 +276,7 @@ func GetThumb(c *fiber.Ctx) error {
 			_, err := os.Stat("C:\\Program Files\\LibreOffice\\program\\soffice.exe")
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetThumb", "Error libreoffice not found "+err.Error())
+				model2.EventLogAdd(c, 500, "GetThumb", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -294,7 +289,7 @@ func GetThumb(c *fiber.Ctx) error {
 			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
 			if err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetThumb", "Error libreoffice not found "+err.Error())
+				model2.EventLogAdd(c, 500, "GetThumb", "Error libreoffice not found "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -307,30 +302,30 @@ func GetThumb(c *fiber.Ctx) error {
 
 		var FI os.FileInfo
 
-		if FI, err = os.Stat(path.Join(prefix, "thumb", hex_name)); err != nil {
+		if FI, err = os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err != nil {
 
-			//panic("Stat error " + path.Join(prefix, "thumb", hex_name) + " " + err.Error())
+			//panic("Stat error " + path.Join(conf.ConfigRoot, "thumb", hex_name) + " " + err.Error())
 		}
 
 		if FI != nil {
 
 			if FI.Size() == 0 {
 
-				if err = os.Remove(path.Join(prefix, "thumb", hex_name)); err != nil {
-					panic("Problem of remove zero file " + path.Join(prefix, "thumb", hex_name) + " " + err.Error())
+				if err = os.Remove(path.Join(conf.ConfigRoot, "thumb", hex_name)); err != nil {
+					panic("Problem of remove zero file " + path.Join(conf.ConfigRoot, "thumb", hex_name) + " " + err.Error())
 				}
 
 			} else {
 
-				model.EventLogAdd(db, c, "200", "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
+				model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
-				return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+				return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
 			}
 		}
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		filepath_tmp := path.Join(prefix, "temp")
+		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
 		if runtime.GOOS == "windows" {
 			filepath_tmp = util.RotateSlash(filepath_tmp)
@@ -345,14 +340,14 @@ func GetThumb(c *fiber.Ctx) error {
 
 			if runtime.GOOS == "windows" {
 
-				arg_fold_path := util.RotateSlash(path.Join(arg_fold, c_path))
+				arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
 
 				util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to png --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
 			} else {
 
-				cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(arg_fold, c_path)+"\"")
-				cmd.Dir = arg_fold
+				cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(conf.ArgFold, c_path)+"\"")
+				cmd.Dir = conf.ArgFold
 				//out, _ := cmd.Output()
 				//fmt.Println("out=", out)
 
@@ -371,14 +366,14 @@ func GetThumb(c *fiber.Ctx) error {
 			readerFile, read_err = os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 			if read_err != nil {
 
-				model.EventLogAdd(db, c, "500", "GetThumb", "REPEAT Error libreoffice, open file "+read_err.Error())
+				model2.EventLogAdd(c, 500, "GetThumb", "REPEAT Error libreoffice, open file "+read_err.Error())
 
 				time.Sleep(2 * time.Second)
 			}
 
 			if read_err_cnt > 5 {
 
-				model.EventLogAdd(db, c, "500", "GetThumb", "SEVERAL Errors libreoffice, open file "+read_err.Error())
+				model2.EventLogAdd(c, 500, "GetThumb", "SEVERAL Errors libreoffice, open file "+read_err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
@@ -389,12 +384,12 @@ func GetThumb(c *fiber.Ctx) error {
 			read_err_cnt++
 		}
 
-		output, _ := os.Create(path.Join(prefix, "thumb", hex_name))
+		output, _ := os.Create(path.Join(conf.ConfigRoot, "thumb", hex_name))
 
 		_, err = io.Copy(output, readerFile)
 		if err != nil {
 
-			model.EventLogAdd(db, c, "500", "GetThumb", "Error copy after libreoffice convert: "+err.Error())
+			model2.EventLogAdd(c, 500, "GetThumb", "Error copy after libreoffice convert: "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
@@ -412,9 +407,9 @@ func GetThumb(c *fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		model.EventLogAdd(db, c, "200", "GetThumb", "Make office thumbnail and SendFile "+path.Join(c_path))
+		model2.EventLogAdd(c, 200, "GetThumb", "Make office thumbnail and SendFile "+path.Join(c_path))
 
-		return c.SendFile(path.Join(prefix, "thumb", hex_name), false)
+		return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
 	}
 
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

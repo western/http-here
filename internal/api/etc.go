@@ -1,14 +1,13 @@
 package api
 
 import (
-	"strconv"
+	//"strconv"
 	"sync"
 	"time"
 
-	"github.com/western/http-here/internal/model"
+	//"github.com/western/http-here/v2/internal/model2"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 type FileRow struct {
@@ -40,6 +39,7 @@ func setCookie(c *fiber.Ctx, name, value string) {
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
+/*
 type ErrorDescription struct {
 	C          *fiber.Ctx
 	DB         *gorm.DB
@@ -49,16 +49,19 @@ type ErrorDescription struct {
 	MsgShort   string
 	MsgLong    string
 }
+*/
 
+/*
 func handleErrorJSON(c *fiber.Ctx, db *gorm.DB, statusCode int, tag, msgShort, msgLong string) error {
 
-	model.EventLogAdd(db, c, strconv.Itoa(statusCode), tag, msgLong)
+	model2.EventLogAdd(c, strconv.Itoa(statusCode), tag, msgLong)
 
 	return c.Status(statusCode).JSON(fiber.Map{
 		"code": statusCode,
 		"msg":  msgShort,
 	}, "application/json")
 }
+*/
 
 /*
 func handleErrorJSON(ed ErrorDescription) error {
@@ -72,15 +75,17 @@ func handleErrorJSON(ed ErrorDescription) error {
 }
 */
 
+/*
 func handleErrorHTML(c *fiber.Ctx, db *gorm.DB, statusCode int, tag, title, msgShort, msgLong string) error {
 
-	model.EventLogAdd(db, c, strconv.Itoa(statusCode), tag, msgLong)
+	model2.EventLogAdd(c, strconv.Itoa(statusCode), tag, msgLong)
 
 	return c.Status(statusCode).Render("view/error", fiber.Map{
 		"Title":   title,
 		"Message": msgShort,
 	}, "view/layout/error")
 }
+*/
 
 /*
 func handleErrorHTML(ed ErrorDescription) error {

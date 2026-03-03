@@ -7,20 +7,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/western/http-here/internal/model"
-	"github.com/western/http-here/internal/util"
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v2"
-
-	"gorm.io/gorm"
 )
 
 func PostMove(c *fiber.Ctx) error {
-
-	arg_fold := GetStringFromLocals(c, "arg_fold", "")
-	prefix := GetStringFromLocals(c, "prefix", "")
-
-	db := c.Locals("db").(*gorm.DB)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -29,7 +23,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	if len(from_path) == 0 {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "from_path is empty")
+		model2.EventLogAdd(c, 500, "PostMove", "from_path is empty")
 
 		return c.JSON(fiber.Map{
 			"code": 500,
@@ -37,10 +31,10 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	_, err := os.Stat(path.Join(arg_fold, from_path))
+	_, err := os.Stat(path.Join(conf.ArgFold, from_path))
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "'"+path.Join(arg_fold, from_path)+"' not exists "+err.Error())
+		model2.EventLogAdd(c, 500, "PostMove", "'"+path.Join(conf.ArgFold, from_path)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -55,7 +49,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	if len(to_path) == 0 {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "to_path is empty")
+		model2.EventLogAdd(c, 500, "PostMove", "to_path is empty")
 
 		return c.JSON(fiber.Map{
 			"code": 500,
@@ -63,10 +57,10 @@ func PostMove(c *fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	_, err = os.Stat(path.Join(arg_fold, to_path))
+	_, err = os.Stat(path.Join(conf.ArgFold, to_path))
 	if err != nil {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "'"+path.Join(arg_fold, to_path)+"' not exists "+err.Error())
+		model2.EventLogAdd(c, 500, "PostMove", "'"+path.Join(conf.ArgFold, to_path)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -78,7 +72,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	if from_path == to_path {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "Source and target paths '"+from_path+"' are identical")
+		model2.EventLogAdd(c, 500, "PostMove", "Source and target paths '"+from_path+"' are identical")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -93,7 +87,7 @@ func PostMove(c *fiber.Ctx) error {
 
 	if len(names) == 0 {
 
-		model.EventLogAdd(db, c, "500", "PostMove", "form is empty")
+		model2.EventLogAdd(c, 500, "PostMove", "form is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
@@ -109,17 +103,17 @@ func PostMove(c *fiber.Ctx) error {
 		name = util.CleanDirtyPath(name)
 
 		if len(name) == 0 {
-			model.EventLogAdd(db, c, "500", "PostMove", "name is empty")
+			model2.EventLogAdd(c, 500, "PostMove", "name is empty")
 			err_list = append(err_list, "name is empty")
 			continue
 		}
 
-		src_file_path := path.Join(arg_fold, from_path, name)
-		target_file_path := path.Join(arg_fold, to_path, name)
+		src_file_path := path.Join(conf.ArgFold, from_path, name)
+		target_file_path := path.Join(conf.ArgFold, to_path, name)
 
 		src_stat, err := os.Stat(src_file_path)
 		if err != nil {
-			model.EventLogAdd(db, c, "500", "PostMove", "Source '"+src_file_path+"' not exists")
+			model2.EventLogAdd(c, 500, "PostMove", "Source '"+src_file_path+"' not exists")
 			err_list = append(err_list, "Source '"+src_file_path+"' not exists")
 			continue
 		}
@@ -127,10 +121,10 @@ func PostMove(c *fiber.Ctx) error {
 		_, err = os.Stat(target_file_path)
 		if err == nil {
 
-			model.EventLogAdd(db, c, "200", "PostMove", "Target '"+target_file_path+"' is exists. It will be rewrite.")
+			model2.EventLogAdd(c, 200, "PostMove", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
 			if err := os.RemoveAll(target_file_path); err != nil {
-				model.EventLogAdd(db, c, "500", "PostMove", "'"+target_file_path+"' err "+err.Error())
+				model2.EventLogAdd(c, 500, "PostMove", "'"+target_file_path+"' err "+err.Error())
 				err_list = append(err_list, "'"+target_file_path+"' err "+err.Error())
 				continue
 			}
@@ -140,37 +134,37 @@ func PostMove(c *fiber.Ctx) error {
 			err := util.CopyDir(src_file_path, target_file_path)
 
 			if err != nil {
-				model.EventLogAdd(db, c, "500", "PostMove", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+				model2.EventLogAdd(c, 500, "PostMove", "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 				err_list = append(err_list, "CopyDir '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 				continue
 			}
 
 			// remove source folder
 			if err := os.RemoveAll(src_file_path); err != nil {
-				model.EventLogAdd(db, c, "500", "PostMove", "rm folder '"+src_file_path+"' err "+err.Error())
+				model2.EventLogAdd(c, 500, "PostMove", "rm folder '"+src_file_path+"' err "+err.Error())
 				err_list = append(err_list, "'"+src_file_path+"' err "+err.Error())
 				continue
 			}
 
-			model.EventLogAdd(db, c, "200", "PostMove", "Move dir '"+src_file_path+"' to "+target_file_path)
+			model2.EventLogAdd(c, 200, "PostMove", "Move dir '"+src_file_path+"' to "+target_file_path)
 
 		} else {
 			err := util.MoveFile(src_file_path, target_file_path)
 
 			if err != nil {
-				model.EventLogAdd(db, c, "500", "PostMove", "MoveFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
+				model2.EventLogAdd(c, 500, "PostMove", "MoveFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 				err_list = append(err_list, "MoveFile '"+src_file_path+"' to '"+target_file_path+"' err "+err.Error())
 				continue
 			}
 
-			model.EventLogAdd(db, c, "200", "PostMove", "Move file '"+src_file_path+"' to "+target_file_path)
+			model2.EventLogAdd(c, 200, "PostMove", "Move file '"+src_file_path+"' to "+target_file_path)
 		}
 
 	}
 
-	go model.FileChkAsync(db, prefix)
-	RemoveCacheDir(path.Join(arg_fold, from_path))
-	RemoveCacheDir(path.Join(arg_fold, to_path))
+	go model2.FileChkAsync()
+	RemoveCacheDir(path.Join(conf.ArgFold, from_path))
+	RemoveCacheDir(path.Join(conf.ArgFold, to_path))
 
 	if len(err_list) > 0 {
 
