@@ -82,6 +82,36 @@ func FileFind(FullPath string) (File, bool) {
 	return file, false
 }
 
+func FileFindByMD5(findMD5 string) (File, bool) {
+
+	if len(findMD5) == 0 {
+		panic("Yous should set findMD5")
+	}
+
+	var file_ret File
+
+	if Dbse.BadgerEnable {
+
+		bytesFound, isFound := BadgerGetOne("idx_md5_file_" + findMD5)
+		if isFound {
+
+			bytesFound2, isFound2 := BadgerGetOne(string(bytesFound))
+			if isFound2 {
+
+				err := json.Unmarshal(bytesFound2, &file_ret)
+				if err != nil {
+					fmt.Println("error:", err)
+				}
+
+				return file_ret, true
+			}
+		}
+
+	}
+
+	return file_ret, false
+}
+
 func FileGetPrimaryId() uint64 {
 
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_file"), 1000)
@@ -173,6 +203,16 @@ func FileAdd(FullPath string) error {
 			return nil
 		})
 
+		Dbse.Badger.Update(func(txn *badger.Txn) error {
+
+			err := txn.Set([]byte("idx_md5_file_"+md5_hash), []byte(key))
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		})
+
 		//FileList()
 
 	}
@@ -255,6 +295,15 @@ func FileClear() {
 		prefix := []byte("file_")
 
 		err := Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("idx_md5_file_")
+
+		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
 			panic(err)
 		}
