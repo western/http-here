@@ -295,27 +295,6 @@ func UserList() {
 
 					fmt.Printf("key=%s, value=%+v\n", k, el)
 
-					/*
-											       	User{
-											   			ID int `json:"id"`
-
-						                            	Login    string `json:"login"`
-						                            	Password string `json:"password"`
-
-						                            	Enabled bool `json:"status"`
-						                            	Label string `json:"label"`
-
-						                            	Registered string `json:"registered"`
-						                            	Changed    string `json:"changed"`
-											   		}
-					*/
-
-					// | [26566] [2026-03-02 08:47:54.070] [192.168.0.110] [login0Xz] [200] [CORE] SendFile /tmp/folder1/morning/mor2/800x800.jpg
-					//s := fmt.Sprintf("[%d] [%s] [%s] [%s] [%d] [%s] %s", el.ProcId, el.DT, el.IP, el.Login, el.Code, el.Tag, el.Msg)
-
-					//f.WriteString(s)
-					//fmt.Println(s)
-
 					return nil
 				})
 				if err != nil {

@@ -36,12 +36,30 @@ type EventLog struct {
 	Msg string `json:"msg"`
 }
 
-// func EventLogAdd(db *badger.DB, c *fiber.Ctx, status, tag, msg string) {
+func EventLogGetPrimaryId() uint64 {
+
+	seq, err := Dbse.Badger.GetSequence([]byte("seq_event_log"), 1000)
+	defer seq.Release()
+
+	// uint64, err
+	num, err := seq.Next()
+	if err != nil {
+		panic(err)
+	}
+
+	if num == 0 {
+		num, err = seq.Next()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return num
+}
+
 func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 	pref := ""
-
-	//status_i, _ := strconv.Atoi(status)
 
 	if status != 200 {
 		pref += red_clr("| ")
@@ -55,8 +73,8 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 	_dt := time.Now().Format("2006-01-02 15:04:05.000")
 	pref += "[" + _dt + "] "
 
-	_dt_timestamp, _ := time.Parse("2006-01-02 15:04:05.000", _dt)
-	//fmt.Println("_dt_timestamp=", _dt_timestamp.Unix())
+	//_dt_timestamp, _ := time.Parse("2006-01-02 15:04:05.000", _dt)
+	event_log_id := EventLogGetPrimaryId()
 
 	_ip := ""
 	if c != nil {
@@ -119,21 +137,15 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 		}
 		payload, _ := json.Marshal(el)
 
-		//fmt.Println("payload=", string(payload))
-
 		Dbse.Badger.Update(func(txn *badger.Txn) error {
 
-			key := "event_log"
+			key := "event_log_"
 
-			_dt_timestamp_str := strconv.FormatInt(_dt_timestamp.Unix(), 10)
-			key += _dt_timestamp_str
+			//_dt_timestamp_str := strconv.FormatInt(_dt_timestamp.Unix(), 10)
+			//key += _dt_timestamp_str
+			key += strconv.FormatUint(event_log_id, 10)
 
-			//fmt.Println("key=", key)
-
-			//err := txn.Set([]byte(key), payload)
-
-			e := badger.NewEntry([]byte(key), payload)
-			err := txn.SetEntry(e)
+			err := txn.Set([]byte(key), payload)
 
 			return err
 		})
@@ -161,8 +173,6 @@ func EventLogDumpTo(toPath string) {
 				//k := item.Key()
 				err := item.Value(func(v []byte) error {
 
-					//fmt.Printf("key=%s, value=%s\n", k, v)
-
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
@@ -170,21 +180,6 @@ func EventLogDumpTo(toPath string) {
 					}
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
-
-					/*
-					       	EventLog{
-					   			ProcId: os.Getpid(),
-					   			DT:     _dt,
-
-					   			IP:    _ip,
-					   			Login: _user,
-
-					   			Code: status,
-
-					   			Tag: tag,
-					   			Msg: msg,
-					   		}
-					*/
 
 					// | [26566] [2026-03-02 08:47:54.070] [192.168.0.110] [login0Xz] [200] [CORE] SendFile /tmp/folder1/morning/mor2/800x800.jpg
 					s := fmt.Sprintf("[%d] [%s] [%s] [%s] [%d] [%s] %s\n", el.ProcId, el.DT, el.IP, el.Login, el.Code, el.Tag, el.Msg)
@@ -216,8 +211,6 @@ func EventLogDump() {
 				//k := item.Key()
 				err := item.Value(func(v []byte) error {
 
-					//fmt.Printf("key=%s, value=%s\n", k, v)
-
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
@@ -226,25 +219,9 @@ func EventLogDump() {
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
 
-					/*
-					       	EventLog{
-					   			ProcId: os.Getpid(),
-					   			DT:     _dt,
-
-					   			IP:    _ip,
-					   			Login: _user,
-
-					   			Code: status,
-
-					   			Tag: tag,
-					   			Msg: msg,
-					   		}
-					*/
-
 					// | [26566] [2026-03-02 08:47:54.070] [192.168.0.110] [login0Xz] [200] [CORE] SendFile /tmp/folder1/morning/mor2/800x800.jpg
 					s := fmt.Sprintf("[%d] [%s] [%s] [%s] [%d] [%s] %s", el.ProcId, el.DT, el.IP, el.Login, el.Code, el.Tag, el.Msg)
 
-					//f.WriteString(s)
 					fmt.Println(s)
 
 					return nil

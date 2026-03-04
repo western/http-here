@@ -182,6 +182,13 @@ func Core() {
 
 			cmdSubcommandLog()
 		}
+
+		if os.Args[1] == "file" {
+
+			model2.Open()
+
+			cmdSubcommandFile()
+		}
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -862,6 +869,75 @@ func cmdSubcommandLog() {
 	if *arg_clear {
 
 		model2.EventLogClear()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+}
+
+func cmdSubcommandFile() {
+
+	fileCmd := flag.NewFlagSet("user", flag.ExitOnError)
+	arg_help := fileCmd.Bool("help", false, "Show help")
+
+	//arg_login := fileCmd.String("login", "", "Login for user basic auth")
+	//arg_password := fileCmd.String("password", "", "Password for user basic auth")
+	//arg_label := fileCmd.String("label", "", "Label for user account")
+	//arg_disabled := fileCmd.Bool("disabled", false, "Disabled for user account")
+
+	//arg_generate := fileCmd.Bool("generate", false, "Generate list of random accounts")
+	arg_list := fileCmd.Bool("list", false, "Print all user accounts")
+	arg_clear := fileCmd.Bool("clear", false, "Clear all user accounts")
+
+	fileCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here file`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			//`     --login ` + white_clr(`[str]`) + `               Login for NEW USER basic authorization`,
+			//`     --password ` + white_clr(`[str]`) + `            Password for NEW USER basic authorization`,
+			//`     --label ` + white_clr(`[str]`) + `               Label for NEW USER account`,
+			//`     --disabled                  Disabled for NEW USER account`,
+			//``,
+			//`     --generate                  Generate and save list of random accounts`,
+			`     --list                      Print all files`,
+			``,
+			`     --clear                     Clear all files`,
+
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_list {
+
+		model2.FileList()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_clear {
+
+		model2.FileClear()
 		os.Exit(0)
 	}
 
