@@ -8,6 +8,7 @@ import (
 	//"time"
 	"encoding/json"
 	"html/template"
+	"regexp"
 
 	//"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/util"
@@ -16,7 +17,8 @@ import (
 )
 
 type File struct {
-	ID uint64 `json:"id"`
+	ID  uint64 `json:"id"`
+	MD5 string `json:"md5"`
 
 	FullPath string `json:"full_path"`
 	Name     string `json:"name"`
@@ -27,6 +29,8 @@ type File struct {
 
 	ModTime string `json:"mod_time"`
 }
+
+var makeMd5ForRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 
 func FileFind(FullPath string) (File, bool) {
 
@@ -128,8 +132,22 @@ func FileAdd(FullPath string) error {
 		mod_time := fileInfo.ModTime()
 		mod_time_human := mod_time.Format("2006-01-02 15:04:05")
 
+		md5_hash := ""
+
+		//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
+		is_match := makeMd5ForRegex.MatchString(ext)
+		if is_match {
+
+			md5_hash = util.GetMd5File(FullPath)
+
+		} else if size < 20*1024*1024 {
+
+			md5_hash = util.GetMd5File(FullPath)
+		}
+
 		el := File{
-			ID: file_id,
+			ID:  file_id,
+			MD5: md5_hash,
 
 			FullPath: FullPath,
 			Name:     name,
