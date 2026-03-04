@@ -64,6 +64,50 @@ func ConnectToBadger() (*badger.DB, error) {
 
 }
 
+func BadgerGetOne(findKey string) ([]byte, bool) {
+
+	if len(findKey) == 0 {
+		panic("Yous should set findKey")
+	}
+
+	var ret []byte
+
+	if Dbse.BadgerEnable {
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte(findKey)
+
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+
+				item := it.Item()
+				k := item.Key()
+
+				item.Value(func(v []byte) error {
+
+					if string(k) == findKey {
+
+						//fmt.Printf("key=%s, value=%+v\n", k, el)
+						//ret = v
+						copy(ret, v)
+					}
+
+					return nil
+				})
+			}
+			return nil
+		})
+
+		if len(ret) > 0 {
+			return ret, true
+		}
+	}
+
+	return ret, false
+}
+
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
 func GetBoolFromLocals(c *fiber.Ctx, key string) bool {
