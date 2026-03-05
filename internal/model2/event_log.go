@@ -144,7 +144,7 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 		}
 		payload, _ := json.Marshal(el)
 
-		Dbse.Badger.Update(func(txn *badger.Txn) error {
+		err := Dbse.Badger.Update(func(txn *badger.Txn) error {
 
 			key := "event_log_"
 
@@ -156,6 +156,10 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 			return err
 		})
+		if err != nil {
+			fmt.Println("EventLogAdd Dbse.Badger.Update err=", err)
+			panic(err)
+		}
 
 	}
 

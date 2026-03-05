@@ -80,8 +80,8 @@ func GetThumb(c *fiber.Ctx) error {
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"file": path.Join("/__thumb/", c_path) + " It is not a regular file",
-				"msg":  "It is a folder",
+				"file": path.Join("/__thumb/", c_path),
+				"msg":  "It is not a regular file",
 			}, "application/json")
 		}
 

@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 	//"path"
+	"path/filepath"
 	"strconv"
 	//"time"
 	"encoding/json"
 	"html/template"
 	"regexp"
+	"strings"
 
-	//"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/util"
 
 	badger "github.com/dgraph-io/badger/v4"
@@ -262,6 +264,76 @@ type FileSearchType struct {
 func FileSearchResult(s string) []FileSearchType {
 
 	var ret []FileSearchType
+	repl := regexp.MustCompile(`(?i)` + s)
+
+	resultPathFoundRegex := regexp.MustCompile(s)
+
+	FileSearchWalk := func(resultPath string, de os.DirEntry, err error) error {
+		/*
+			    if err != nil {
+					return err
+				}
+		*/
+		//fmt.Println("FileSearchWalk=", resultPath)
+
+		resultPathCut := strings.Replace(resultPath, conf.ArgFold, "", 1)
+		name := util.GetFileName(resultPathCut)
+		ext := util.GetExtNorm(resultPathCut)
+
+		is_found := resultPathFoundRegex.MatchString(resultPathCut)
+		if !is_found {
+
+			return nil
+		}
+
+		// ----------------------------------------------------------------------------------------------
+
+		if de.IsDir() {
+			return nil
+		}
+
+		fileInfo, err := de.Info()
+		if err != nil {
+			panic(err)
+		}
+
+		//size := fileInfo.Size()
+		//size_human := util.PrettyByteSize(size)
+
+		mod_time := fileInfo.ModTime()
+		mod_time_human := mod_time.Format("2006-01-02 15:04:05")
+
+		// ----------------------------------------------------------------------------------------------
+
+		OnlyFold := filepath.Dir(resultPathCut)
+
+		OnlyFoldHtml := repl.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+s+`</span>`)
+
+		NameHtml := repl.ReplaceAllString(name, `<span style="background-color:yellow">`+s+`</span>`)
+
+		// ----------------------------------------------------------------------------------------------
+
+		ret = append(ret, FileSearchType{
+
+			FullPath: resultPathCut,
+			Name:     name,
+			EXT:      ext,
+
+			Size:      fileInfo.Size(),
+			SizeHuman: util.PrettyByteSize(fileInfo.Size()),
+
+			ModTime: mod_time_human,
+
+			OnlyFold:     OnlyFold,
+			OnlyFoldHtml: template.HTML(OnlyFoldHtml),
+
+			NameHtml: template.HTML(NameHtml),
+		})
+
+		return nil
+	}
+
+	filepath.WalkDir(conf.ArgFold, FileSearchWalk)
 
 	return ret
 }

@@ -446,7 +446,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 				})
 
 				if arg_extend_mode {
-					model2.FileAdd(path.Join(readTarget, e.Name()))
+					//model2.FileAdd(path.Join(readTarget, e.Name()))
 				}
 			}
 

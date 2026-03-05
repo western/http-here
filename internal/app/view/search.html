@@ -52,14 +52,7 @@
             <tbody>
 
                 
-                {{if .arg_usedb}}
-                {{else}}
-                    <tr>
-                        <td colspan="5">
-                            You should enable database for search
-                        </td>
-                    </tr>
-                {{end}}
+                
                 
                 {{range .result_list}}
                     
@@ -70,8 +63,8 @@
                         <td>
                             <a href="{{.FullPath}}">{{.NameHtml}}</a>
                         </td>
-                        <td>{{.EXT}}</td>
-                        <td>{{.SizeHuman}}</td>
+                        <td><nobr>{{.EXT}}</td>
+                        <td><nobr>{{.SizeHuman}}</td>
                         <td>{{.ModTime}}</td>
                         
                     </tr>
