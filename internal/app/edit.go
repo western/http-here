@@ -50,106 +50,103 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 	// html|rtf|doc|docx|odt
 	is_office_match := isOfficeRegex.MatchString(file_ext)
+	if !is_office_match {
 
-	if is_office_match {
+		model2.EventLogAdd(c, 500, "GetEditDoc", "Error: format of file is not for edit")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	}
 
-		// --------------------------------------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-		if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" {
 
-			_, err := os.Stat("C:/Program Files/LibreOffice/program/soffice.exe")
-			if err != nil {
+		_, err := os.Stat("C:/Program Files/LibreOffice/program/soffice.exe")
+		if err != nil {
 
-				model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice not found "+err.Error())
+			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice not found "+err.Error())
 
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-
-		} else {
-
-			_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice not found "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		if runtime.GOOS == "windows" {
+	} else {
 
-			// --------------------------------------------------------------------------------------------------------------------------------
+		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		if err != nil {
 
-			//filepath_tmp := util.RotateSlash(path.Join(conf.ConfigRoot, "temp"))
-			//arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
+			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice not found "+err.Error())
 
-			filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-			arg_fold_path := path.Join(conf.ArgFold, c_path)
-
-			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
-
-			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-
-			// --------------------------------------------------------------------------------------------------------------------------------
-
-			model2.EventLogAdd(c, 200, "GetEditDoc", "Open for edit "+path.Join(conf.ArgFold, c_path))
-
-			return c.Render("view/edit/edit_doc", fiber.Map{
-				"file_name": orig_filename + "." + file_ext,
-				"full_path": c_path,
-
-				"file_data": template.HTML(string(b)),
-			}, "view/layout/default")
-
-		} else {
-
-			// --------------------------------------------------------------------------------------------------------------------------------
-
-			filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-
-			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(conf.ArgFold, c_path)+"\"")
-			cmd.Dir = conf.ArgFold
-
-			stderr, _ := cmd.StderrPipe()
-			if err := cmd.Start(); err != nil {
-				panic(err)
-			}
-
-			scanner := bufio.NewScanner(stderr)
-			for scanner.Scan() {
-				//fmt.Println("libreoffice:", scanner.Text())
-			}
-
-			b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-			}
-
-			// --------------------------------------------------------------------------------------------------------------------------------
-
-			model2.EventLogAdd(c, 200, "GetEditDoc", "Open for edit "+path.Join(conf.ArgFold, c_path))
-
-			return c.Render("view/edit/edit_doc", fiber.Map{
-				"file_name": orig_filename + "." + file_ext,
-				"full_path": c_path,
-
-				"file_data": template.HTML(string(b)),
-			}, "view/layout/default")
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 	}
 
-	model2.EventLogAdd(c, 500, "GetEditDoc", "Error: format of file is not for edit")
+	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
-	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	if runtime.GOOS == "windows" {
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		//filepath_tmp := util.RotateSlash(path.Join(conf.ConfigRoot, "temp"))
+		//arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
+
+		arg_fold_path := path.Join(conf.ArgFold, c_path)
+
+		util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
+
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		model2.EventLogAdd(c, 200, "GetEditDoc", "Open for edit "+path.Join(conf.ArgFold, c_path))
+
+		return c.Render("view/edit/edit_doc", fiber.Map{
+			"file_name": orig_filename + "." + file_ext,
+			"full_path": c_path,
+
+			"file_data": template.HTML(string(b)),
+		}, "view/layout/default")
+
+	} else {
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+path.Join(conf.ArgFold, c_path)+"\"")
+		cmd.Dir = conf.ArgFold
+
+		stderr, _ := cmd.StderrPipe()
+		if err := cmd.Start(); err != nil {
+			panic(err)
+		}
+
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			//fmt.Println("libreoffice:", scanner.Text())
+		}
+
+		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		// --------------------------------------------------------------------------------------------------------------------------------
+
+		model2.EventLogAdd(c, 200, "GetEditDoc", "Open for edit "+path.Join(conf.ArgFold, c_path))
+
+		return c.Render("view/edit/edit_doc", fiber.Map{
+			"file_name": orig_filename + "." + file_ext,
+			"full_path": c_path,
+
+			"file_data": template.HTML(string(b)),
+		}, "view/layout/default")
+	}
 
 }
 
@@ -183,42 +180,39 @@ func GetEditCode(c *fiber.Ctx) error {
 
 	// html|txt|js|css|md
 	is_simple_source_match := isSimpleSourceRegex.MatchString(file_ext)
+	if !is_simple_source_match {
 
-	if is_simple_source_match {
-
-		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		util.CopyFile(
-			path.Join(conf.ArgFold, c_path),
-			path.Join(filepath_tmp, orig_filename+"."+file_ext),
-		)
-
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "GetEditCode", "Error open temp source file: "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		model2.EventLogAdd(c, 200, "GetEditCode", "Open for edit "+path.Join(conf.ArgFold, c_path))
-
-		return c.Render("view/edit/edit_code", fiber.Map{
-			"file_name": orig_filename + "." + file_ext,
-			"full_path": c_path,
-
-			"file_data": template.HTML(string(b)),
-		}, "view/layout/default")
-
+		model2.EventLogAdd(c, 500, "GetEditCode", "Error: format of file is not for edit")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	model2.EventLogAdd(c, 500, "GetEditCode", "Error: format of file is not for edit")
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
+
+	util.CopyFile(
+		path.Join(conf.ArgFold, c_path),
+		path.Join(filepath_tmp, orig_filename+"."+file_ext),
+	)
+
+	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "GetEditCode", "Error open temp source file: "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	}
+
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	model2.EventLogAdd(c, 200, "GetEditCode", "Open for edit "+path.Join(conf.ArgFold, c_path))
+
+	return c.Render("view/edit/edit_code", fiber.Map{
+		"file_name": orig_filename + "." + file_ext,
+		"full_path": c_path,
+
+		"file_data": template.HTML(string(b)),
+	}, "view/layout/default")
 
 }
 
@@ -250,41 +244,39 @@ func GetEditMd(c *fiber.Ctx) error {
 
 	is_md_match, _ := regexp.MatchString("^(md)$", file_ext)
 
-	if is_md_match {
+	if !is_md_match {
 
-		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		util.CopyFile(
-			path.Join(conf.ArgFold, c_path),
-			path.Join(filepath_tmp, orig_filename+"."+file_ext),
-		)
-
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "GetEditMd", "Error open temp source file: "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
-		}
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		model2.EventLogAdd(c, 200, "GetEditMd", "Open for edit "+path.Join(conf.ArgFold, c_path))
-
-		return c.Render("view/edit/edit_md", fiber.Map{
-			"file_name": orig_filename + "." + file_ext,
-			"full_path": c_path,
-
-			"file_data": template.HTML(string(b)),
-		}, "view/layout/default")
-
+		model2.EventLogAdd(c, 500, "GetEditMd", "Error: format of file is not for edit")
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	model2.EventLogAdd(c, 500, "GetEditMd", "Error: format of file is not for edit")
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
+
+	util.CopyFile(
+		path.Join(conf.ArgFold, c_path),
+		path.Join(filepath_tmp, orig_filename+"."+file_ext),
+	)
+
+	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "GetEditMd", "Error open temp source file: "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+	}
+
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	model2.EventLogAdd(c, 200, "GetEditMd", "Open for edit "+path.Join(conf.ArgFold, c_path))
+
+	return c.Render("view/edit/edit_md", fiber.Map{
+		"file_name": orig_filename + "." + file_ext,
+		"full_path": c_path,
+
+		"file_data": template.HTML(string(b)),
+	}, "view/layout/default")
 
 }
 
@@ -524,7 +516,7 @@ func PostFileEdit(c *fiber.Ctx) error {
 				os.Remove(path.Join(filepath_tmp, orig_filename+".html"))
 			}
 
-			model2.FileDelMd5Async(conf.ConfigRoot, path.Join(conf.ArgFold, full_path))
+			model2.FileDelMd5Async(path.Join(conf.ArgFold, full_path))
 
 			model2.FileDelAsync(path.Join(conf.ArgFold, full_path))
 
