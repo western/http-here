@@ -181,6 +181,12 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 		password := util.RandStringRunes(16)
 
 		if len(arg_login) > 0 {
+
+			_, isFound := BadgerGetOne("idx_user_login_" + arg_login)
+			if isFound {
+				panic("Login should be unique in system")
+			}
+
 			login = arg_login
 		}
 		if len(arg_password) > 0 {
@@ -268,6 +274,11 @@ func UserGenerate() {
 					panic(err)
 				}
 
+				err = txn.Set([]byte("idx_user_login_"+login), []byte(key))
+				if err != nil {
+					panic(err)
+				}
+
 				return nil
 			})
 
@@ -318,9 +329,20 @@ func UserClear() {
 
 	if Dbse.BadgerEnable {
 
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
 		prefix := []byte("user_")
 
 		err := Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("idx_user_login_")
+
+		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
 			panic(err)
 		}
