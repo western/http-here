@@ -156,7 +156,12 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	//fmt.Println("len(os.Args)=", len(os.Args))
+	if *arg_usedb && *arg_prefork {
+
+		fmt.Println("")
+		fmt.Println("You can not run --prefork with --usedb")
+		return
+	}
 
 	if len(os.Args) > 1 {
 
