@@ -32,7 +32,9 @@ type File struct {
 	ModTime string `json:"mod_time"`
 }
 
-var makeMd5ForRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+var (
+	generateMd5AllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+)
 
 func FileFindByPath(FullPath string) (File, bool) {
 
@@ -173,8 +175,8 @@ func FileAdd(FullPath string) error {
 
 		md5_hash := ""
 
-		//is_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$", ext)
-		is_match := makeMd5ForRegex.MatchString(ext)
+		//generateMd5AllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+		is_match := generateMd5AllRegex.MatchString(ext)
 		if is_match {
 
 			md5_hash = util.GetMd5File(FullPath)
