@@ -146,7 +146,14 @@ func UserSave(user User) error {
 
 func UserGetPrimaryId() uint64 {
 
+	if !Dbse.BadgerEnable {
+		return 0
+	}
+
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_user"), 1000)
+	if err != nil {
+		panic(err)
+	}
 	defer seq.Release()
 
 	// uint64, err

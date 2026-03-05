@@ -38,7 +38,14 @@ type EventLog struct {
 
 func EventLogGetPrimaryId() uint64 {
 
+	if !Dbse.BadgerEnable {
+		return 0
+	}
+
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_event_log"), 1000)
+	if err != nil {
+		panic(err)
+	}
 	defer seq.Release()
 
 	// uint64, err

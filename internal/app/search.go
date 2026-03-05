@@ -17,10 +17,9 @@ func GetSearch(c *fiber.Ctx) error {
 
 	model2.EventLogAdd(c, 200, "GetSearch", "Get search '"+s+"'")
 
-	/*
-		if db == nil {
-			model2.EventLogAdd( c, "200", "GetSearch", "You should enable database for search")
-		}*/
+	if !model2.Dbse.BadgerEnable {
+		model2.EventLogAdd(c, 200, "GetSearch", "You should enable database for search")
+	}
 
 	return c.Render("view/search", fiber.Map{
 

@@ -32,7 +32,7 @@ type File struct {
 
 var makeMd5ForRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 
-func FileFind(FullPath string) (File, bool) {
+func FileFindByPath(FullPath string) (File, bool) {
 
 	if len(FullPath) == 0 {
 		panic("Yous should set full_path")
@@ -114,7 +114,14 @@ func FileFindByMD5(findMD5 string) (File, bool) {
 
 func FileGetPrimaryId() uint64 {
 
+	if !Dbse.BadgerEnable {
+		return 0
+	}
+
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_file"), 1000)
+	if err != nil {
+		panic(err)
+	}
 	defer seq.Release()
 
 	// uint64, err
@@ -141,7 +148,7 @@ func FileAdd(FullPath string) error {
 
 	if Dbse.BadgerEnable {
 
-		_, isFound := FileFind(FullPath)
+		_, isFound := FileFindByPath(FullPath)
 		if isFound {
 			return nil
 		}
@@ -193,6 +200,8 @@ func FileAdd(FullPath string) error {
 		key := "file_"
 		key += strconv.FormatUint(file_id, 10)
 
+		// ------------------------------------------------------------------------------------------------------------------------
+
 		Dbse.Badger.Update(func(txn *badger.Txn) error {
 
 			err := txn.Set([]byte(key), []byte(payload))
@@ -200,18 +209,24 @@ func FileAdd(FullPath string) error {
 				panic(err)
 			}
 
-			return nil
-		})
+			if len(el.FullPath) > 0 {
+				err := txn.Set([]byte("idx_fullpath_file_"+el.FullPath), []byte(key))
+				if err != nil {
+					panic(err)
+				}
+			}
 
-		Dbse.Badger.Update(func(txn *badger.Txn) error {
-
-			err := txn.Set([]byte("idx_md5_file_"+md5_hash), []byte(key))
-			if err != nil {
-				panic(err)
+			if len(md5_hash) > 0 {
+				err := txn.Set([]byte("idx_md5_file_"+md5_hash), []byte(key))
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			return nil
 		})
+
+		// ------------------------------------------------------------------------------------------------------------------------
 
 		//FileList()
 
@@ -220,7 +235,7 @@ func FileAdd(FullPath string) error {
 	return nil
 }
 
-func FileDelMd5Async(prefix, FullPath string) {
+func FileDelMd5Async(FullPath string) {
 
 }
 
@@ -228,7 +243,7 @@ func FileDelAsync(FullPath string) {
 
 }
 
-type FileSearch struct {
+type FileSearchType struct {
 	ID uint64 `json:"id"`
 
 	FullPath string `json:"full_path"`
@@ -246,9 +261,9 @@ type FileSearch struct {
 	NameHtml template.HTML `json:"name_html"`
 }
 
-func FileSearchResult(s string) []FileSearch {
+func FileSearchResult(s string) []FileSearchType {
 
-	var ret []FileSearch
+	var ret []FileSearchType
 
 	return ret
 }
@@ -295,6 +310,15 @@ func FileClear() {
 		prefix := []byte("file_")
 
 		err := Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("idx_fullpath_file_")
+
+		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
 			panic(err)
 		}
