@@ -244,21 +244,19 @@ func FileDelAsync(FullPath string) {
 }
 
 type FileSearchType struct {
-	ID uint64 `json:"id"`
+	FullPath string
+	Name     string
+	EXT      string
 
-	FullPath string `json:"full_path"`
-	Name     string `json:"name"`
-	EXT      string `json:"ext"`
+	Size      int64
+	SizeHuman string
 
-	Size      int64  `json:"size"`
-	SizeHuman string `json:"size_human"`
+	ModTime string
 
-	ModTime string `json:"mod_time"`
+	OnlyFold     string
+	OnlyFoldHtml template.HTML
 
-	OnlyFold     string        `json:"only_fold"`
-	OnlyFoldHtml template.HTML `json:"only_fold_html"`
-
-	NameHtml template.HTML `json:"name_html"`
+	NameHtml template.HTML
 }
 
 func FileSearchResult(s string) []FileSearchType {
