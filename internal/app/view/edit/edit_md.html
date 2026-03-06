@@ -45,27 +45,19 @@
     
     
 
-if (typeof window.$$ != 'function') {
-    window.$$ = (arg0, arg1) => {
-        if (arg0 && arg1) {
-            return arg0.querySelectorAll(arg1);
+if (typeof window.$ != 'function') {
+    window.$ = (query, cntx = document) => {
+        const el = cntx.querySelector(query);
+        if (!el) {
+            console.warn(`Element ${query} not found`);
         }
-
-        if (arg0 && !arg1) {
-            return document.querySelectorAll(arg0);
-        }
+        return el;
     };
 }
 
-if (typeof window.$ != 'function') {
-    window.$ = (arg0, arg1) => {
-        if (arg0 && arg1) {
-            return arg0.querySelector(arg1);
-        }
-
-        if (arg0 && !arg1) {
-            return document.querySelector(arg0);
-        }
+if (typeof window.$$ != 'function') {
+    window.$$ = (query, cntx = document) => {
+        return Array.from(cntx.querySelectorAll(query));
     };
 }
 
