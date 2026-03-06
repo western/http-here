@@ -16,6 +16,7 @@ import (
 	"github.com/western/http-here/v2/internal/util"
 
 	badger "github.com/dgraph-io/badger/v4"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type File struct {
@@ -342,6 +343,11 @@ func FileSearchResult(s string) []FileSearchType {
 
 func FileList() {
 
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	// key=file_23, value={ID:23 MD5:b423c6288f1b9d97076ab406870eae01 FullPath:/tmp/folder1/spring/alexandru-tudorache-JdjdIjzJl94-unsplash.jpg Name:alexandru-tudorache-JdjdIjzJl94-unsplash EXT:jpg Size:1185441 SizeHuman:1.1 MiB ModTime:2025-08-03 20:25:35}
+	t.AppendHeader(table.Row{"#", "MD5", "FullPath", "Name", "EXT", "SizeHuman", "ModTime"})
+
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
@@ -350,7 +356,7 @@ func FileList() {
 			prefix := []byte("file_")
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
-				k := item.Key()
+				//k := item.Key()
 				err := item.Value(func(v []byte) error {
 
 					//fmt.Printf("key=%s, value=%s\n", k, v)
@@ -361,7 +367,10 @@ func FileList() {
 						fmt.Println("error:", err2)
 					}
 
-					fmt.Printf("key=%s, value=%+v\n", k, el)
+					//fmt.Printf("key=%s, value=%+v\n", k, el)
+					t.AppendRows([]table.Row{
+						{el.ID, el.MD5, el.FullPath, el.Name, el.EXT, el.SizeHuman, el.ModTime},
+					})
 
 					return nil
 				})
@@ -371,6 +380,8 @@ func FileList() {
 			}
 			return nil
 		})
+
+		t.Render()
 
 	}
 }

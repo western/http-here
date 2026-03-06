@@ -3,19 +3,17 @@ package model2
 import (
 	"encoding/json"
 	"fmt"
-	//"os"
+	"os"
 	//"regexp"
 	"strconv"
 	//"strings"
 	"time"
 
-	//"github.com/fatih/color"
-	//"github.com/gofiber/fiber/v2"
-
 	//"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/util"
 
 	badger "github.com/dgraph-io/badger/v4"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type User struct {
@@ -31,7 +29,7 @@ type User struct {
 	Changed    string `json:"changed"`
 }
 
-func UserFind(arg_login string) (User, bool) {
+func UserFindByLogin(arg_login string) (User, bool) {
 
 	if len(arg_login) == 0 {
 		panic("Yous should set login")
@@ -91,35 +89,10 @@ func UserSave(user User) error {
 
 	if Dbse.BadgerEnable {
 
-		Dbse.Badger.View(func(txn *badger.Txn) error {
-
-			it := txn.NewIterator(badger.DefaultIteratorOptions)
-			defer it.Close()
-			prefix := []byte("user_")
-
-			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-				item := it.Item()
-				k := item.Key()
-				item.Value(func(v []byte) error {
-
-					var el User
-					err2 := json.Unmarshal(v, &el)
-					if err2 != nil {
-						fmt.Println("error:", err2)
-					}
-
-					if el.ID == user.ID {
-
-						//fmt.Printf("key=%s, value=%+v\n", k, el)
-
-						key = string(k)
-					}
-
-					return nil
-				})
-			}
-			return nil
-		})
+		_, isFound := BadgerGetOne("user_" + strconv.FormatUint(user.ID, 10))
+		if isFound {
+			key = "user_" + strconv.FormatUint(user.ID, 10)
+		}
 
 		if len(key) > 0 {
 
@@ -292,6 +265,11 @@ func UserGenerate() {
 
 func UserList() {
 
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	// key=user_2, value={ID:2 Login:login2DP Password:SgJQY6pk2iNWsUxQ Enabled:true Label: Registered:2026-03-05 23:19:59.559 Changed:}
+	t.AppendHeader(table.Row{"#", "Login", "Password", "Enabled", "Label", "Registered", "Changed"})
+
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
@@ -300,7 +278,7 @@ func UserList() {
 			prefix := []byte("user_")
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
-				k := item.Key()
+				//k := item.Key()
 				err := item.Value(func(v []byte) error {
 
 					//fmt.Printf("key=%s, value=%s\n", k, v)
@@ -311,7 +289,10 @@ func UserList() {
 						fmt.Println("error:", err2)
 					}
 
-					fmt.Printf("key=%s, value=%+v\n", k, el)
+					//fmt.Printf("key=%s, value=%+v\n", k, el)
+					t.AppendRows([]table.Row{
+						{el.ID, el.Login, el.Password, el.Enabled, el.Label, el.Registered, el.Changed},
+					})
 
 					return nil
 				})
@@ -321,6 +302,8 @@ func UserList() {
 			}
 			return nil
 		})
+
+		t.Render()
 
 	}
 }

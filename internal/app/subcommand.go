@@ -1,6 +1,4 @@
-
 package app
-
 
 import (
 	"flag"
@@ -9,12 +7,7 @@ import (
 	"strings"
 
 	"github.com/western/http-here/v2/internal/model2"
-	
-	
 )
-
-
-
 
 func cmdSubcommandUser() {
 
@@ -95,6 +88,8 @@ func cmdSubcommandUser() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	os.Exit(0)
+
 }
 
 func cmdSubcommandUserMod() {
@@ -139,46 +134,49 @@ func cmdSubcommandUserMod() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if len(*arg_login) > 0 {
+	if len(*arg_login) == 0 {
 
-		user, isFound := model2.UserFind(*arg_login)
+		fmt.Println("")
+		fmt.Println("Login is mandatory param")
+		return
+	}
 
-		if !isFound {
+	user, isFound := model2.UserFindByLogin(*arg_login)
 
-			fmt.Println(`User "` + *arg_login + `" nof found`)
-			os.Exit(0)
-		} else {
+	if !isFound {
 
-			if len(*arg_newlogin) > 0 {
-				user.Login = *arg_newlogin
-			}
+		fmt.Println(`User "` + *arg_login + `" nof found`)
+		os.Exit(0)
 
-			if len(*arg_password) > 0 {
-				user.Password = *arg_password
-			}
+	} else {
 
-			if len(*arg_label) > 0 {
-				user.Label = *arg_label
-			}
-
-			if *arg_disable {
-				user.Enabled = false
-			}
-
-			if *arg_enable {
-				user.Enabled = true
-			}
-
-			//fmt.Println("changed user=", user)
-			model2.UserSave(user)
-			os.Exit(0)
+		if len(*arg_newlogin) > 0 {
+			user.Login = *arg_newlogin
 		}
 
+		if len(*arg_password) > 0 {
+			user.Password = *arg_password
+		}
+
+		if len(*arg_label) > 0 {
+			user.Label = *arg_label
+		}
+
+		if *arg_disable {
+			user.Enabled = false
+		}
+
+		if *arg_enable {
+			user.Enabled = true
+		}
+
+		model2.UserSave(user)
+		os.Exit(0)
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	// -------------------------------------------------------------------------------------------------------------------------------------------
+	os.Exit(0)
 
 }
 
@@ -244,6 +242,8 @@ func cmdSubcommandLog() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	os.Exit(0)
+
 }
 
 func cmdSubcommandFile() {
@@ -251,12 +251,6 @@ func cmdSubcommandFile() {
 	fileCmd := flag.NewFlagSet("user", flag.ExitOnError)
 	arg_help := fileCmd.Bool("help", false, "Show help")
 
-	//arg_login := fileCmd.String("login", "", "Login for user basic auth")
-	//arg_password := fileCmd.String("password", "", "Password for user basic auth")
-	//arg_label := fileCmd.String("label", "", "Label for user account")
-	//arg_disabled := fileCmd.Bool("disabled", false, "Disabled for user account")
-
-	//arg_generate := fileCmd.Bool("generate", false, "Generate list of random accounts")
 	arg_list := fileCmd.Bool("list", false, "Print all user accounts")
 	arg_clear := fileCmd.Bool("clear", false, "Clear all user accounts")
 
@@ -273,13 +267,7 @@ func cmdSubcommandFile() {
 			``,
 			`options:`,
 			``,
-			//`     --login ` + white_clr(`[str]`) + `               Login for NEW USER basic authorization`,
-			//`     --password ` + white_clr(`[str]`) + `            Password for NEW USER basic authorization`,
-			//`     --label ` + white_clr(`[str]`) + `               Label for NEW USER account`,
-			//`     --disabled                  Disabled for NEW USER account`,
-			//``,
-			//`     --generate                  Generate and save list of random accounts`,
-			`     --list                      Print all files`,
+			`     --list                      Print all database files`,
 			``,
 			`     --clear                     Clear all files`,
 
@@ -290,10 +278,6 @@ func cmdSubcommandFile() {
 		fmt.Println(strings.Join(inf[:], "\n"))
 		os.Exit(0)
 	}
-
-	// -------------------------------------------------------------------------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -313,6 +297,6 @@ func cmdSubcommandFile() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	os.Exit(0)
+
 }
-
-
