@@ -93,6 +93,8 @@ func PostDelete(c *fiber.Ctx) error {
 					continue
 				}
 
+				RemoveCacheDir(path.Join(readTarget, name))
+
 				model2.EventLogAdd(c, 200, "PostDelete", "Remove fold '"+path.Join(readTarget, name)+"'")
 
 			} else {

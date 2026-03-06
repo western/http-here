@@ -3,11 +3,13 @@ module github.com/western/http-here/v2
 go 1.26.0
 
 require (
+	github.com/charlievieth/fastwalk v1.0.14
 	github.com/dgraph-io/badger/v4 v4.9.1
 	github.com/edwvee/exiffix v0.0.0-20240229113213-0dbb146775be
 	github.com/fatih/color v1.18.0
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/template/html/v2 v2.1.3
+	github.com/jedib0t/go-pretty/v6 v6.7.8
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
 )
 
@@ -24,7 +26,6 @@ require (
 	github.com/gofiber/utils v1.2.0 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

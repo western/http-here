@@ -3,7 +3,7 @@ package model2
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	//"os"
 	//"regexp"
 	"strconv"
 	//"strings"
@@ -14,6 +14,7 @@ import (
 
 	badger "github.com/dgraph-io/badger/v4"
 	"github.com/jedib0t/go-pretty/v6/table"
+	//"github.com/jedib0t/go-pretty/v6/text"
 )
 
 type User struct {
@@ -266,7 +267,10 @@ func UserGenerate() {
 func UserList() {
 
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	//t.SetOutputMirror(os.Stdout)
+	//t.SetStyle(table.StyleBold)
+	t.SetStyle(table.StyleLight)
+
 	// key=user_2, value={ID:2 Login:login2DP Password:SgJQY6pk2iNWsUxQ Enabled:true Label: Registered:2026-03-05 23:19:59.559 Changed:}
 	t.AppendHeader(table.Row{"#", "Login", "Password", "Enabled", "Label", "Registered", "Changed"})
 
@@ -303,9 +307,52 @@ func UserList() {
 			return nil
 		})
 
-		t.Render()
+		fmt.Println(t.Render())
 
 	}
+}
+
+func UserListFill() map[string]string {
+
+	var password_list = map[string]string{}
+
+	if Dbse.BadgerEnable {
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte("user_")
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				item := it.Item()
+				//k := item.Key()
+				err := item.Value(func(v []byte) error {
+
+					//fmt.Printf("key=%s, value=%s\n", k, v)
+
+					var el User
+					err2 := json.Unmarshal(v, &el)
+					if err2 != nil {
+						fmt.Println("error:", err2)
+					}
+
+					//fmt.Printf("key=%s, value=%+v\n", k, el)
+
+					if el.Enabled {
+						password_list[el.Login] = el.Password
+					}
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+
+	}
+
+	return password_list
 }
 
 func UserClear() {

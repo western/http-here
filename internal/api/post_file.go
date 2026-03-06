@@ -7,6 +7,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	//"fmt"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -52,16 +53,30 @@ func PostFile(c *fiber.Ctx) error {
 	form, _ := c.MultipartForm()
 	files := form.File["fileBlob"]
 
+	var (
+		regexpSpaceSymbols = regexp.MustCompile("\\s+")
+		regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
+	)
+
 	for _, file := range files {
 
-		file_ext := util.GetExtNorm(file.Filename)
-		originalFileName := util.GetFileName(file.Filename)
+		fileFilename, err := url.QueryUnescape(file.Filename)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFileUpload", "Error unescape file name "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error unescape file name ",
+			}, "application/json")
+		}
+
+		file_ext := util.GetExtNorm(fileFilename)
+		originalFileName := util.GetFileName(fileFilename)
 
 		originalFileName = strings.ReplaceAll(originalFileName, "/", "")
-		re := regexp.MustCompile("\\s+")
-		originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
-		re = regexp.MustCompile("[\\-]{2,}")
-		originalFileName = re.ReplaceAllLiteralString(originalFileName, "-")
+		originalFileName = regexpSpaceSymbols.ReplaceAllLiteralString(originalFileName, "-")
+		originalFileName = regexpDoubleDash.ReplaceAllLiteralString(originalFileName, "-")
 
 		filename := originalFileName + "." + file_ext
 		filename = util.CleanDirtyPath(filename)

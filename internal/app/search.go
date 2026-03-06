@@ -11,7 +11,8 @@ func GetSearch(c *fiber.Ctx) error {
 
 	s := c.Query("s")
 
-	result_list := model2.FileSearchResult(s)
+	//result_list := model2.FileSearchResult(s)
+	result_list := model2.FileFastSearchResult(s)
 
 	model2.EventLogAdd(c, 200, "GetSearch", "Get search '"+s+"'")
 

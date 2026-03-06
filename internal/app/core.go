@@ -62,6 +62,7 @@ func Core() {
 	arg_login := flag.String("login", "", "Login for user basic auth")
 	arg_password := flag.String("password", "", "Password for user basic auth")
 	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
+	arg_basic2 := flag.Bool("basic2", false, "Set basic auth and use database accounts")
 
 	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
@@ -111,6 +112,7 @@ func Core() {
 			`     --password ` + white_clr(`[str]`) + `          Password for basic authorization`,
 			``,
 			`     --basic                   Set basic auth and generate several accounts every time`,
+			`     --basic2                  Set basic auth and use database accounts`,
 			``,
 			``,
 			`     --index-disable           Disable current folder read`,
@@ -434,6 +436,39 @@ func Core() {
 			},
 		}))
 
+	}
+
+	if *arg_basic2 {
+
+		if !*arg_usedb {
+
+			fmt.Println("")
+			fmt.Println("You can not run --basic2 without --usedb")
+			return
+		}
+
+		fmt.Println("")
+		fmt.Println("  Basic auth set: ")
+
+		password_list := model2.UserListFill()
+
+		for key, val := range password_list {
+
+			fmt.Println("         " + key + "    " + val)
+		}
+
+		app.Use(basicauth.New(basicauth.Config{
+
+			Users: password_list,
+
+			Unauthorized: func(c *fiber.Ctx) error {
+
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
+
+				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
+				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
+			},
+		}))
 	}
 
 	if len(*arg_login) > 0 && len(*arg_password) > 0 {

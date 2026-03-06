@@ -138,7 +138,7 @@ func cmdSubcommandUserMod() {
 
 		fmt.Println("")
 		fmt.Println("Login is mandatory param")
-		return
+		os.Exit(0)
 	}
 
 	user, isFound := model2.UserFindByLogin(*arg_login)
