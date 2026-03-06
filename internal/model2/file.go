@@ -183,7 +183,7 @@ func FileAdd(FullPath string) error {
 
 			md5_hash = util.GetMd5File(FullPath)
 
-		} else if size < 20*1024*1024 {
+		} else if size <= 20*1024*1024 {
 
 			md5_hash = util.GetMd5File(FullPath)
 		}

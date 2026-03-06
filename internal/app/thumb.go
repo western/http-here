@@ -144,7 +144,7 @@ func GetThumb(c *fiber.Ctx) error {
 		*/
 	}
 
-	if fileInfoOriginal.Size() >= 20*1024*1024 {
+	if fileInfoOriginal.Size() > 20*1024*1024 {
 
 		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+", original file size is more than 20 Megabytes")
 
