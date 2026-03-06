@@ -20,7 +20,6 @@ type FileRow struct {
 
 	ModTime      time.Time
 	ModTimeHuman string
-	Md5          string
 
 	IsPreviewImg bool
 	IsPreviewDoc bool

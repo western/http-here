@@ -102,12 +102,16 @@ func serveDirectory(c *fiber.Ctx) error {
 		return c.Redirect("/#!"+c_path, 302)
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
 	// check index.html inside
 	if _, err := os.Stat(path.Join(readTarget, "index.html")); err == nil {
 
 		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readTarget, "index.html"))
 		return c.SendFile(path.Join(readTarget, "index.html"), false)
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	model2.EventLogAdd(c, 200, "CORE", "Dir "+readTarget)
 
@@ -126,7 +130,6 @@ func serveDirectory(c *fiber.Ctx) error {
 
 	template_file := "index"
 
-	//var rows []FileRow
 	var mode string
 	var s_sort string
 
@@ -416,7 +419,6 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
 
-					//Md5:   "",
 					IsPreviewImg: false,
 					IsPreviewDoc: false,
 					IsEditDoc:    false,
@@ -436,7 +438,6 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 					ModTime:      modtime,
 					ModTimeHuman: modtime_human,
 
-					//Md5:       GetMd5File( path.Join(readTarget, e.Name()) ),
 					IsPreviewImg: is_preview_img,
 					IsPreviewDoc: is_preview_doc,
 					IsEditDoc:    is_edit_doc,
