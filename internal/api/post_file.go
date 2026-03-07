@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"regexp"
+	//"regexp"
 	"strings"
 	//"fmt"
 
@@ -54,8 +54,8 @@ func PostFile(c *fiber.Ctx) error {
 	files := form.File["fileBlob"]
 
 	var (
-		regexpSpaceSymbols = regexp.MustCompile("\\s+")
-		regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
+	//regexpSpaceSymbols = regexp.MustCompile("\\s+")
+	//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
 	)
 
 	for _, file := range files {
@@ -75,8 +75,8 @@ func PostFile(c *fiber.Ctx) error {
 		originalFileName := util.GetFileName(fileFilename)
 
 		originalFileName = strings.ReplaceAll(originalFileName, "/", "")
-		originalFileName = regexpSpaceSymbols.ReplaceAllLiteralString(originalFileName, "-")
-		originalFileName = regexpDoubleDash.ReplaceAllLiteralString(originalFileName, "-")
+		//originalFileName = regexpSpaceSymbols.ReplaceAllLiteralString(originalFileName, "-")
+		//originalFileName = regexpDoubleDash.ReplaceAllLiteralString(originalFileName, "-")
 
 		filename := originalFileName + "." + file_ext
 		filename = util.CleanDirtyPath(filename)
