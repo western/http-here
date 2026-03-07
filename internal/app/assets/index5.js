@@ -1,15 +1,23 @@
+let sendError = (...msg) => {
+    let formData = new FormData();
+    formData.append('msg', msg.join(' '));
+    formData.append('path', location.pathname);
 
-
-window.onerror = function (msg, source, lineNo, columnNo, error) {
-              
-    alert("window.onerror: " + msg + 
-          "\nScript: " + source + 
-          "\nLine: " + lineNo + 
-          "\nColumn: " + columnNo + 
-          "\nStackTrace: " + error);
-    //return true;
+    fetch('/api/jserr', {
+        method: 'POST',
+        body: formData,
+    })
+        .then((r) => r.json())
+        .then((js) => {})
+        .catch((err) => {
+            console.error('/api/jserr catch err=', err);
+        });
 };
 
+window.onerror = function (msg, source, lineNo, columnNo, error) {
+    sendError('window.onerror: ' + msg + '\nScript: ' + source + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nStackTrace: ' + error);
+    //return true;
+};
 
 if (typeof window.$ != 'function') {
     window.$ = (query, cntx = document) => {
@@ -155,6 +163,7 @@ class Clipboard {
                         })
                         .catch((err) => {
                             console.error('/api/' + clipboard.mode + ' catch err=', err);
+                            sendError('/api/' + clipboard.mode + ' catch err=', err);
                         });
                 } else {
                     alert('Clipboard is empty');
@@ -301,6 +310,7 @@ class API {
                         })
                         .catch((err) => {
                             console.error('/api/delete/one catch err=', err);
+                            sendError('/api/delete/one catch err=', err);
                         });
                 }
             });
@@ -339,6 +349,7 @@ class API {
                         })
                         .catch((err) => {
                             console.error('/api/delete catch err=', err);
+                            sendError('/api/delete catch err=', err);
                         });
                 }
             });
@@ -438,6 +449,7 @@ class API {
                 })
                 .catch((err) => {
                     console.error('/api/file/touch catch err=', err);
+                    sendError('/api/file/touch catch err=', err);
                 });
         };
 
@@ -498,6 +510,7 @@ class API {
                 })
                 .catch((err) => {
                     console.error('/api/folder catch err=', err);
+                    sendError('/api/folder catch err=', err);
                 });
         };
 
@@ -627,6 +640,7 @@ class API {
                 })
                 .catch((err) => {
                     console.error('/api/rename catch err=', err);
+                    sendError('/api/rename catch err=', err);
                 });
         };
 
@@ -750,6 +764,15 @@ class API {
                     location.href = location.href;
                 }
             };
+
+            xhr.upload.onerror = function () {
+                sendError(`xhr.upload.onerror: ${xhr.statusText}`);
+            };
+
+            xhr.onerror = function (ee) {
+                sendError('xhr.onerror: ' + xhr.statusText + ee);
+            };
+
             xhr.open('POST', '/api/file');
             xhr.send(formData);
         };
@@ -1006,9 +1029,11 @@ class SimpleUploadClient extends BaseClient {
         },
         onError: (err) => {
             console.info('onError', err.name, err.message);
+            sendError('onError', err.name, err.message);
         },
         onFailed: (sessionInfo) => {
             console.info('onFailed', sessionInfo);
+            sendError('onFailed', sessionInfo);
         },
     });
 
@@ -1276,9 +1301,11 @@ class PartUploadClient extends BaseClient {
         },
         onError: (err) => {
             console.info('onError', err.name, err.message);
+            sendError('onError', err.name, err.message);
         },
         onFailed: (sessionInfo, chunkInfo) => {
             console.info('onFailed', sessionInfo, chunkInfo);
+            sendError('onFailed', sessionInfo, chunkInfo);
         },
     });
 
