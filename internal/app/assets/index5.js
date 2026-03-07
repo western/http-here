@@ -15,7 +15,7 @@ let sendError = (...msg) => {
 };
 
 window.onerror = function (msg, source, lineNo, columnNo, error) {
-    sendError('window.onerror: ' + msg + '\nScript: ' + source + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nStackTrace: ' + error);
+    sendError('window.onerror: ' + msg + ' Script: ' + source + ' Line: ' + lineNo + ' Column: ' + columnNo + ' StackTrace: ' + error);
     //return true;
 };
 
