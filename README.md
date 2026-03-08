@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v1.14.5 https://github.com/western/http-here
+git clone --branch v2.0.0 https://github.com/western/http-here
 cd http-here
 make build
 
@@ -43,7 +43,7 @@ cp http-here ~/bin
 ```
 or
 ```console
-go install github.com/western/http-here/cmd/http-here@v1.14.5
+go install github.com/western/http-here/cmd/http-here@v2.0.0
 ```
 
 
@@ -57,7 +57,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v1.14.5/http-here.gz
+wget https://github.com/western/http-here/releases/download/v2.0.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,12 +66,17 @@ chmod +x http-here
 windows / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v1.14.5/http-here.zip
+https://github.com/western/http-here/releases/download/v2.0.0/http-here.zip
 
 # Unpack it
 # Open `cmd` and run
 ```
 
+darwin / amd64
+```console
+# Download this archive
+https://github.com/western/http-here/releases/download/v2.0.0/http-here.darwin.amd64.gz
+```
 
 ## Run
 ```console
@@ -301,6 +306,18 @@ https://github.com/western/http-here/issues
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
 - [x] REST restructure
+
+### 2.0.0
+- [x] database nonblock speedest engine
+- [x] database engine use only native golang builder (not need specific lib)
+- [x] one central model handlers
+- [x] `http-here user` subcommand interface
+- [x] `http-here log` subcommand interface
+- [x] basic auth by database USER accounts `--basic2 key`
+- [x] index5 client js code
+- [x] search without database
+- [x] removed folder fix - `RemoveCacheDir for subfolders`
+- [x] save file name spaces
 
 ### 1.14.3
 - [x] refresh spa
