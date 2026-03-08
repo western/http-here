@@ -7,6 +7,7 @@ import (
 	//"regexp"
 	"strconv"
 	//"strings"
+	"golang.org/x/exp/slices"
 	"time"
 
 	//"github.com/western/http-here/v2/internal/conf"
@@ -378,9 +379,9 @@ func UserList() {
 	}
 }
 
-func UserListFill() map[string]string {
+func UserSelect(Filters []map[string]interface{}) []User {
 
-	var password_list = map[string]string{}
+	var ret []User
 
 	if Dbse.BadgerEnable {
 
@@ -393,8 +394,6 @@ func UserListFill() map[string]string {
 				//k := item.Key()
 				err := item.Value(func(v []byte) error {
 
-					//fmt.Printf("key=%s, value=%s\n", k, v)
-
 					var el User
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
@@ -402,9 +401,49 @@ func UserListFill() map[string]string {
 					}
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
+					var isExpected []bool
 
-					if el.Enabled {
-						password_list[el.Login] = el.Password
+					for _, f_val := range Filters {
+
+						//fmt.Println("")
+						//fmt.Println("item=", f_val)
+
+						for k2, v2 := range f_val {
+							//fmt.Println("k2=", k2, " v2=", v2)
+
+							// key=user_2, value={ID:2 Login:login2DP Password:SgJQY6pk2iNWsUxQ Enabled:true Label: Registered:2026-03-05 23:19:59.559 Changed:}
+							switch k2 {
+							case "ID":
+								if el.ID == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+							case "Login":
+								if el.Login == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+							case "Enabled":
+								if el.Enabled == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+
+							}
+
+						}
+					}
+
+					//fmt.Println("isExpected=", isExpected)
+					//fmt.Println();
+
+					isPresentFalse := slices.Contains(isExpected, false)
+					if !isPresentFalse {
+						// false is absent
+						ret = append(ret, el)
 					}
 
 					return nil
@@ -418,7 +457,7 @@ func UserListFill() map[string]string {
 
 	}
 
-	return password_list
+	return ret
 }
 
 func UserClear() {

@@ -18,20 +18,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
-
 	"github.com/western/http-here/v2/internal/api"
 	"github.com/western/http-here/v2/internal/cert"
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
+	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/html/v2"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 //go:embed view/*
@@ -457,12 +457,26 @@ func Core() {
 		fmt.Println("")
 		fmt.Println("  Basic auth set: ")
 
-		password_list := model2.UserListFill()
+		t := table.NewWriter()
+		t.SetStyle(table.StyleLight)
+		t.AppendHeader(table.Row{"#", "Login", "Password", "Label"})
 
-		for key, val := range password_list {
-
-			fmt.Println("         " + key + "    " + val)
+		filt := []map[string]interface{}{
+			//{"Login": "login2"},
+			{"Enabled": true},
 		}
+		user_list := model2.UserSelect(filt)
+
+		var password_list = map[string]string{}
+		for _, el := range user_list {
+
+			password_list[el.Login] = el.Password
+
+			t.AppendRows([]table.Row{
+				{el.ID, el.Login, el.Password, el.Label},
+			})
+		}
+		fmt.Println(t.Render())
 
 		app.Use(basicauth.New(basicauth.Config{
 

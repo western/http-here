@@ -171,9 +171,11 @@ func EventLogDumpTo(toPath string) {
 		defer f.Close()
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
+
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
 			prefix := []byte("event_log")
+
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
 				//k := item.Key()
@@ -209,9 +211,11 @@ func EventLogDump() {
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
+
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
 			prefix := []byte("event_log")
+
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
 				//k := item.Key()
