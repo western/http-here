@@ -42,10 +42,10 @@ func cmdSubcommandUser() {
 			`     --disabled                  Disabled for NEW USER account`,
 			``,
 			`     --generate                  Generate and save list of random accounts`,
+			``,
 			`     --list                      Print all user accounts`,
 			``,
 			`     --clear                     Clear all user accounts`,
-
 			``,
 			``,
 		}
@@ -98,7 +98,7 @@ func cmdSubcommandUserMod() {
 	arg_help := usermodCmd.Bool("help", false, "Show help")
 
 	arg_login := usermodCmd.String("login", "", "Login")
-	arg_newlogin := usermodCmd.String("newlogin", "", "New login for account")
+	//arg_newlogin := usermodCmd.String("newlogin", "", "New login for account")
 	arg_password := usermodCmd.String("password", "", "Password for account")
 	arg_label := usermodCmd.String("label", "", "Label for account")
 	arg_disable := usermodCmd.Bool("disable", false, "Disable for account")
@@ -118,7 +118,7 @@ func cmdSubcommandUserMod() {
 			`options:`,
 			``,
 			`     --login ` + white_clr(`[str]`) + `                Login`,
-			`     --newlogin ` + white_clr(`[str]`) + `             New login for account`,
+			//`     --newlogin ` + white_clr(`[str]`) + `             New login for account`,
 			`     --password ` + white_clr(`[str]`) + `             Password for account`,
 			`     --label ` + white_clr(`[str]`) + `                Label for account`,
 			``,
@@ -150,9 +150,11 @@ func cmdSubcommandUserMod() {
 
 	} else {
 
-		if len(*arg_newlogin) > 0 {
-			user.Login = *arg_newlogin
-		}
+		/*
+			if len(*arg_newlogin) > 0 {
+				user.Login = *arg_newlogin
+			}
+		*/
 
 		if len(*arg_password) > 0 {
 			user.Password = *arg_password
@@ -170,7 +172,64 @@ func cmdSubcommandUserMod() {
 			user.Enabled = true
 		}
 
-		model2.UserSave(user)
+		model2.UserUpdate(user)
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	os.Exit(0)
+
+}
+
+func cmdSubcommandUserDel() {
+
+	usermodCmd := flag.NewFlagSet("userdel", flag.ExitOnError)
+	arg_help := usermodCmd.Bool("help", false, "Show help")
+
+	arg_login := usermodCmd.String("login", "", "Login")
+
+	usermodCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here userdel`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			`     --login ` + white_clr(`[str]`) + `                Login for delete`,
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_login) == 0 {
+
+		fmt.Println("")
+		fmt.Println("Login is mandatory param")
+		os.Exit(0)
+	}
+
+	user, isFound := model2.UserFindByLogin(*arg_login)
+
+	if !isFound {
+
+		fmt.Println(`User "` + *arg_login + `" nof found`)
+		os.Exit(0)
+
+	} else {
+
+		model2.UserDelByLogin(user.Login)
 		os.Exit(0)
 	}
 

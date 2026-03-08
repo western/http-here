@@ -7,9 +7,9 @@ import (
 
 	"github.com/western/http-here/v2/internal/conf"
 
-	"github.com/gofiber/fiber/v2"
-
 	badger "github.com/dgraph-io/badger/v4"
+	"github.com/gofiber/fiber/v2"
+	"github.com/valyala/fasthttp"
 )
 
 type DBSE struct {
@@ -89,9 +89,9 @@ func BadgerGetOne(findKey string) ([]byte, bool) {
 
 					if string(k) == findKey {
 
-						//fmt.Printf("key=%s, value=%+v\n", k, el)
-						//ret = v
-						copy(ret, v)
+						//fmt.Printf("found key=%s, value=%s\n", k, v)
+						ret = v
+						//copy(ret, v)
 					}
 
 					return nil
@@ -106,6 +106,14 @@ func BadgerGetOne(findKey string) ([]byte, bool) {
 	}
 
 	return ret, false
+}
+
+func FakeFiberCtx() *fiber.Ctx {
+	app := fiber.New()
+	fctx := &fasthttp.RequestCtx{}
+	c := app.AcquireCtx(fctx)
+
+	return c
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------

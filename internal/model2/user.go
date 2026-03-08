@@ -3,7 +3,7 @@ package model2
 import (
 	"encoding/json"
 	"fmt"
-	//"os"
+	"os"
 	//"regexp"
 	"strconv"
 	//"strings"
@@ -23,7 +23,7 @@ type User struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 
-	Enabled bool   `json:"status"`
+	Enabled bool   `json:"enabled"`
 	Label   string `json:"label"`
 
 	Registered string `json:"registered"`
@@ -80,19 +80,23 @@ func UserFindByLogin(arg_login string) (User, bool) {
 	return user, false
 }
 
-func UserSave(user User) error {
+func UserUpdate(user User) error {
 
 	if user.ID == 0 {
 		panic("Yous should set User")
 	}
 
-	var key string
+	c := FakeFiberCtx()
 
 	if Dbse.BadgerEnable {
 
-		_, isFound := BadgerGetOne("user_" + strconv.FormatUint(user.ID, 10))
-		if isFound {
+		var key string
+
+		if user.ID > 0 {
 			key = "user_" + strconv.FormatUint(user.ID, 10)
+		} else {
+			user_id := UserGetPrimaryId()
+			key = "user_" + strconv.FormatUint(user_id, 10)
 		}
 
 		if len(key) > 0 {
@@ -102,15 +106,26 @@ func UserSave(user User) error {
 
 			payload, _ := json.Marshal(user)
 
-			Dbse.Badger.Update(func(txn *badger.Txn) error {
+			err := Dbse.Badger.Update(func(txn *badger.Txn) error {
 
 				err := txn.Set([]byte(key), []byte(payload))
 				if err != nil {
 					panic(err)
 				}
 
+				err = txn.Set([]byte("idx_user_login_"+user.Login), []byte(key))
+				if err != nil {
+					panic(err)
+				}
+
 				return nil
 			})
+
+			if err == nil {
+				EventLogAdd(c, 200, "UserSave", "User "+user.Login+" saved")
+			} else {
+				EventLogAdd(c, 500, "UserSave", "User "+user.Login+" save error: "+err.Error())
+			}
 		}
 
 	}
@@ -158,17 +173,19 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 
 			_, isFound := BadgerGetOne("idx_user_login_" + arg_login)
 			if isFound {
-				panic("Login should be unique in system")
+
+				fmt.Println("Login should be unique in system")
+				os.Exit(0)
 			}
 
 			login = arg_login
 		}
+
 		if len(arg_password) > 0 {
 			password = arg_password
 		}
 
 		_dt := time.Now().Format("2006-01-02 15:04:05.000")
-		//_dt_timestamp, _ := time.Parse("2006-01-02 15:04:05.000", _dt)
 
 		el := User{
 			ID: user_id,
@@ -184,15 +201,16 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 		}
 		payload, _ := json.Marshal(el)
 
-		key := "user_"
-
-		//_dt_timestamp_str := strconv.FormatInt(_dt_timestamp.Unix(), 10)
-		//key += _dt_timestamp_str
-		key += strconv.FormatUint(user_id, 10)
+		key := "user_" + strconv.FormatUint(user_id, 10)
 
 		Dbse.Badger.Update(func(txn *badger.Txn) error {
 
 			err := txn.Set([]byte(key), []byte(payload))
+			if err != nil {
+				panic(err)
+			}
+
+			err = txn.Set([]byte("idx_user_login_"+login), []byte(key))
 			if err != nil {
 				panic(err)
 			}
@@ -205,13 +223,46 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 	}
 }
 
+func UserDelByLogin(arg_login string) {
+
+	c := FakeFiberCtx()
+
+	if Dbse.BadgerEnable {
+
+		foundBytes, isFound := BadgerGetOne("idx_user_login_" + arg_login)
+		if isFound {
+
+			prefix := []byte(string(foundBytes))
+
+			err := Dbse.Badger.DropPrefix(prefix)
+			if err == nil {
+				EventLogAdd(c, 200, "UserDelByLogin", "User "+arg_login+" deleted")
+			} else {
+				EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" delete error: "+err.Error())
+			}
+
+			// -------------------------------------------------------------------------------------------------------------------------------------------
+
+			prefix = []byte("idx_user_login_" + arg_login)
+
+			err = Dbse.Badger.DropPrefix(prefix)
+			if err != nil {
+				EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" INDEX delete error: "+err.Error())
+			}
+
+		} else {
+
+			EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" INDEX not found")
+		}
+	}
+}
+
 func UserGenerate() {
 
 	if Dbse.BadgerEnable {
 
 		for i := range 10 {
 
-			//i := i + 1
 			_ = i
 
 			user_id := UserGetPrimaryId()
@@ -219,7 +270,6 @@ func UserGenerate() {
 			password := util.RandStringRunes(16)
 
 			_dt := time.Now().Format("2006-01-02 15:04:05.000")
-			//_dt_timestamp, _ := time.Parse("2006-01-02 15:04:05.000", _dt)
 
 			el := User{
 				ID: user_id,
@@ -235,11 +285,7 @@ func UserGenerate() {
 			}
 			payload, _ := json.Marshal(el)
 
-			key := "user_"
-
-			//_dt_timestamp_str := strconv.FormatInt(_dt_timestamp.Unix()+int64(i), 10)
-			//key += _dt_timestamp_str
-			key += strconv.FormatUint(user_id, 10)
+			key := "user_" + strconv.FormatUint(user_id, 10)
 
 			Dbse.Badger.Update(func(txn *badger.Txn) error {
 
@@ -267,8 +313,6 @@ func UserGenerate() {
 func UserList() {
 
 	t := table.NewWriter()
-	//t.SetOutputMirror(os.Stdout)
-	//t.SetStyle(table.StyleBold)
 	t.SetStyle(table.StyleLight)
 
 	// key=user_2, value={ID:2 Login:login2DP Password:SgJQY6pk2iNWsUxQ Enabled:true Label: Registered:2026-03-05 23:19:59.559 Changed:}
@@ -308,6 +352,26 @@ func UserList() {
 		})
 
 		fmt.Println(t.Render())
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte("idx_user_login_")
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				item := it.Item()
+				k := item.Key()
+				err := item.Value(func(v []byte) error {
+
+					fmt.Printf("key=%s, value=%s\n", k, v)
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
 	}
 }

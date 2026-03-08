@@ -44,23 +44,8 @@ func PostJserr(c *fiber.Ctx) error {
 		u_path = form_path
 	}
 
-	//readTarget := path.Join(conf.ArgFold, u_path)
-
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	/*
-		form, err := c.MultipartForm()
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostJserr", "Error MultipartForm parse "+u_path+" "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error MultipartForm parse " + u_path,
-			}, "application/json")
-		}*/
-
-	//msg := form.Value["msg"]
 	msg := c.FormValue("msg")
 
 	if len(msg) > 0 {

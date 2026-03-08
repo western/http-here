@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
+	//"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
-	"github.com/gofiber/fiber/v2"
-
 	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/util"
 
 	badger "github.com/dgraph-io/badger/v4"
+	"github.com/fatih/color"
+	"github.com/gofiber/fiber/v2"
 )
 
 var (
@@ -80,7 +80,6 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 	_dt := time.Now().Format("2006-01-02 15:04:05.000")
 	pref += "[" + _dt + "] "
 
-	//_dt_timestamp, _ := time.Parse("2006-01-02 15:04:05.000", _dt)
 	event_log_id := EventLogGetPrimaryId()
 
 	_ip := ""
@@ -128,7 +127,7 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 	if Dbse.BadgerEnable && !arg_nolog {
 
-		msg = StringClearColor(msg)
+		msg = util.StringClearColor(msg)
 
 		el := EventLog{
 			ProcId: os.Getpid(),
@@ -146,11 +145,7 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 		err := Dbse.Badger.Update(func(txn *badger.Txn) error {
 
-			key := "event_log_"
-
-			//_dt_timestamp_str := strconv.FormatInt(_dt_timestamp.Unix(), 10)
-			//key += _dt_timestamp_str
-			key += strconv.FormatUint(event_log_id, 10)
+			key := "event_log_" + strconv.FormatUint(event_log_id, 10)
 
 			err := txn.Set([]byte(key), payload)
 
@@ -259,12 +254,4 @@ func EventLogClear() {
 		}
 
 	}
-}
-
-func StringClearColor(msg string) string {
-
-	// /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''
-
-	re := regexp.MustCompile("[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]")
-	return re.ReplaceAllString(msg, "")
 }

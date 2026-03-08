@@ -183,6 +183,13 @@ func Core() {
 			cmdSubcommandUserMod()
 		}
 
+		if os.Args[1] == "userdel" {
+
+			model2.Open()
+
+			cmdSubcommandUserDel()
+		}
+
 		if os.Args[1] == "log" {
 
 			model2.Open()

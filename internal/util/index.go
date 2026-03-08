@@ -11,11 +11,11 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"reflect"
+	//"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
+	//"sync"
 	"time"
 )
 
@@ -84,65 +84,6 @@ func PrettyByteSize(b int64) string {
 	return fmt.Sprintf("%.1fYiB", bf)
 }
 
-/*
-func addFilesToZip(w *zip.Writer, basePath, baseInZip string) {
-	// Open the Directory
-	//files, err := ioutil.ReadDir(basePath)
-	files, err := os.ReadDir(basePath)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	for _, file := range files {
-		//fmt.Println(  path.Join(basePath, file.Name())   )
-		if !file.IsDir() {
-			//dat, err := ioutil.ReadFile(basePath + file.Name())
-			dat, err := os.ReadFile(path.Join(basePath, file.Name()))
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			fileInfo, err := os.Stat(path.Join(basePath, file.Name()))
-			if err != nil {
-				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+path.Join(basePath, file.Name())+"' not exists")
-				//continue
-			}
-
-			header, err := zip.FileInfoHeader(fileInfo)
-			if err != nil {
-				fmt.Println(err)
-				//LogPrefix(c, "500", "'"+path.Join(arg_fold, u_path, name)+"' err: "+err.Error())
-				//continue
-			}
-			header.Method = zip.Store
-			header.Name = path.Join(baseInZip, file.Name())
-
-			// Add some files to the archive.
-			//f, err := w.Create(path.Join(baseInZip, file.Name()))
-			f, err := w.CreateHeader(header)
-			if err != nil {
-				fmt.Println(err)
-			}
-			_, err = f.Write(dat)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else if file.IsDir() {
-
-			// Recurse
-			//newBase := basePath + file.Name() + "/"
-			newBase := path.Join(basePath, file.Name()) + "/"
-			//fmt.Println("Recursing and Adding SubDir: " + file.Name())
-			//fmt.Println("Recursing and Adding SubDir: " + newBase)
-
-			//addFiles(w, newBase, baseInZip+file.Name()+"/")
-			addFilesToZip(w, newBase, path.Join(baseInZip, file.Name())+"/")
-		}
-	}
-}
-*/
-
 func RunAnyCommandUnderWin(c string) error {
 
 	homepath, err := os.UserHomeDir()
@@ -193,177 +134,15 @@ func RunAnyCommandUnderWin(c string) error {
 	return nil
 }
 
-/*
-func WalkAndMakeThumbnail(path string, deep int) {
-
-	//fmt.Println("WalkAndMakeThumbnail ", path)
-
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return
-	}
-
-	if deep > 5 {
-		return
-	}
-
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, file := range files {
-
-		fileInfo, err := os.Stat(path.Join(path, file.Name()))
-
-		modtime := fileInfo.ModTime()
-		modtime_human := modtime.Format("2006-01-02 15:04:05")
-
-		size := fileInfo.Size()
-		size_human := PrettyByteSize(size)
-
-		//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
-
-		if !file.IsDir() {
-
-			c_width := "600"
-			i_width := 600
-
-			file_ext := GetExtNorm(file.Name())
-			orig_filename := GetFileName(file.Name())
-
-			is_preview_match, _ := regexp.MatchString("^(jpg|jpeg|png|gif)$", file_ext)
-			if !is_preview_match {
-				continue
-			}
-
-			hash_name := md5.Sum([]byte(orig_filename + modtime_human + size_human + c_width))
-			hex_name := hex.EncodeToString(hash_name[:])
-
-			if _, err := os.Stat(path.Join(homepath, ".httphere", "thumb", hex_name)); err == nil {
-				//fmt.Println("Is exists ", path.Join(homepath, ".httphere", "thumb", hex_name))
-				continue
-			}
-
-			go func() {
-
-				input, _ := os.Open(path.Join(path, file.Name()))
-				defer input.Close()
-
-				output, _ := os.Create(path.Join(homepath, ".httphere", "thumb", hex_name))
-				defer output.Close()
-
-				var src image.Image
-
-				// Decode the image (from PNG to image.Image):
-				if file_ext == "png" {
-					src, err = png.Decode(input)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				if file_ext == "jpg" {
-
-					// src, err = jpeg.Decode(input)
-					src, _, err = exiffix.Decode(input)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				if file_ext == "gif" {
-					src, err = gif.Decode(input)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
-				i_height := int(math.Round(float64(i_width) * ratio))
-
-				var dst *image.RGBA
-
-				if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
-					dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
-				} else {
-
-					err := os.Remove(path.Join(homepath, ".httphere", "thumb", hex_name))
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-
-					//fmt.Println("Too small for thumb make ", path.Join(path, file.Name()))
-					return
-				}
-
-				// Resize:
-				draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
-
-				if file_ext == "png" {
-					err = png.Encode(output, dst)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				if file_ext == "jpg" {
-					err = jpeg.Encode(output, dst, nil)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				if file_ext == "gif" {
-					err = gif.Encode(output, dst, nil)
-					if err != nil {
-						//log.Fatal(err)
-						panic(err)
-					}
-				}
-
-				output.Close()
-				input.Close()
-
-				src = nil
-				dst = nil
-
-				//fmt.Println("Make thumb for ", path.Join(path, file.Name()))
-
-				//fmt.Println("runtime.NumGoroutine=", runtime.NumGoroutine())
-
-			}()
-
-			//fmt.Println("Not wait for ", path.Join(path, file.Name()))
-
-		} else if file.IsDir() {
-
-			WalkAndMakeThumbnail(path.Join(path, file.Name()), deep+1)
-
-		}
-	}
-
-	return
-}
-*/
-
-func MutexUnLocked(m *sync.Mutex) bool {
-	state := reflect.ValueOf(m).Elem().FieldByName("state")
-	//fmt.Println("state=", state)
-	//return state.Int()&mutexLocked == mutexLocked
-	//return atomic.CompareAndSwapInt32(&m.state, 0, mutexLocked)
-	//return false
-	return state.Int() == 0
-}
-
 func PrintPrettify(prefix string, payload interface{}) {
 
 	s, _ := json.MarshalIndent(payload, "", "\t")
 	fmt.Println(prefix, "= ", string(s))
+}
+
+// /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ”
+var regexpAnsiColor = regexp.MustCompile("[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]")
+
+func StringClearColor(msg string) string {
+	return regexpAnsiColor.ReplaceAllString(msg, "")
 }

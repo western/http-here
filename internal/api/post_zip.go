@@ -61,7 +61,15 @@ func PostZip(c *fiber.Ctx) error {
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-	archive, err := os.Create(path.Join(conf.ConfigRoot, "temp", archive_name))
+	zip_full_path := path.Join(conf.ConfigRoot, "temp", archive_name)
+
+	if runtime.GOOS == "windows" {
+		zip_full_path = util.RotateSlash(zip_full_path)
+	}
+
+	model2.EventLogAdd(c, 200, "PostZip", "Temp file prepare "+zip_full_path)
+
+	archive, err := os.Create(zip_full_path)
 
 	if err != nil {
 
@@ -157,12 +165,7 @@ func PostZip(c *fiber.Ctx) error {
 	//return c.SendFile(path.Join(conf.ArgFold, u_path, "archive.zip"), false)
 	//return c.Download(path.Join(conf.ArgFold, u_path, "archive.zip"), "archive.zip");
 
-	zip_full_path := path.Join(conf.ConfigRoot, "temp", archive_name)
-	if runtime.GOOS == "windows" {
-		zip_full_path = util.RotateSlash(zip_full_path)
-	}
-
-	model2.EventLogAdd(c, 200, "PostZip", "Temp file create "+zip_full_path)
+	model2.EventLogAdd(c, 200, "PostZip", "Temp file created "+zip_full_path)
 
 	return c.JSON(fiber.Map{
 		"code": 200,

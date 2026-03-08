@@ -43,11 +43,15 @@ func PostFileTouch(c *fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
+	var (
+		regexpSpaceSymbols = regexp.MustCompile("\\s+")
+		//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
+	)
+
 	name := c.FormValue("name")
 
 	name = strings.ReplaceAll(name, "/", "")
-	re := regexp.MustCompile("\\s+")
-	name = re.ReplaceAllLiteralString(name, " ")
+	name = regexpSpaceSymbols.ReplaceAllLiteralString(name, " ")
 
 	name = util.CleanDirtyPath(name)
 
