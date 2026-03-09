@@ -142,7 +142,8 @@ func UserGetPrimaryId() uint64 {
 
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_user"), 1000)
 	if err != nil {
-		panic(err)
+		//fmt.Println("UserGetPrimaryId GetSequence err:", err.Error())
+		return 0
 	}
 	defer seq.Release()
 

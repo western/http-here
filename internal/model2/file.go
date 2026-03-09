@@ -126,7 +126,8 @@ func FileGetPrimaryId() uint64 {
 
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_file"), 1000)
 	if err != nil {
-		panic(err)
+		//fmt.Println("FileGetPrimaryId GetSequence err:", err.Error())
+		return 0
 	}
 	defer seq.Release()
 

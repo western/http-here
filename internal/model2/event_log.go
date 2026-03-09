@@ -44,7 +44,8 @@ func EventLogGetPrimaryId() uint64 {
 
 	seq, err := Dbse.Badger.GetSequence([]byte("seq_event_log"), 1000)
 	if err != nil {
-		panic(err)
+		//fmt.Println("EventLogGetPrimaryId GetSequence err:", err.Error())
+		return 0
 	}
 	defer seq.Release()
 
@@ -217,8 +218,10 @@ func EventLogDump() {
 			prefix := []byte("event_log")
 
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+
 				item := it.Item()
 				//k := item.Key()
+
 				err := item.Value(func(v []byte) error {
 
 					var el EventLog
