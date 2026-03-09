@@ -41,10 +41,7 @@ make build
 cp http-here ~/bin
 
 ```
-or
-```console
-go install github.com/western/http-here/cmd/http-here@v2.0.1
-```
+
 
 
 
