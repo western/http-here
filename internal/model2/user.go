@@ -323,9 +323,11 @@ func UserList() {
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
+
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
 			prefix := []byte("user_")
+
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
 				//k := item.Key()
@@ -387,9 +389,11 @@ func UserSelect(Filters []map[string]interface{}) []User {
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
+
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
 			prefix := []byte("user_")
+
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
 				//k := item.Key()
@@ -477,6 +481,15 @@ func UserClear() {
 		// -------------------------------------------------------------------------------------------------------------------------------------------
 
 		prefix = []byte("idx_user_login_")
+
+		err = Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("seq_user")
 
 		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {

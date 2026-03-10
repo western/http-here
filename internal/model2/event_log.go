@@ -175,7 +175,7 @@ func EventLogDumpTo(toPath string) {
 
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
-			prefix := []byte("event_log")
+			prefix := []byte("event_log_")
 
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
@@ -215,7 +215,7 @@ func EventLogDump() {
 
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
-			prefix := []byte("event_log")
+			prefix := []byte("event_log_")
 
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 
@@ -253,9 +253,18 @@ func EventLogClear() {
 
 	if Dbse.BadgerEnable {
 
-		prefix := []byte("event_log")
+		prefix := []byte("event_log_")
 
 		err := Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("seq_event_log")
+
+		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
 			panic(err)
 		}

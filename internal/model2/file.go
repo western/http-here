@@ -446,9 +446,11 @@ func FileList() {
 	if Dbse.BadgerEnable {
 
 		Dbse.Badger.View(func(txn *badger.Txn) error {
+
 			it := txn.NewIterator(badger.DefaultIteratorOptions)
 			defer it.Close()
 			prefix := []byte("file_")
+
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				item := it.Item()
 				//k := item.Key()
@@ -504,6 +506,15 @@ func FileClear() {
 		// -------------------------------------------------------------------------------------------------------------------------------------------
 
 		prefix = []byte("idx_md5_file_")
+
+		err = Dbse.Badger.DropPrefix(prefix)
+		if err != nil {
+			panic(err)
+		}
+
+		// -------------------------------------------------------------------------------------------------------------------------------------------
+
+		prefix = []byte("seq_file")
 
 		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
