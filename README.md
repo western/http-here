@@ -307,6 +307,10 @@ https://github.com/western/http-here/issues
 - [ ] prepare tui.editor repo
 - [x] REST restructure
 
+### 2.0.2
+- [x] clearing sequences on reset
+- [x] search without case sensitive
+
 ### 2.0.0
 - [x] database nonblock speedest engine
 - [x] database engine use only native golang builder (not need specific lib)
@@ -319,40 +323,6 @@ https://github.com/western/http-here/issues
 - [x] removed folder fix - `RemoveCacheDir for subfolders`
 - [x] save file name spaces
 
-### 1.14.3
-- [x] refresh spa
-
-refresh codemirror - add json highlight, disable dark, disable autocomplete;
-
-MakeFileModal: add json, sh exts; add md editor redirect
-- [x] codemirror bundle update cm6.bundle-20250710.min.js
-
-codemirror:
-- [x] disable autocomplete
-- [x] disable black theme
-- [x] add highlight JSON
-
-editors:
-- [x] open SH as CODE
-- [x] for new SH file - open CODE online editor
-- [x] for new JSON file - open CODE online editor
-- [x] for new MD file - open in MARKDOWN editor
-
-### 1.14.2
-- [x] refresh spa, spa app can run in two modes - default and extend
-
-### 1.14.0
-- [x] add --usedb param (database disabled by default)
-- [x] cache readdir and --cache-dir param for timeout
-- [x] server connections optimization
-- [x] add --share-only param
-- [x] remove jquery
-- [x] disable WalkAndTreeBuild2, remove bstreeview (rewrite to "clipboard style")
-- [x] add MARKDOWN editor (without SPA app)
-- [x] refresh SPA app - change upload api and checkbox reset
-- [x] rewrite code
-
-By default `cache-dir` timeout set to `30 seconds`. If you not set yours.
 
 
 
