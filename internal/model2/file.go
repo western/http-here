@@ -274,12 +274,6 @@ func FileSearchResult(s string) []FileSearchType {
 	resultPathFoundRegex := regexp.MustCompile(s)
 
 	FileSearchWalk := func(resultPath string, de os.DirEntry, err error) error {
-		/*
-			    if err != nil {
-					return err
-				}
-		*/
-		//fmt.Println("FileSearchWalk=", resultPath)
 
 		resultPathCut := strings.Replace(resultPath, conf.ArgFold, "", 1)
 		name := util.GetFileName(resultPathCut)
@@ -348,25 +342,9 @@ func FileFastSearchResult(s string) []FileSearchType {
 	var ret []FileSearchType
 	repl := regexp.MustCompile(`(?i)` + s)
 
-	resultPathFoundRegex := regexp.MustCompile(s)
+	resultPathFoundRegex := regexp.MustCompile(`(?i)` + s)
 
-	//walkFn := func(resultPath string, de fs.DirEntry, err error) error {
 	walkFn := func(resultPath string, de os.DirEntry, err error) error {
-
-		/*
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
-				return nil // returning the error stops iteration
-			}
-			if *pattern != "" {
-				if ok, err := filepath.Match(*pattern, d.Name()); !ok {
-					// invalid pattern (err != nil) or name does not match
-					return err
-				}
-			}
-			_, err = fmt.Println(path)
-			return err
-		*/
 
 		resultPathCut := strings.Replace(resultPath, conf.ArgFold, "", 1)
 		name := util.GetFileName(resultPathCut)
