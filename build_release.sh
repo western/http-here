@@ -4,7 +4,7 @@
 set -x
 
 
-rm http-here http-here.darwin.amd64.gz http-here.freebsd.amd64.gz http-here.gz http-here.zip
+rm http-here http-here.exe http-here.darwin.amd64.gz http-here.freebsd.amd64.gz http-here.gz http-here.zip
 
 
 GOOS=linux GOARCH=amd64 go build -o http-here -ldflags "-w -s" cmd/http-here/main.go
