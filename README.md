@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v2.0.2 https://github.com/western/http-here
+git clone --branch v2.0.3 https://github.com/western/http-here
 cd http-here
 make build
 
@@ -43,7 +43,7 @@ cp http-here ~/bin
 ```
 or
 ```console
-go install github.com/western/http-here/v2/cmd/http-here@v2.0.2
+go install github.com/western/http-here/v2/cmd/http-here@v2.0.3
 ```
 
 
@@ -57,7 +57,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v2.0.2/http-here.gz
+wget https://github.com/western/http-here/releases/download/v2.0.3/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,7 +66,7 @@ chmod +x http-here
 windows / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.0.2/http-here.zip
+https://github.com/western/http-here/releases/download/v2.0.3/http-here.zip
 
 # Unpack it
 # Open `cmd` and run
@@ -75,7 +75,7 @@ https://github.com/western/http-here/releases/download/v2.0.2/http-here.zip
 darwin / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.0.2/http-here.darwin.amd64.gz
+https://github.com/western/http-here/releases/download/v2.0.3/http-here.darwin.amd64.gz
 ```
 
 ## Run
