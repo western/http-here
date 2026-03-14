@@ -5,9 +5,10 @@ import (
 	"os"
 	//"path"
 	"path/filepath"
-	"strconv"
+	//"strconv"
 	//"time"
 	"encoding/json"
+	"golang.org/x/exp/slices"
 	"html/template"
 	"regexp"
 	"strings"
@@ -35,88 +36,8 @@ type File struct {
 }
 
 var (
-	generateMd5AllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+	allowMD5ExtsRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 )
-
-func FileFindByPath(FullPath string) (File, bool) {
-
-	if len(FullPath) == 0 {
-		panic("Yous should set full_path")
-	}
-
-	var file File
-
-	if Dbse.BadgerEnable {
-
-		Dbse.Badger.View(func(txn *badger.Txn) error {
-
-			it := txn.NewIterator(badger.DefaultIteratorOptions)
-			defer it.Close()
-			prefix := []byte("file_")
-
-			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-				item := it.Item()
-				//k := item.Key()
-				item.Value(func(v []byte) error {
-
-					var el File
-					err2 := json.Unmarshal(v, &el)
-					if err2 != nil {
-						fmt.Println("error:", err2)
-					}
-
-					if el.FullPath == FullPath {
-
-						//fmt.Printf("key=%s, value=%+v\n", k, el)
-						file = el
-					}
-
-					return nil
-				})
-			}
-			return nil
-		})
-
-		if file.ID == 0 {
-			return file, false
-		} else {
-			return file, true
-		}
-
-	}
-
-	return file, false
-}
-
-func FileFindByMD5(findMD5 string) (File, bool) {
-
-	if len(findMD5) == 0 {
-		panic("Yous should set findMD5")
-	}
-
-	var file_ret File
-
-	if Dbse.BadgerEnable {
-
-		bytesFound, isFound := BadgerGetOne("idx_md5_file_" + findMD5)
-		if isFound {
-
-			bytesFound2, isFound2 := BadgerGetOne(string(bytesFound))
-			if isFound2 {
-
-				err := json.Unmarshal(bytesFound2, &file_ret)
-				if err != nil {
-					fmt.Println("error:", err)
-				}
-
-				return file_ret, true
-			}
-		}
-
-	}
-
-	return file_ret, false
-}
 
 func FileGetPrimaryId() uint64 {
 
@@ -147,6 +68,115 @@ func FileGetPrimaryId() uint64 {
 	return num
 }
 
+func FileFindByPath(searchFullPath string) (File, bool) {
+
+	if len(searchFullPath) == 0 {
+		panic("Yous should set searchFullPath")
+	}
+
+	var returnFile File
+
+	if Dbse.BadgerEnable {
+
+		/*
+			Dbse.Badger.View(func(txn *badger.Txn) error {
+
+				it := txn.NewIterator(badger.DefaultIteratorOptions)
+				defer it.Close()
+				prefix := []byte("file_")
+
+				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+					item := it.Item()
+					//k := item.Key()
+					item.Value(func(v []byte) error {
+
+						var el File
+						err2 := json.Unmarshal(v, &el)
+						if err2 != nil {
+							fmt.Println("error:", err2)
+						}
+
+						if el.FullPath == FullPath {
+
+							//fmt.Printf("key=%s, value=%+v\n", k, el)
+							file = el
+						}
+
+						return nil
+					})
+				}
+				return nil
+			})
+
+			if file.ID == 0 {
+				return file, false
+			} else {
+				return file, true
+			}
+		*/
+
+		foundBytes, isFound := BadgerGetOne("idx_file_fullpath_" + searchFullPath)
+		if !isFound {
+
+			//EventLogAdd(nil, 500, "FileFindByPath", "File by path not found (1)")
+			return returnFile, false
+		}
+
+		file_key := string(foundBytes)
+
+		foundBytes2, isFound2 := BadgerGetOne(file_key)
+		if !isFound2 {
+
+			//EventLogAdd(nil, 500, "FileFindByPath", "File by path not found (2)")
+			return returnFile, false
+		}
+
+		err := json.Unmarshal(foundBytes2, &returnFile)
+		if err != nil {
+
+			//EventLogAdd(nil, 500, "FileFindByPath", "json.Unmarshal "+err.Error())
+			return returnFile, false
+		}
+
+		return returnFile, true
+
+	}
+
+	return returnFile, false
+}
+
+func FileFindByMD5(findMD5 string) (File, bool) {
+
+	if len(findMD5) == 0 {
+		panic("Yous should set findMD5")
+	}
+
+	var file_ret File
+
+	if Dbse.BadgerEnable {
+
+		bytesFound, isFound := BadgerGetOne("idx_file_md5_" + findMD5)
+		if isFound {
+
+			bytesFound2, isFound2 := BadgerGetOne(string(bytesFound))
+			if isFound2 {
+
+				err := json.Unmarshal(bytesFound2, &file_ret)
+				if err != nil {
+
+					EventLogAdd(nil, 500, "FileFindByMD5", "json.Unmarshal "+err.Error())
+				}
+
+				return file_ret, true
+			}
+		}
+
+	}
+
+	EventLogAdd(nil, 500, "FileFindByMD5", "File by MD5 not found")
+	return file_ret, false
+}
+
 func FileChkAsync() {
 
 }
@@ -159,8 +189,6 @@ func FileAdd(FullPath string) error {
 		if isFound {
 			return nil
 		}
-
-		file_id := FileGetPrimaryId()
 
 		name := util.GetFileName(FullPath)
 		ext := util.GetExtNorm(FullPath)
@@ -178,8 +206,7 @@ func FileAdd(FullPath string) error {
 
 		md5_hash := ""
 
-		//generateMd5AllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
-		is_match := generateMd5AllRegex.MatchString(ext)
+		is_match := allowMD5ExtsRegex.MatchString(ext)
 		if is_match {
 
 			md5_hash = util.GetMd5File(FullPath)
@@ -187,6 +214,11 @@ func FileAdd(FullPath string) error {
 		} else if size <= 20*1024*1024 {
 
 			md5_hash = util.GetMd5File(FullPath)
+		}
+
+		file_id := FileGetPrimaryId()
+		if file_id == 0 {
+			panic("FileAdd: file_id is zero")
 		}
 
 		el := File{
@@ -204,8 +236,7 @@ func FileAdd(FullPath string) error {
 		}
 		payload, _ := json.Marshal(el)
 
-		key := "file_"
-		key += strconv.FormatUint(file_id, 10)
+		key := "file_" + fmt.Sprintf("%020d", file_id)
 
 		// ------------------------------------------------------------------------------------------------------------------------
 
@@ -217,14 +248,14 @@ func FileAdd(FullPath string) error {
 			}
 
 			if len(el.FullPath) > 0 {
-				err := txn.Set([]byte("idx_fullpath_file_"+el.FullPath), []byte(key))
+				err := txn.Set([]byte("idx_file_fullpath_"+el.FullPath), []byte(key))
 				if err != nil {
 					panic(err)
 				}
 			}
 
 			if len(md5_hash) > 0 {
-				err := txn.Set([]byte("idx_md5_file_"+md5_hash), []byte(key))
+				err := txn.Set([]byte("idx_file_md5_"+md5_hash), []byte(key))
 				if err != nil {
 					panic(err)
 				}
@@ -439,7 +470,8 @@ func FileList() {
 					var el File
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						fmt.Println("error:", err2)
+						//fmt.Println("error:", err2)
+						EventLogAdd(nil, 500, "FileList", "json.Unmarshal "+err2.Error())
 					}
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
@@ -461,7 +493,106 @@ func FileList() {
 	}
 }
 
-func FileClear() {
+func FileSelect(Filters []map[string]interface{}) []File {
+
+	var ret []File
+
+	if Dbse.BadgerEnable {
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte("file_")
+
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				item := it.Item()
+				//k := item.Key()
+				err := item.Value(func(v []byte) error {
+
+					var el File
+					err2 := json.Unmarshal(v, &el)
+					if err2 != nil {
+						//fmt.Println("error:", err2)
+						EventLogAdd(nil, 500, "FileSelect", "json.Unmarshal "+err2.Error())
+					}
+
+					//fmt.Printf("key=%s, value=%+v\n", k, el)
+					var isExpected []bool
+
+					for _, f_val := range Filters {
+
+						//fmt.Println("")
+						//fmt.Println("item=", f_val)
+
+						for k2, v2 := range f_val {
+							//fmt.Println("k2=", k2, " v2=", v2)
+
+							/*
+							   type File struct {
+							   	ID  uint64 `json:"id"`
+							   	MD5 string `json:"md5"`
+
+							   	FullPath string `json:"full_path"`
+							   	Name     string `json:"name"`
+							   	EXT      string `json:"ext"`
+
+							   	Size      int64  `json:"size"`
+							   	SizeHuman string `json:"size_human"`
+
+							   	ModTime string `json:"mod_time"`
+							   }
+							*/
+
+							switch k2 {
+							case "ID":
+								if el.ID == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+							case "MD5":
+								if el.MD5 == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+							case "FullPath":
+								if el.FullPath == v2 {
+									isExpected = append(isExpected, true)
+								} else {
+									isExpected = append(isExpected, false)
+								}
+
+							}
+
+						}
+					}
+
+					//fmt.Println("isExpected=", isExpected)
+					//fmt.Println();
+
+					isPresentFalse := slices.Contains(isExpected, false)
+					if !isPresentFalse {
+						// false is absent
+						ret = append(ret, el)
+					}
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+
+	}
+
+	return ret
+}
+
+func FileTruncate() {
 
 	if Dbse.BadgerEnable {
 
@@ -474,7 +605,7 @@ func FileClear() {
 
 		// -------------------------------------------------------------------------------------------------------------------------------------------
 
-		prefix = []byte("idx_fullpath_file_")
+		prefix = []byte("idx_file_fullpath_")
 
 		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
@@ -483,7 +614,7 @@ func FileClear() {
 
 		// -------------------------------------------------------------------------------------------------------------------------------------------
 
-		prefix = []byte("idx_md5_file_")
+		prefix = []byte("idx_file_md5_")
 
 		err = Dbse.Badger.DropPrefix(prefix)
 		if err != nil {
@@ -498,6 +629,8 @@ func FileClear() {
 		if err != nil {
 			panic(err)
 		}
+
+		EventLogAdd(nil, 200, "FileTruncate", "File storage recreated")
 
 	}
 }

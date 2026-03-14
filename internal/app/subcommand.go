@@ -21,7 +21,7 @@ func cmdSubcommandUser() {
 
 	arg_generate := userCmd.Bool("generate", false, "Generate list of random accounts")
 	arg_list := userCmd.Bool("list", false, "Print all user accounts")
-	arg_clear := userCmd.Bool("clear", false, "Clear all user accounts")
+	arg_truncate := userCmd.Bool("truncate", false, "Recreate User storage with drop all users")
 
 	userCmd.Parse(os.Args[2:])
 
@@ -45,7 +45,12 @@ func cmdSubcommandUser() {
 			``,
 			`     --list                      Print all user accounts`,
 			``,
-			`     --clear                     Clear all user accounts`,
+			`     --truncate                  Recreate User storage with drop all users`,
+			``,
+			``,
+			`also:`,
+			`       ` + green_clr(`http-here usermod`) + ` --help `,
+			`       ` + green_clr(`http-here userdel`) + ` --help `,
 			``,
 			``,
 		}
@@ -80,9 +85,9 @@ func cmdSubcommandUser() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if *arg_clear {
+	if *arg_truncate {
 
-		model2.UserClear()
+		model2.UserTruncate()
 		os.Exit(0)
 	}
 
@@ -244,10 +249,11 @@ func cmdSubcommandLog() {
 	logCmd := flag.NewFlagSet("log", flag.ExitOnError)
 	arg_help := logCmd.Bool("help", false, "Show help")
 
-	arg_dumpto := logCmd.String("dumpto", "", "Dump to file")
+	arg_dumpto := logCmd.String("dumpto", "", "Filename for dump")
+	arg_jsonto := logCmd.String("jsonto", "", "Filename for json dump")
 	arg_dump := logCmd.Bool("dump", false, "Dump to stdout")
 
-	arg_clear := logCmd.Bool("clear", false, "Clear event log")
+	arg_truncate := logCmd.Bool("truncate", false, "Recreate Log storage with drop all records")
 
 	logCmd.Parse(os.Args[2:])
 
@@ -263,9 +269,10 @@ func cmdSubcommandLog() {
 			`options:`,
 			``,
 			`     --dumpto ` + white_clr(`[str]`) + `              Filename for dump`,
+			`     --jsonto ` + white_clr(`[str]`) + `              Filename for json dump`,
 			`     --dump                      Dump to stdout`,
 			``,
-			`     --clear                     Clear event log`,
+			`     --truncate                  Recreate Log storage with drop all records`,
 
 			``,
 			``,
@@ -283,6 +290,12 @@ func cmdSubcommandLog() {
 		os.Exit(0)
 	}
 
+	if len(*arg_jsonto) > 0 {
+
+		model2.EventLogJsonTo(*arg_jsonto)
+		os.Exit(0)
+	}
+
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	if *arg_dump {
@@ -293,9 +306,9 @@ func cmdSubcommandLog() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if *arg_clear {
+	if *arg_truncate {
 
-		model2.EventLogClear()
+		model2.EventLogTruncate()
 		os.Exit(0)
 	}
 
@@ -311,7 +324,7 @@ func cmdSubcommandFile() {
 	arg_help := fileCmd.Bool("help", false, "Show help")
 
 	arg_list := fileCmd.Bool("list", false, "Print all user accounts")
-	arg_clear := fileCmd.Bool("clear", false, "Clear all user accounts")
+	arg_truncate := fileCmd.Bool("truncate", false, "Recreate File storage with drop all records")
 
 	fileCmd.Parse(os.Args[2:])
 
@@ -328,7 +341,7 @@ func cmdSubcommandFile() {
 			``,
 			`     --list                      Print all database files`,
 			``,
-			`     --clear                     Clear all files`,
+			`     --truncate                  Recreate File storage with drop all records`,
 
 			``,
 			``,
@@ -348,9 +361,9 @@ func cmdSubcommandFile() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if *arg_clear {
+	if *arg_truncate {
 
-		model2.FileClear()
+		model2.FileTruncate()
 		os.Exit(0)
 	}
 

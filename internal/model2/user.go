@@ -31,6 +31,36 @@ type User struct {
 	Changed    string `json:"changed"`
 }
 
+func UserGetPrimaryId() uint64 {
+
+	if !Dbse.BadgerEnable {
+		return 0
+	}
+
+	seq, err := Dbse.Badger.GetSequence([]byte("seq_user"), 1000)
+	if err != nil {
+		//fmt.Println("UserGetPrimaryId GetSequence err:", err.Error())
+		return 0
+	}
+	defer seq.Release()
+
+	// uint64, err
+	num, err := seq.Next()
+	if err != nil {
+		panic(err)
+	}
+
+	if num == 0 {
+		num, err = seq.Next()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return num
+}
+
+/*
 func UserFindByLogin(arg_login string) (User, bool) {
 
 	if len(arg_login) == 0 {
@@ -80,6 +110,60 @@ func UserFindByLogin(arg_login string) (User, bool) {
 
 	return user, false
 }
+*/
+
+func UserFindByLogin(findLogin string) (User, bool) {
+
+	if len(findLogin) == 0 {
+		panic("Yous should set findLogin")
+	}
+
+	var returnUser User
+
+	if Dbse.BadgerEnable {
+		/*
+			filt := []map[string]interface{}{
+				{"Login": findLogin},
+			}
+			user_list := UserSelect(filt)
+
+			if len(user_list) == 0 {
+				return User{}, false
+			}
+
+			return user_list[0], true
+		*/
+
+		foundBytes, isFound := BadgerGetOne("idx_user_login_" + findLogin)
+		if isFound {
+
+			EventLogAdd(nil, 500, "UserFindByLogin", "User by login not found (1)")
+			return returnUser, false
+		}
+
+		user_key := string(foundBytes)
+
+		foundBytes2, isFound2 := BadgerGetOne(user_key)
+		if !isFound2 {
+
+			EventLogAdd(nil, 500, "UserFindByLogin", "User by login not found (2)")
+			return returnUser, false
+		}
+
+		err := json.Unmarshal(foundBytes2, &returnUser)
+		if err != nil {
+
+			EventLogAdd(nil, 500, "UserFindByLogin", "json.Unmarshal "+err.Error())
+			return returnUser, false
+		}
+
+		return returnUser, true
+
+	}
+
+	return returnUser, false
+
+}
 
 func UserUpdate(user User) error {
 
@@ -87,17 +171,19 @@ func UserUpdate(user User) error {
 		panic("Yous should set User")
 	}
 
-	c := FakeFiberCtx()
+	//c := FakeFiberCtx()
 
 	if Dbse.BadgerEnable {
 
 		var key string
 
 		if user.ID > 0 {
-			key = "user_" + strconv.FormatUint(user.ID, 10)
+			//key = "user_" + strconv.FormatUint(user.ID, 10)
+			key = "user_" + fmt.Sprintf("%020d", user.ID)
 		} else {
 			user_id := UserGetPrimaryId()
-			key = "user_" + strconv.FormatUint(user_id, 10)
+			//key = "user_" + strconv.FormatUint(user_id, 10)
+			key = "user_" + fmt.Sprintf("%020d", user_id)
 		}
 
 		if len(key) > 0 {
@@ -123,44 +209,15 @@ func UserUpdate(user User) error {
 			})
 
 			if err == nil {
-				EventLogAdd(c, 200, "UserSave", "User "+user.Login+" saved")
+				EventLogAdd(nil, 200, "UserSave", "User "+user.Login+" saved")
 			} else {
-				EventLogAdd(c, 500, "UserSave", "User "+user.Login+" save error: "+err.Error())
+				EventLogAdd(nil, 500, "UserSave", "User "+user.Login+" save error: "+err.Error())
 			}
 		}
 
 	}
 
 	return nil
-}
-
-func UserGetPrimaryId() uint64 {
-
-	if !Dbse.BadgerEnable {
-		return 0
-	}
-
-	seq, err := Dbse.Badger.GetSequence([]byte("seq_user"), 1000)
-	if err != nil {
-		//fmt.Println("UserGetPrimaryId GetSequence err:", err.Error())
-		return 0
-	}
-	defer seq.Release()
-
-	// uint64, err
-	num, err := seq.Next()
-	if err != nil {
-		panic(err)
-	}
-
-	if num == 0 {
-		num, err = seq.Next()
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return num
 }
 
 func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
@@ -203,18 +260,21 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 		}
 		payload, _ := json.Marshal(el)
 
-		key := "user_" + strconv.FormatUint(user_id, 10)
+		//key := "user_" + strconv.FormatUint(user_id, 10)
+		key := "user_" + fmt.Sprintf("%020d", user_id)
 
-		Dbse.Badger.Update(func(txn *badger.Txn) error {
+		err := Dbse.Badger.Update(func(txn *badger.Txn) error {
 
 			err := txn.Set([]byte(key), []byte(payload))
 			if err != nil {
-				panic(err)
+				//panic(err)
+				return err
 			}
 
 			err = txn.Set([]byte("idx_user_login_"+login), []byte(key))
 			if err != nil {
-				panic(err)
+				//panic(err)
+				return err
 			}
 
 			return nil
@@ -222,12 +282,18 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 
 		UserList()
 
+		if err == nil {
+			EventLogAdd(nil, 200, "UserAdd", "User "+el.Login+" created")
+		} else {
+			EventLogAdd(nil, 500, "UserAdd", "User "+el.Login+" create error: "+err.Error())
+		}
+
 	}
 }
 
 func UserDelByLogin(arg_login string) {
 
-	c := FakeFiberCtx()
+	//c := FakeFiberCtx()
 
 	if Dbse.BadgerEnable {
 
@@ -238,9 +304,9 @@ func UserDelByLogin(arg_login string) {
 
 			err := Dbse.Badger.DropPrefix(prefix)
 			if err == nil {
-				EventLogAdd(c, 200, "UserDelByLogin", "User "+arg_login+" deleted")
+				EventLogAdd(nil, 200, "UserDelByLogin", "User "+arg_login+" deleted")
 			} else {
-				EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" delete error: "+err.Error())
+				EventLogAdd(nil, 500, "UserDelByLogin", "User "+arg_login+" delete error: "+err.Error())
 			}
 
 			// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -249,12 +315,12 @@ func UserDelByLogin(arg_login string) {
 
 			err = Dbse.Badger.DropPrefix(prefix)
 			if err != nil {
-				EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" INDEX delete error: "+err.Error())
+				EventLogAdd(nil, 500, "UserDelByLogin", "User "+arg_login+" INDEX delete error: "+err.Error())
 			}
 
 		} else {
 
-			EventLogAdd(c, 500, "UserDelByLogin", "User "+arg_login+" INDEX not found")
+			EventLogAdd(nil, 500, "UserDelByLogin", "User "+arg_login+" INDEX not found")
 		}
 	}
 }
@@ -287,7 +353,8 @@ func UserGenerate() {
 			}
 			payload, _ := json.Marshal(el)
 
-			key := "user_" + strconv.FormatUint(user_id, 10)
+			//key := "user_" + strconv.FormatUint(user_id, 10)
+			key := "user_" + fmt.Sprintf("%020d", user_id)
 
 			Dbse.Badger.Update(func(txn *badger.Txn) error {
 
@@ -307,6 +374,8 @@ func UserGenerate() {
 		}
 
 		UserList()
+
+		EventLogAdd(nil, 200, "UserGenerate", "Users generated")
 
 	}
 
@@ -356,28 +425,6 @@ func UserList() {
 		})
 
 		fmt.Println(t.Render())
-
-		/*
-			Dbse.Badger.View(func(txn *badger.Txn) error {
-				it := txn.NewIterator(badger.DefaultIteratorOptions)
-				defer it.Close()
-				prefix := []byte("idx_user_login_")
-				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-					item := it.Item()
-					k := item.Key()
-					err := item.Value(func(v []byte) error {
-
-						fmt.Printf("key=%s, value=%s\n", k, v)
-
-						return nil
-					})
-					if err != nil {
-						return err
-					}
-				}
-				return nil
-			})
-		*/
 
 	}
 }
@@ -465,7 +512,7 @@ func UserSelect(Filters []map[string]interface{}) []User {
 	return ret
 }
 
-func UserClear() {
+func UserTruncate() {
 
 	if Dbse.BadgerEnable {
 
@@ -495,6 +542,8 @@ func UserClear() {
 		if err != nil {
 			panic(err)
 		}
+
+		EventLogAdd(nil, 200, "UserTruncate", "Users storage recreated")
 
 	}
 }

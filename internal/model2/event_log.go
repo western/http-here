@@ -42,27 +42,34 @@ func EventLogGetPrimaryId() uint64 {
 		return 0
 	}
 
-	seq, err := Dbse.Badger.GetSequence([]byte("seq_event_log"), 1000)
-	if err != nil {
-		//fmt.Println("EventLogGetPrimaryId GetSequence err:", err.Error())
-		return 0
-	}
-	defer seq.Release()
+	for i := range 100 {
+		_ = i
 
-	// uint64, err
-	num, err := seq.Next()
-	if err != nil {
-		panic(err)
-	}
-
-	if num == 0 {
-		num, err = seq.Next()
+		seq, err := Dbse.Badger.GetSequence([]byte("seq_event_log"), 1000)
 		if err != nil {
-			panic(err)
+			continue
+		}
+		defer seq.Release()
+
+		num, err := seq.Next()
+		if err != nil {
+			continue
+		}
+
+		if num == 0 {
+			num, err = seq.Next()
+			if err != nil {
+				continue
+			}
+		}
+
+		if num > 0 {
+
+			return num
 		}
 	}
 
-	return num
+	return 0
 }
 
 func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
@@ -80,8 +87,6 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 	_dt := time.Now().Format("2006-01-02 15:04:05.000")
 	pref += "[" + _dt + "] "
-
-	event_log_id := EventLogGetPrimaryId()
 
 	_ip := ""
 	if c != nil {
@@ -126,7 +131,12 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 		fmt.Println(pref)
 	}
 
+	event_log_id := uint64(0)
 	if Dbse.BadgerEnable && !arg_nolog {
+		event_log_id = EventLogGetPrimaryId()
+	}
+
+	if Dbse.BadgerEnable && !arg_nolog && event_log_id > 0 {
 
 		msg = util.StringClearColor(msg)
 
@@ -146,14 +156,15 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 		err := Dbse.Badger.Update(func(txn *badger.Txn) error {
 
-			key := "event_log_" + strconv.FormatUint(event_log_id, 10)
+			//key := "event_log_" + strconv.FormatUint(event_log_id, 10)
+			key := "event_log_" + fmt.Sprintf("%020d", event_log_id)
 
 			err := txn.Set([]byte(key), payload)
 
 			return err
 		})
 		if err != nil {
-			fmt.Println("EventLogAdd Dbse.Badger.Update err=", err)
+			fmt.Println("EventLogAdd Dbse.Badger.Update err=", err.Error())
 			panic(err)
 		}
 
@@ -185,7 +196,8 @@ func EventLogDumpTo(toPath string) {
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						fmt.Println("error:", err2)
+						//fmt.Println("error:", err2)
+						EventLogAdd(nil, 500, "EventLogDumpTo", "json.Unmarshal "+err2.Error())
 					}
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
@@ -203,6 +215,64 @@ func EventLogDumpTo(toPath string) {
 			}
 			return nil
 		})
+
+		EventLogAdd(nil, 200, "EventLogDumpTo", "EventLog saved to "+toPath)
+
+	}
+}
+
+func EventLogJsonTo(toPath string) {
+
+	if Dbse.BadgerEnable {
+
+		f, err := os.Create(toPath)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		var logs []EventLog
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte("event_log_")
+
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				item := it.Item()
+				//k := item.Key()
+				err := item.Value(func(v []byte) error {
+
+					var el EventLog
+					err2 := json.Unmarshal(v, &el)
+					if err2 != nil {
+						//fmt.Println("error:", err2)
+						EventLogAdd(nil, 500, "EventLogJsonTo", "json.Unmarshal "+err2.Error())
+					}
+
+					logs = append(logs, el)
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+
+		//payload, _ := json.Marshal(logs)
+		//f.WriteString(string(payload))
+
+		payload, err := json.MarshalIndent(logs, "", "    ")
+		if err != nil {
+			EventLogAdd(nil, 500, "EventLogJsonTo", "json.MarshalIndent "+err.Error())
+		}
+		//fmt.Println(string(b))
+		f.WriteString(string(payload))
+
+		EventLogAdd(nil, 200, "EventLogJsonTo", "EventLog saved to "+toPath)
 
 	}
 }
@@ -227,7 +297,8 @@ func EventLogDump() {
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						fmt.Println("error:", err2)
+						//fmt.Println("error:", err2)
+						EventLogAdd(nil, 500, "EventLogDump", "json.Unmarshal "+err2.Error())
 					}
 
 					//fmt.Printf("key=%s, value=%+v\n", k, el)
@@ -249,7 +320,7 @@ func EventLogDump() {
 	}
 }
 
-func EventLogClear() {
+func EventLogTruncate() {
 
 	if Dbse.BadgerEnable {
 
@@ -268,6 +339,8 @@ func EventLogClear() {
 		if err != nil {
 			panic(err)
 		}
+
+		EventLogAdd(nil, 200, "EventLogTruncate", "EventLog storage recreated")
 
 	}
 }

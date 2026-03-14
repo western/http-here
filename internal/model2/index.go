@@ -85,17 +85,15 @@ func BadgerGetOne(findKey string) ([]byte, bool) {
 				item := it.Item()
 				k := item.Key()
 
-				item.Value(func(v []byte) error {
+				if string(k) == findKey {
 
-					if string(k) == findKey {
+					item.Value(func(v []byte) error {
 
-						//fmt.Printf("found key=%s, value=%s\n", k, v)
 						ret = v
-						//copy(ret, v)
-					}
+						return nil
+					})
+				}
 
-					return nil
-				})
 			}
 			return nil
 		})
