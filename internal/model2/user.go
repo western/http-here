@@ -60,58 +60,6 @@ func UserGetPrimaryId() uint64 {
 	return num
 }
 
-/*
-func UserFindByLogin(arg_login string) (User, bool) {
-
-	if len(arg_login) == 0 {
-		panic("Yous should set login")
-	}
-
-	var user User
-
-	if Dbse.BadgerEnable {
-
-		Dbse.Badger.View(func(txn *badger.Txn) error {
-
-			it := txn.NewIterator(badger.DefaultIteratorOptions)
-			defer it.Close()
-			prefix := []byte("user_")
-
-			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-				item := it.Item()
-				//k := item.Key()
-				item.Value(func(v []byte) error {
-
-					var el User
-					err2 := json.Unmarshal(v, &el)
-					if err2 != nil {
-						fmt.Println("error:", err2)
-					}
-
-					if el.Login == arg_login {
-
-						//fmt.Printf("key=%s, value=%+v\n", k, el)
-						user = el
-					}
-
-					return nil
-				})
-			}
-			return nil
-		})
-
-		if user.ID == 0 {
-			return user, false
-		} else {
-			return user, true
-		}
-
-	}
-
-	return user, false
-}
-*/
-
 func UserFindByLogin(findLogin string) (User, bool) {
 
 	if len(findLogin) == 0 {
@@ -121,18 +69,6 @@ func UserFindByLogin(findLogin string) (User, bool) {
 	var returnUser User
 
 	if Dbse.BadgerEnable {
-		/*
-			filt := []map[string]interface{}{
-				{"Login": findLogin},
-			}
-			user_list := UserSelect(filt)
-
-			if len(user_list) == 0 {
-				return User{}, false
-			}
-
-			return user_list[0], true
-		*/
 
 		foundBytes, isFound := BadgerGetOne("idx_user_login_" + findLogin)
 		if isFound {
@@ -170,8 +106,6 @@ func UserUpdate(user User) error {
 	if user.ID == 0 {
 		panic("Yous should set User")
 	}
-
-	//c := FakeFiberCtx()
 
 	if Dbse.BadgerEnable {
 
@@ -293,8 +227,6 @@ func UserAdd(arg_login, arg_password, arg_label string, arg_disabled bool) {
 
 func UserDelByLogin(arg_login string) {
 
-	//c := FakeFiberCtx()
-
 	if Dbse.BadgerEnable {
 
 		foundBytes, isFound := BadgerGetOne("idx_user_login_" + arg_login)
@@ -376,6 +308,47 @@ func UserGenerate() {
 		UserList()
 
 		EventLogAdd(nil, 200, "UserGenerate", "Users generated")
+
+	}
+
+}
+
+func UserSetStatusAll(setEnabled bool) {
+
+	if Dbse.BadgerEnable {
+
+		Dbse.Badger.View(func(txn *badger.Txn) error {
+
+			it := txn.NewIterator(badger.DefaultIteratorOptions)
+			defer it.Close()
+			prefix := []byte("user_")
+
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				item := it.Item()
+				//k := item.Key()
+				err := item.Value(func(v []byte) error {
+
+					var el User
+					err2 := json.Unmarshal(v, &el)
+					if err2 != nil {
+						fmt.Println("error:", err2)
+					}
+
+					//fmt.Printf("key=%s, value=%+v\n", k, el)
+
+					el.Enabled = setEnabled
+					UserUpdate(el)
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+
+		UserList()
 
 	}
 

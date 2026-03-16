@@ -20,6 +20,8 @@ func cmdSubcommandUser() {
 	arg_disabled := userCmd.Bool("disabled", false, "Disabled for user account")
 
 	arg_generate := userCmd.Bool("generate", false, "Generate list of random accounts")
+	arg_disable_all := userCmd.Bool("disable-all", false, "Disable all User accounts")
+	arg_enable_all := userCmd.Bool("enable-all", false, "Enable all User accounts")
 	arg_list := userCmd.Bool("list", false, "Print all user accounts")
 	arg_truncate := userCmd.Bool("truncate", false, "Recreate User storage with drop all users")
 
@@ -42,6 +44,8 @@ func cmdSubcommandUser() {
 			`     --disabled                  Disabled for NEW USER account`,
 			``,
 			`     --generate                  Generate and save list of random accounts`,
+			`     --disable-all               Disable all User accounts`,
+			`     --enable-all                Enable all User accounts`,
 			``,
 			`     --list                      Print all user accounts`,
 			``,
@@ -72,6 +76,18 @@ func cmdSubcommandUser() {
 	if *arg_generate {
 
 		model2.UserGenerate()
+		os.Exit(0)
+	}
+
+	if *arg_disable_all {
+
+		model2.UserSetStatusAll(false)
+		os.Exit(0)
+	}
+
+	if *arg_enable_all {
+
+		model2.UserSetStatusAll(true)
 		os.Exit(0)
 	}
 

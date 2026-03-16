@@ -78,43 +78,6 @@ func FileFindByPath(searchFullPath string) (File, bool) {
 
 	if Dbse.BadgerEnable {
 
-		/*
-			Dbse.Badger.View(func(txn *badger.Txn) error {
-
-				it := txn.NewIterator(badger.DefaultIteratorOptions)
-				defer it.Close()
-				prefix := []byte("file_")
-
-				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-					item := it.Item()
-					//k := item.Key()
-					item.Value(func(v []byte) error {
-
-						var el File
-						err2 := json.Unmarshal(v, &el)
-						if err2 != nil {
-							fmt.Println("error:", err2)
-						}
-
-						if el.FullPath == FullPath {
-
-							//fmt.Printf("key=%s, value=%+v\n", k, el)
-							file = el
-						}
-
-						return nil
-					})
-				}
-				return nil
-			})
-
-			if file.ID == 0 {
-				return file, false
-			} else {
-				return file, true
-			}
-		*/
-
 		foundBytes, isFound := BadgerGetOne("idx_file_fullpath_" + searchFullPath)
 		if !isFound {
 
@@ -446,7 +409,6 @@ func FileFastSearchResult(s string) []FileSearchType {
 func FileList() {
 
 	t := table.NewWriter()
-	//t.SetOutputMirror(os.Stdout)
 	t.SetStyle(table.StyleLight)
 
 	// key=file_23, value={ID:23 MD5:b423c6288f1b9d97076ab406870eae01 FullPath:/tmp/folder1/spring/alexandru-tudorache-JdjdIjzJl94-unsplash.jpg Name:alexandru-tudorache-JdjdIjzJl94-unsplash EXT:jpg Size:1185441 SizeHuman:1.1 MiB ModTime:2025-08-03 20:25:35}
@@ -461,16 +423,16 @@ func FileList() {
 			prefix := []byte("file_")
 
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+
 				item := it.Item()
 				//k := item.Key()
-				err := item.Value(func(v []byte) error {
 
-					//fmt.Printf("key=%s, value=%s\n", k, v)
+				err := item.Value(func(v []byte) error {
 
 					var el File
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						//fmt.Println("error:", err2)
+
 						EventLogAdd(nil, 500, "FileList", "json.Unmarshal "+err2.Error())
 					}
 
@@ -506,14 +468,16 @@ func FileSelect(Filters []map[string]interface{}) []File {
 			prefix := []byte("file_")
 
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+
 				item := it.Item()
 				//k := item.Key()
+
 				err := item.Value(func(v []byte) error {
 
 					var el File
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						//fmt.Println("error:", err2)
+
 						EventLogAdd(nil, 500, "FileSelect", "json.Unmarshal "+err2.Error())
 					}
 
@@ -527,22 +491,6 @@ func FileSelect(Filters []map[string]interface{}) []File {
 
 						for k2, v2 := range f_val {
 							//fmt.Println("k2=", k2, " v2=", v2)
-
-							/*
-							   type File struct {
-							   	ID  uint64 `json:"id"`
-							   	MD5 string `json:"md5"`
-
-							   	FullPath string `json:"full_path"`
-							   	Name     string `json:"name"`
-							   	EXT      string `json:"ext"`
-
-							   	Size      int64  `json:"size"`
-							   	SizeHuman string `json:"size_human"`
-
-							   	ModTime string `json:"mod_time"`
-							   }
-							*/
 
 							switch k2 {
 							case "ID":

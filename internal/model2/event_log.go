@@ -196,7 +196,7 @@ func EventLogDumpTo(toPath string) {
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						//fmt.Println("error:", err2)
+
 						EventLogAdd(nil, 500, "EventLogDumpTo", "json.Unmarshal "+err2.Error())
 					}
 
@@ -247,7 +247,7 @@ func EventLogJsonTo(toPath string) {
 					var el EventLog
 					err2 := json.Unmarshal(v, &el)
 					if err2 != nil {
-						//fmt.Println("error:", err2)
+
 						EventLogAdd(nil, 500, "EventLogJsonTo", "json.Unmarshal "+err2.Error())
 					}
 
@@ -262,14 +262,11 @@ func EventLogJsonTo(toPath string) {
 			return nil
 		})
 
-		//payload, _ := json.Marshal(logs)
-		//f.WriteString(string(payload))
-
 		payload, err := json.MarshalIndent(logs, "", "    ")
 		if err != nil {
 			EventLogAdd(nil, 500, "EventLogJsonTo", "json.MarshalIndent "+err.Error())
 		}
-		//fmt.Println(string(b))
+
 		f.WriteString(string(payload))
 
 		EventLogAdd(nil, 200, "EventLogJsonTo", "EventLog saved to "+toPath)
