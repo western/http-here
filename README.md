@@ -195,13 +195,13 @@ Office files follow this flow: `file.doc => file.html, edit => file.doc`
     
 </p>
 
-Your server need package `openssl`. It will be use `openssl aes-256-gcm`
+It will be use `aes-256-gcm`
 
 ```console
 http-here --extend-mode --crypt /tmp
 ```
 
-Then, set your passcode to the form. The passcode store on the form between requests and you not need input it every time (if you clear it server will not use openssl).
+Then, set your passcode to the form. The passcode store on the form between requests and you not need input it every time.
 
 During the process of uploading, your files will be encrypt and their EXT change to `.crypt`
 
