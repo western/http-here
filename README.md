@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v2.0.3 https://github.com/western/http-here
+git clone --branch v2.1.0 https://github.com/western/http-here
 cd http-here
 make build
 
@@ -43,7 +43,7 @@ cp http-here ~/bin
 ```
 or
 ```console
-go install github.com/western/http-here/v2/cmd/http-here@v2.0.3
+go install github.com/western/http-here/v2/cmd/http-here@v2.1.0
 ```
 
 
@@ -57,7 +57,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v2.0.3/http-here.gz
+wget https://github.com/western/http-here/releases/download/v2.1.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,7 +66,7 @@ chmod +x http-here
 windows / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.0.3/http-here.zip
+https://github.com/western/http-here/releases/download/v2.1.0/http-here.zip
 
 # Unpack it
 # Open `cmd` and run
@@ -75,7 +75,7 @@ https://github.com/western/http-here/releases/download/v2.0.3/http-here.zip
 darwin / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.0.3/http-here.darwin.amd64.gz
+https://github.com/western/http-here/releases/download/v2.1.0/http-here.darwin.amd64.gz
 ```
 
 ## Run
@@ -195,7 +195,7 @@ Office files follow this flow: `file.doc => file.html, edit => file.doc`
     
 </p>
 
-Your server need package `openssl`. It will be use `openssl aes-256-cbc`
+Your server need package `openssl`. It will be use `openssl aes-256-gcm`
 
 ```console
 http-here --extend-mode --crypt /tmp
@@ -274,7 +274,6 @@ All previews generate during first view. One time.
 
 - CDN `cdn.jsdelivr.net` - Bootstrap and Bootstrap icons
 - `libreoffice` (not mandatory if you not use) - for doc thumbnails, for doc files online edit
-- `openssl` (not mandatory if you not use) - encrypt file support
 
 ## How to build without CDN
 
@@ -306,6 +305,11 @@ https://github.com/western/http-here/issues
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
 - [x] REST restructure
+
+### 2.1.0
+- [x] client js file encrypt option fix
+- [x] remove openssl dependence for file encrypt
+- [x] change `aes-256-cbc` to `aes-256-gcm`
 
 ### 2.0.2
 - [x] clearing sequences on reset
