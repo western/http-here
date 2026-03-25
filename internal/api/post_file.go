@@ -1,15 +1,16 @@
 package api
 
 import (
+	//"fmt"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"regexp"
 	"strings"
-	//"fmt"
 
 	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
@@ -58,6 +59,7 @@ func PostFile(c *fiber.Ctx) error {
 		//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
 	)
 
+	// file = type *multipart.FileHeader
 	for _, file := range files {
 
 		fileFilename, err := url.QueryUnescape(file.Filename)
@@ -83,14 +85,6 @@ func PostFile(c *fiber.Ctx) error {
 
 		// -------------------------------------------------------------------------------------------------------------------------
 
-		if fileInfo, err := os.Stat(path.Join(readTarget, filename)); err == nil {
-
-			if !fileInfo.IsDir() {
-
-				model2.EventLogAdd(c, 200, "PostFileUpload", "'"+path.Join(readTarget, filename)+"' already exists. It will be rewrite.")
-			}
-		}
-
 		// -------------------------------------------------------------------------------------------------------------------------
 
 		code := c.Cookies("code")
@@ -102,22 +96,32 @@ func PostFile(c *fiber.Ctx) error {
 
 		if arg_crypt && len(code) > 0 {
 
-			f, err := os.CreateTemp("", "httphere_crypt*")
+			// ------------------------------------------------------------------------------------------------------------------
+
+			fileOrig, err := os.CreateTemp("", "httphere_orig*")
 			if err != nil {
 				panic(err)
 			}
-			//fmt.Println("Crypt Temp file name:", f.Name())
-			defer os.Remove(f.Name())
+			defer os.Remove(fileOrig.Name())
 
 			readerFile, _ := file.Open()
-			_, err = io.Copy(f, readerFile)
+			_, err = io.Copy(fileOrig, readerFile)
 			if err != nil {
 				panic(err)
 			}
-			f.Close()
+			readerFile.Close()
 
-			isOk, err := util.EncryptFile(f.Name(), code)
-			if !isOk {
+			// ------------------------------------------------------------------------------------------------------------------
+
+			fileEncrypt, err := os.CreateTemp("", "httphere_encrypt*")
+			if err != nil {
+				panic(err)
+			}
+			defer os.Remove(fileEncrypt.Name())
+
+			// ------------------------------------------------------------------------------------------------------------------
+
+			if err := crypt.GCMEncryptFile([]byte(code), fileOrig.Name(), fileEncrypt.Name()); err != nil {
 
 				model2.EventLogAdd(c, 500, "PostFileUpload", "Error CryptFile "+err.Error())
 
@@ -127,38 +131,54 @@ func PostFile(c *fiber.Ctx) error {
 				}, "application/json")
 			}
 
-			out, err := os.Create(path.Join(readTarget, filename+".crypt"))
+			// ------------------------------------------------------------------------------------------------------------------
+
+			readTargetFilenameCrypt := path.Join(readTarget, filename+".crypt")
+
+			out, err := os.Create(readTargetFilenameCrypt)
 			if err != nil {
 
-				model2.EventLogAdd(c, 500, "PostFileUpload", "Error create "+path.Join(readTarget, filename+".crypt")+" "+err.Error())
+				model2.EventLogAdd(c, 500, "PostFileUpload", "Error create "+readTargetFilenameCrypt+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + path.Join(readTarget, filename+".crypt"),
+					"msg":  "Error create " + readTargetFilenameCrypt,
 				}, "application/json")
 			}
 			defer out.Close()
 
-			readerFile, _ = os.Open(f.Name())
+			readerFile, _ = os.Open(fileEncrypt.Name())
 
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
 				panic(err)
 			}
-			f.Close()
+			readerFile.Close()
 
-			model2.EventLogAdd(c, 200, "PostFileUpload", "Save encrypted '"+path.Join(readTarget, filename+".crypt")+"'")
+			model2.EventLogAdd(c, 200, "PostFileUpload", "Save encrypted '"+readTargetFilenameCrypt+"'")
 
 		} else {
 
-			out, err := os.Create(path.Join(readTarget, filename))
+			readTargetFilename := path.Join(readTarget, filename)
+
+			if fileInfo, err := os.Stat(readTargetFilename); err == nil {
+
+				if !fileInfo.IsDir() {
+
+					model2.EventLogAdd(c, 200, "PostFileUpload", "'"+readTargetFilename+"' already exists. It will be rewrite.")
+				}
+			}
+
+			// ----------------------------------------------------------------------------------------------------------------------
+
+			out, err := os.Create(readTargetFilename)
 			if err != nil {
 
-				model2.EventLogAdd(c, 500, "PostFileUpload", "Error create "+path.Join(readTarget, filename)+" "+err.Error())
+				model2.EventLogAdd(c, 500, "PostFileUpload", "Error create "+readTargetFilename+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error create " + path.Join(readTarget, filename),
+					"msg":  "Error create " + readTargetFilename,
 				}, "application/json")
 			}
 			defer out.Close()
@@ -167,15 +187,15 @@ func PostFile(c *fiber.Ctx) error {
 			_, err = io.Copy(out, readerFile)
 			if err != nil {
 
-				model2.EventLogAdd(c, 500, "PostFileUpload", "Error copy "+path.Join(readTarget, filename)+" "+err.Error())
+				model2.EventLogAdd(c, 500, "PostFileUpload", "Error copy "+readTargetFilename+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error copy " + path.Join(readTarget, filename),
+					"msg":  "Error copy " + readTargetFilename,
 				}, "application/json")
 			}
 
-			model2.EventLogAdd(c, 200, "PostFileUpload", "Save '"+path.Join(readTarget, filename)+"'")
+			model2.EventLogAdd(c, 200, "PostFileUpload", "Save '"+readTargetFilename+"'")
 
 		}
 

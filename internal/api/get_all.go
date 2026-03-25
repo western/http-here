@@ -4,7 +4,6 @@ import (
 	"errors"
 	//"fmt"
 	"html/template"
-	"io"
 	"net/url"
 	"os"
 	"path"
@@ -15,6 +14,7 @@ import (
 	"time"
 
 	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
@@ -254,43 +254,44 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 		code = q_code
 	}
 
-	is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
+	//fmt.Println("code cookie=", code)
+	//fmt.Println("arg_crypt=", arg_crypt)
 
 	// reset code for safety
 	if !arg_crypt && len(code) > 0 {
 
+		//fmt.Println("clear code cookie")
 		setCookie(c, "code", "")
 	}
 
+	is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
+
 	if (is_crypt_ext && arg_crypt && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
 
-		f, err := os.CreateTemp("", "httphere_decrypt*")
+		fileDecrupt, err := os.CreateTemp("", "httphere_decrypt*")
 		if err != nil {
 			panic(err)
 		}
-		defer os.Remove(f.Name())
+		defer os.Remove(fileDecrupt.Name())
 
-		readerFile, _ := os.Open(readTarget)
-		_, err = io.Copy(f, readerFile)
-		if err != nil {
-			panic(err)
-		}
-		f.Close()
+		// ------------------------------------------------------------------------------------------------------------------
 
-		isOk, err := util.DecryptFile(f.Name(), code)
-		if !isOk {
+		if err := crypt.GCMDecryptFile([]byte(code), readTarget, fileDecrupt.Name()); err != nil {
 
 			model2.EventLogAdd(c, 500, "CORE", "Error DecryptFile "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+readTarget)
+		// ------------------------------------------------------------------------------------------------------------------
 
 		fname := filepath.Base(c_path)
 		fname = strings.Replace(fname, ".crypt", "", 1)
+
 		c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
 
-		return c.SendFile(f.Name(), false)
+		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+readTarget+" as "+fname)
+
+		return c.SendFile(fileDecrupt.Name(), false)
 
 	} else {
 
@@ -326,6 +327,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_cache_dir := GetIntFromLocals(c, "arg_cache_dir", 30)
+	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -355,7 +357,7 @@ func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
 	cached, exists := dirCache[readTarget]
 	dirCacheMux.RUnlock()
 
-	if exists && !cached.isExpired(arg_cache_dir) {
+	if !arg_crypt && exists && !cached.isExpired(arg_cache_dir) {
 
 		rows_dir := cached.rows_dir
 		rows_file := cached.rows_file
