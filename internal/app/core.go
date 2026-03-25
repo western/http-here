@@ -12,15 +12,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	//"reflect"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/western/http-here/v2/internal/api"
-	"github.com/western/http-here/v2/internal/cert"
 	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
@@ -643,7 +642,7 @@ func Core() {
 
 	if *arg_tls && !crt_is_exists && !fiber.IsChild() {
 
-		cert.Run(path.Join(conf.ConfigRoot, "tls"), "server")
+		crypt.MakeRSAKeyPairAndSave(path.Join(conf.ConfigRoot, "tls"), "server")
 
 		fmt.Println(yellow_clr("  Generate new TLS keys"))
 		fmt.Println("")
@@ -692,7 +691,7 @@ func Core() {
 
 		fmt.Println("")
 
-		fmt.Println("  Serve folder: " + cian_clr(conf.ArgFold))
+		fmt.Println("  Serve folder: " + white_clr(conf.ArgFold))
 		fmt.Println("")
 		fmt.Println(cian_clr("  [ Control + C ] ") + "Break Server")
 		fmt.Println("")
