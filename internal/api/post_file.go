@@ -124,11 +124,11 @@ func PostFile(c *fiber.Ctx) error {
 
 			if err := crypt.GCMEncryptFile([]byte(code), fileOrig.Name(), fileEncrypt.Name()); err != nil {
 
-				model2.EventLogAdd(c, 500, "PostFileUpload", "Error CryptFile "+err.Error())
+				model2.EventLogAdd(c, 500, "PostFileUpload", "Error EncryptFile "+filename+" "+err.Error())
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error CryptFile",
+					"msg":  "Error EncryptFile",
 				}, "application/json")
 			}
 
