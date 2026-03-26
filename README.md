@@ -3,8 +3,8 @@
 Simple zero-configuration command line http server with lightweight interface to work with files
 
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/western/http-here?style=flat-square)](https://goreportcard.com/report/github.com/western/http-here)
-[![Go Reference](https://pkg.go.dev/badge/github.com/western/http-here.svg)](https://pkg.go.dev/github.com/western/http-here)
+[![Go Report Card](https://goreportcard.com/badge/github.com/western/http-here/v2?style=flat-square)](https://goreportcard.com/report/github.com/western/http-here/v2)
+[![Go Reference](https://pkg.go.dev/badge/github.com/western/http-here/v2.svg)](https://pkg.go.dev/github.com/western/http-here/v2)
 [![Releases](https://img.shields.io/github/release/western/http-here/all.svg?style=flat-square)](https://github.com/western/http-here/releases)
 [![LICENSE](https://img.shields.io/github/license/western/http-here.svg?style=flat-square)](https://github.com/western/http-here/blob/dev/LICENSE.txt)
 
