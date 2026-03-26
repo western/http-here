@@ -89,7 +89,8 @@ func PostFile(c *fiber.Ctx) error {
 
 		code := c.Cookies("code")
 
-		if arg_crypt && len(code) > 0 {
+		// reset code for safety
+		if !arg_crypt && len(code) > 0 {
 
 			setCookie(c, "code", "")
 		}

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"errors"
 	//"fmt"
+	"errors"
 	"html/template"
 	"net/url"
 	"os"
@@ -254,13 +254,9 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 		code = q_code
 	}
 
-	//fmt.Println("code cookie=", code)
-	//fmt.Println("arg_crypt=", arg_crypt)
-
 	// reset code for safety
 	if !arg_crypt && len(code) > 0 {
 
-		//fmt.Println("clear code cookie")
 		setCookie(c, "code", "")
 	}
 
