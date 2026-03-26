@@ -12,8 +12,6 @@ import (
 	"encoding/hex"
 )
 
-// ---------------------------------------------------------------------------------------------------------------------------
-
 // PKCS7Padding adds PKCS#7 padding to data
 func PKCS7Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
@@ -28,7 +26,10 @@ func PKCS7Unpadding(plantext []byte) []byte {
 	return plantext[:(length - unpadding)]
 }
 
-func CBCEncryptFile(key []byte, inputFile, outputFile string) error {
+func CBCEncryptFile(password []byte, inputFile, outputFile string) error {
+
+	key := deriveKey(password, nil)
+
 	plaintext, err := os.ReadFile(inputFile)
 	if err != nil {
 		return fmt.Errorf("reading input file: %w", err)
@@ -67,7 +68,10 @@ func CBCEncryptFile(key []byte, inputFile, outputFile string) error {
 	return err
 }
 
-func CBCDecryptFile(key []byte, inputFile, outputFile string) error {
+func CBCDecryptFile(password []byte, inputFile, outputFile string) error {
+
+	key := deriveKey(password, nil)
+
 	ciphertextWithIV, err := os.ReadFile(inputFile)
 	if err != nil {
 		return fmt.Errorf("reading input file: %w", err)
@@ -108,12 +112,22 @@ func CBCDecryptFile(key []byte, inputFile, outputFile string) error {
 
 // (See implementation details for PKCS7Padding and PKCS7UnPadding in referenced docs)
 
-func CBCEncryptHexFile(inputFile, outputFile string, key []byte) error {
+func CBCEncryptHexFile(password []byte, inputFile, outputFile string) error {
+
+	key := deriveKey(password, nil)
+
 	// 1. Read input file
-	plaintext, _ := os.ReadFile(inputFile)
+	plaintext, err := os.ReadFile(inputFile)
+	if err != nil {
+		return fmt.Errorf("reading input file: %w", err)
+	}
 
 	// 2. Pad data, create AES block, generate random IV
-	block, _ := aes.NewCipher(key)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return fmt.Errorf("creating AES cipher: %w", err)
+	}
+
 	padded := PKCS7Padding(plaintext, aes.BlockSize)
 	ciphertext := make([]byte, aes.BlockSize+len(padded))
 	iv := ciphertext[:aes.BlockSize]
@@ -127,10 +141,20 @@ func CBCEncryptHexFile(inputFile, outputFile string, key []byte) error {
 	return os.WriteFile(outputFile, []byte(hex.EncodeToString(ciphertext)), 0644)
 }
 
-func CBCDecryptHexFile(inputFile, outputFile string, key []byte) error {
+func CBCDecryptHexFile(password []byte, inputFile, outputFile string) error {
+
+	key := deriveKey(password, nil)
+
 	// 1. Read and decode hex
-	encoded, _ := os.ReadFile(inputFile)
-	ciphertext, _ := hex.DecodeString(string(encoded))
+	encoded, err := os.ReadFile(inputFile)
+	if err != nil {
+		return fmt.Errorf("reading input file: %w", err)
+	}
+
+	ciphertext, err := hex.DecodeString(string(encoded))
+	if err != nil {
+		return fmt.Errorf("hex.DecodeString: %w", err)
+	}
 
 	// 2. Extract IV and decrypt
 	block, _ := aes.NewCipher(key)
