@@ -17,12 +17,18 @@ const (
 	keyLength             = 32
 )
 
-var hashFunc = sha256.New
-var salt = []byte("salt")
+func deriveKey(password, salt []byte) []byte {
+	// http://www.ietf.org/rfc/rfc2898.txt
+	if salt == nil {
+		salt = make([]byte, 8)
+		// rand.Read(salt)
+	}
+	return pbkdf2.Key(password, salt, defaultIterationCount, keyLength, sha256.New)
+}
 
 func GCMEncryptFile(password []byte, inputFile, outputFile string) error {
 
-	key := pbkdf2.Key(password, salt, defaultIterationCount, keyLength, hashFunc)
+	key := deriveKey(password, nil)
 
 	plaintext, err := os.ReadFile(inputFile)
 	if err != nil {
@@ -59,7 +65,7 @@ func GCMEncryptFile(password []byte, inputFile, outputFile string) error {
 
 func GCMDecryptFile(password []byte, inputFile, outputFile string) error {
 
-	key := pbkdf2.Key(password, salt, defaultIterationCount, keyLength, hashFunc)
+	key := deriveKey(password, nil)
 
 	data, err := os.ReadFile(inputFile)
 	if err != nil {

@@ -31,12 +31,12 @@ func PKCS7Unpadding(plantext []byte) []byte {
 func CBCEncryptFile(key []byte, inputFile, outputFile string) error {
 	plaintext, err := os.ReadFile(inputFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("reading input file: %w", err)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating AES cipher: %w", err)
 	}
 
 	// Pad the plaintext
@@ -70,12 +70,12 @@ func CBCEncryptFile(key []byte, inputFile, outputFile string) error {
 func CBCDecryptFile(key []byte, inputFile, outputFile string) error {
 	ciphertextWithIV, err := os.ReadFile(inputFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("reading input file: %w", err)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating AES cipher: %w", err)
 	}
 
 	// The IV is the first block size bytes of the ciphertext
