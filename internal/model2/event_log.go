@@ -131,14 +131,18 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 		fmt.Println(pref)
 	}
 
-	event_log_id := uint64(0)
-	if Dbse.BadgerEnable && !arg_nolog {
-		event_log_id = EventLogGetPrimaryId()
+	// ----------------------------------------------------------------------------
+
+	if Dbse.LogToEnable {
+
+		pref1 := util.StringClearColor(pref)
+
+		Dbse.LogTo.WriteString(pref1 + "\n")
 	}
 
-	if Dbse.BadgerEnable && !arg_nolog && event_log_id > 0 {
+	if Dbse.JsonToEnable {
 
-		msg = util.StringClearColor(msg)
+		msg1 := util.StringClearColor(msg)
 
 		el := EventLog{
 			ProcId: os.Getpid(),
@@ -150,7 +154,40 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 			Code: status,
 
 			Tag: tag,
-			Msg: msg,
+			Msg: msg1,
+		}
+
+		payload, err := json.MarshalIndent(el, "", "    ")
+		if err != nil {
+			panic(err)
+		}
+
+		Dbse.JsonTo.WriteString(string(payload) + ",\n")
+
+	}
+
+	// ----------------------------------------------------------------------------
+
+	event_log_id := uint64(0)
+	if Dbse.BadgerEnable && !arg_nolog {
+		event_log_id = EventLogGetPrimaryId()
+	}
+
+	if Dbse.BadgerEnable && !arg_nolog && event_log_id > 0 {
+
+		msg1 := util.StringClearColor(msg)
+
+		el := EventLog{
+			ProcId: os.Getpid(),
+			DT:     _dt,
+
+			IP:    _ip,
+			Login: _user,
+
+			Code: status,
+
+			Tag: tag,
+			Msg: msg1,
 		}
 		payload, _ := json.Marshal(el)
 

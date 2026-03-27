@@ -80,6 +80,9 @@ func Core() {
 	arg_usedb := flag.Bool("usedb", false, "Database enable")
 	arg_cache_dir := flag.Int("cache-dir", 30, "Cache timeout for readdir, seconds")
 
+	arg_logto := flag.String("logto", "", "Filename for log")
+	arg_jsonto := flag.String("jsonto", "", "Filename for json log")
+
 	flag.Parse()
 
 	if *arg_tls_debug {
@@ -135,6 +138,10 @@ func Core() {
 			`     --cache-dir ` + white_clr(`[int]`) + `         Cache timeout for readdir, seconds [30]`,
 			``,
 			``,
+			`     --logto ` + white_clr(`[str]`) + `             Filename for log`,
+			`     --jsonto ` + white_clr(`[str]`) + `            Filename for json log`,
+			``,
+			``,
 			`examples:`,
 			``,
 			`     The safest run`,
@@ -156,6 +163,16 @@ func Core() {
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_logto) > 0 {
+
+		model2.LogtoOpen(*arg_logto)
+	}
+
+	if len(*arg_jsonto) > 0 {
+
+		model2.JsontoOpen(*arg_jsonto)
+	}
 
 	if *arg_usedb && *arg_prefork {
 

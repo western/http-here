@@ -15,6 +15,14 @@ import (
 type DBSE struct {
 	BadgerEnable bool
 	Badger       *badger.DB
+
+	LogToEnable bool
+	LogToPath   string
+	LogTo       *os.File
+
+	JsonToEnable bool
+	JsonToPath   string
+	JsonTo       *os.File
 }
 
 var Dbse DBSE
@@ -27,10 +35,46 @@ func Open() error {
 		panic(err)
 	}
 
-	Dbse = DBSE{
-		BadgerEnable: true,
-		Badger:       db1,
+	/*
+		Dbse = DBSE{
+			BadgerEnable: true,
+			Badger:       db1,
+		}
+	*/
+	Dbse.BadgerEnable = true
+	Dbse.Badger = db1
+
+	return nil
+}
+
+func LogtoOpen(fileName string) error {
+
+	fh, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+		return err
 	}
+
+	Dbse.LogToEnable = true
+	Dbse.LogToPath = fileName
+	Dbse.LogTo = fh
+
+	return nil
+}
+
+func JsontoOpen(fileName string) error {
+
+	fh, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+		return err
+	}
+
+	Dbse.JsonToEnable = true
+	Dbse.JsonToPath = fileName
+	Dbse.JsonTo = fh
+
+	//Dbse.JsonTo.WriteString("[\n")
 
 	return nil
 }
