@@ -16,7 +16,7 @@ Simple zero-configuration command line http server with lightweight interface to
 > In extended mode you can doing more
 
 <p align="center">
-    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top6.png?raw=true" />
+    <img src="https://github.com/western/http-here/blob/dev/doc/screen-top8.png?raw=true" />
 </p>
 
 ## Mobile screen
