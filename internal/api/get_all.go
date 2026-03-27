@@ -274,8 +274,15 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
 		if err := crypt.GCMDecryptFile([]byte(code), readTarget, fileDecrupt.Name()); err != nil {
 
+			file_ext := util.GetExtNorm(readTarget)
+			originalFileName := util.GetFileName(readTarget)
+			filename := originalFileName + "." + file_ext
+
 			model2.EventLogAdd(c, 500, "CORE", "Error DecryptFile "+readTarget+" "+err.Error())
-			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+			return c.Status(fiber.StatusInternalServerError).Render("view/error", fiber.Map{
+				"Title":   "500",
+				"Message": "Error DecryptFile " + filename,
+			}, "view/layout/error")
 		}
 
 		// ------------------------------------------------------------------------------------------------------------------

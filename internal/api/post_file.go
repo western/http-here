@@ -128,7 +128,7 @@ func PostFile(c *fiber.Ctx) error {
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"code": 500,
-					"msg":  "Error EncryptFile",
+					"msg":  "Error EncryptFile " + filename,
 				}, "application/json")
 			}
 
