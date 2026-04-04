@@ -13,8 +13,9 @@ import (
 	"regexp"
 	"runtime"
 	//"strconv"
+	"context"
 	"strings"
-	//"syscall"
+	"syscall"
 	"time"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -318,7 +319,8 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 	} else {
 
-		_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		//_, err := exec.Command("bash", "-c", "libreoffice --help").Output()
+		_, err := exec.LookPath("libreoffice")
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "ServeOfficeFile", "Error libreoffice not found "+err.Error())
@@ -332,16 +334,16 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	var FI os.FileInfo
+	var HexNameInfo os.FileInfo
 
-	if FI, err = os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err != nil {
+	if HexNameInfo, err = os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err != nil {
 
 		//panic("Stat error " + path.Join(conf.ConfigRoot, "thumb", hex_name) + " " + err.Error())
 	}
 
-	if FI != nil {
+	if HexNameInfo != nil {
 
-		if FI.Size() == 0 {
+		if HexNameInfo.Size() == 0 {
 
 			if err = os.Remove(path.Join(conf.ConfigRoot, "thumb", hex_name)); err != nil {
 				panic("Problem of remove zero file " + path.Join(conf.ConfigRoot, "thumb", hex_name) + " " + err.Error())
@@ -358,9 +360,11 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 	// --------------------------------------------------------------------------------------------------------------------------------
 
 	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
+	arg_fold_path := path.Join(conf.ArgFold, c_path)
 
 	if runtime.GOOS == "windows" {
 		filepath_tmp = util.RotateSlash(filepath_tmp)
+		arg_fold_path = util.RotateSlash(arg_fold_path)
 	}
 
 	var readerFile *os.File
@@ -372,25 +376,72 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 		if runtime.GOOS == "windows" {
 
-			arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
-
 			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to png --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
 		} else {
 
-			cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+path.Join(conf.ArgFold, c_path)+"\"")
-			cmd.Dir = conf.ArgFold
-			//out, _ := cmd.Output()
-			//fmt.Println("out=", out)
+			/*
+				cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
 
-			stderr, _ := cmd.StderrPipe()
+				cmdReader, _ := cmd.StderrPipe()
+				//cmd.Stdout = cmd.Stderr   // combine ERR + OUT
+				if err := cmd.Start(); err != nil {
+					panic(err)
+				}
+
+				scanner := bufio.NewScanner(cmdReader)
+				for scanner.Scan() {
+					fmt.Println("libreoffice:", scanner.Text())
+				}
+			*/
+
+			ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, "bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
+			cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+			cmdReader, _ := cmd.StderrPipe()
+			//cmd.Stdout = cmd.Stderr   // combine ERR + OUT
 			if err := cmd.Start(); err != nil {
 				panic(err)
 			}
 
-			scanner := bufio.NewScanner(stderr)
-			for scanner.Scan() {
-				fmt.Println("libreoffice:", scanner.Text())
+			scanner1 := bufio.NewScanner(cmdReader)
+			for scanner1.Scan() {
+				fmt.Println("libreoffice:", scanner1.Text())
+			}
+
+			done := make(chan error, 1)
+			go func() {
+				done <- cmd.Wait()
+			}()
+
+			select {
+			case err := <-done:
+				// Command finished on its own
+				if err != nil {
+					//fmt.Printf("Command finished with error: %v\n", err)
+				} else {
+					//fmt.Println("Command finished successfully")
+				}
+
+			case <-ctx.Done():
+				// Context was canceled or timed out
+				//fmt.Println("Context done, killing process group...")
+				// Get the process group ID (pgid) and kill the entire group using a negative PID
+				pgid, err := syscall.Getpgid(cmd.Process.Pid)
+				if err == nil {
+					// Use -pgid to kill the process group. SIGKILL (9) is forceful.
+					if err := syscall.Kill(-pgid, syscall.SIGKILL); err != nil {
+						//fmt.Printf("Failed to kill process group: %v\n", err)
+					}
+				} else {
+					//fmt.Printf("Failed to get pgid: %v\n", err)
+				}
+				// Wait again to reap the process and avoid zombies
+				<-done
+				//fmt.Printf("Command terminated: %v\n", ctx.Err())
 			}
 
 		}
@@ -398,14 +449,15 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 		readerFile, read_err = os.Open(path.Join(filepath_tmp, orig_filename+".png"))
 		if read_err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeOfficeFile", "REPEAT Error libreoffice, open file "+read_err.Error())
+			//model2.EventLogAdd(c, 500, "ServeOfficeFile", "REPEAT Error libreoffice, open file "+read_err.Error())
 
 			time.Sleep(2 * time.Second)
 		}
 
 		if read_err_cnt > 5 {
 
-			model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, open file "+read_err.Error())
+			//model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, open file "+read_err.Error())
+			model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, png file absent")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
