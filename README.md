@@ -306,6 +306,10 @@ https://github.com/western/http-here/issues
 - [ ] prepare tui.editor repo
 - [x] REST restructure
 
+### 2.2.0
+- [x] new `--logto` and `--jsonto` flags
+- [x] thumb: new effective doc thumbnailer
+
 ### 2.1.0
 - [x] client js file encrypt option fix
 - [x] remove openssl dependence for file encrypt
