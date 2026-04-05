@@ -55,4 +55,6 @@ run:
 build:
 	go build -o http-here -ldflags "-w -s" cmd/http-here/main.go
 
+clear:
+	rm http-here http-here.exe http-here.darwin.amd64.gz http-here.freebsd.amd64.gz http-here.gz http-here.zip
 
