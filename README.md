@@ -288,6 +288,10 @@ make without_cdn_build
 
 [western/http-here/refs/heads/dev/internal/docs/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/western/http-here/refs/heads/dev/internal/docs/openapi.yaml)
 
+## DATABASE
+
+[what about database](DATABASE.md)
+
 ## You can ask any question or suggest something
 
 https://github.com/western/http-here/issues
