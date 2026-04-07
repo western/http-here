@@ -4,6 +4,8 @@
 - `User table` for save specific person login/password
 - `Log table` for save information
 
+Database is disabled by default. So, you should run app with `--usedb` arg.
+
 ## Help information
 
 ```code
