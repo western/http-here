@@ -71,7 +71,7 @@ func UserFindByLogin(findLogin string) (User, bool) {
 	if Dbse.BadgerEnable {
 
 		foundBytes, isFound := BadgerGetOne("idx_user_login_" + findLogin)
-		if isFound {
+		if !isFound {
 
 			EventLogAdd(nil, 500, "UserFindByLogin", "User by login not found (1)")
 			return returnUser, false
