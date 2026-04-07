@@ -5,7 +5,7 @@ import (
 	"path"
 )
 
-const Version = "v2.2.0"
+const Version = "v2.2.1"
 
 const FilesCountMax = 200
 const FieldSizeMax = 14 * 1024 * 1024 * 1024
