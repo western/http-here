@@ -106,11 +106,11 @@ func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
 
 	_user := ""
 	if c != nil && c.Locals("username") != nil {
-		_user = green_clr(c.Locals("username").(string))
+		_user = c.Locals("username").(string)
 	}
 
 	if len(_user) > 0 {
-		pref += "[" + _user + "] "
+		pref += "[" + green_clr(_user) + "] "
 	} else {
 		pref += "[] "
 	}
