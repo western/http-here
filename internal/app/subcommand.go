@@ -166,7 +166,7 @@ func cmdSubcommandUserMod() {
 
 	if !isFound {
 
-		fmt.Println(`User "` + *arg_login + `" nof found`)
+		//fmt.Println(`User "` + *arg_login + `" nof found`)
 		os.Exit(0)
 
 	} else {
