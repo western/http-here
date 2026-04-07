@@ -22,25 +22,25 @@ http-here log --help
 
 ## Users (some examples)
 
-### Generate list of persistent users
+Generate list of persistent users
 
 ```code
 http-here user --generate
 ```
 
-### Print all users
+Print all users
 
 ```code
 http-here user --list
 ```
 
-### Modify (disable) one user
+Modify (disable) one user
 
 ```code
 http-here usermod --login XXXXXXX --disable
 ```
 
-### Delete one user
+Delete one user
 
 ```code
 http-here userdel --login XXXXXXX
@@ -50,7 +50,7 @@ http-here userdel --login XXXXXXX
 
 ## Log (some examples)
 
-### Print all log data to stdout
+Print all log data to stdout
 
 ```code
 http-here log --dump
