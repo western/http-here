@@ -28,6 +28,18 @@ Generate list of persistent users
 http-here user --generate
 ```
 
+Add new user
+
+```code
+
+# add user with login (password will be generate as random)
+http-here user --login vasya3000
+
+# add user with login and password
+http-here user --login vasya3001 --password pass3001
+
+```
+
 Print all users
 
 ```code
