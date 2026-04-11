@@ -448,7 +448,7 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 		if read_err_cnt > 5 {
 
 			//model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, open file "+read_err.Error())
-			model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, png file absent")
+			model2.EventLogAdd(c, 500, "ServeOfficeFile", "SEVERAL Errors libreoffice, png file "+orig_filename+" absent")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,

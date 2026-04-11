@@ -17,7 +17,7 @@ func MakeLibreofficeThumbnail(filepath_tmp, arg_fold_path string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "bash", "-c", "libreoffice --headless --norestore --nologo --convert-to png --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
+	cmd := exec.CommandContext(ctx, "bash", "-c", `libreoffice --headless --norestore --nologo --convert-to png --outdir "`+filepath_tmp+`" "`+arg_fold_path+`"`)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	cmdReader, _ := cmd.StderrPipe()
