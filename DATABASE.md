@@ -22,13 +22,7 @@ http-here log --help
 
 ## Users (some examples)
 
-Generate list of persistent users
-
-```code
-http-here user --generate
-```
-
-Add new user
+Add new specific user
 
 ```code
 
@@ -38,6 +32,12 @@ http-here user --login vasya3000
 # add user with login and password
 http-here user --login vasya3001 --password pass3001
 
+```
+
+Or automatic generate and save list of random accounts
+
+```code
+http-here user --generate
 ```
 
 Print all users
