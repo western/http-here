@@ -46,10 +46,16 @@ Print all users
 http-here user --list
 ```
 
-Modify (disable) one user
+Modify
 
 ```code
+
+# disable one user
 http-here usermod --login XXXXXXX --disable
+
+# change password
+http-here usermod --login XXXXXXX --password TTTTTTTTT
+
 ```
 
 Delete one user
