@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	//"sync"
+	"context"
 	"time"
 )
 
@@ -84,7 +85,7 @@ func PrettyByteSize(b int64) string {
 	return fmt.Sprintf("%.1fYiB", bf)
 }
 
-func RunAnyCommandUnderWin(c string) error {
+func RunAnyCommandUnderWin(longCmdString string) error {
 
 	homepath, err := os.UserHomeDir()
 	if err != nil {
@@ -108,27 +109,57 @@ func RunAnyCommandUnderWin(c string) error {
 		return err
 	}
 
-	myf.WriteString("@echo off\r\n")
+	//myf.WriteString("@echo off\r\n")
 	myf.WriteString("chcp 65001\r\n")
 
-	myf.WriteString(c)
+	myf.WriteString(longCmdString)
 	myf.WriteString("\r\n")
 	myf.Close()
 
-	cmd := exec.Command(cmd_filename)
+	// ----------------------------------------------------------------------------------------------------------------------------------
 
-	stderr, _ := cmd.StderrPipe()
+	/*
+		cmd := exec.Command(cmd_filename)
+
+		stderr, _ := cmd.StderrPipe()
+		if err := cmd.Start(); err != nil {
+			fmt.Println("RunAnyCommandUnderWin 1:", err)
+		}
+
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println("RunAnyCommandUnderWin 2:", scanner.Text())
+		}
+	*/
+
+	// ----------------------------------------------------------------------------------------------------------------------------------
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "cmd", "/C", cmd_filename)
+
+	// 3. Pipe Stdout to read output in real-time
+	//stdout, _ := cmd.StdoutPipe()
+
+	stdout, _ := cmd.StderrPipe()
+	//cmd.Stdout = cmd.Stderr   // combine ERR + OUT
+
 	if err := cmd.Start(); err != nil {
-
-		fmt.Println("RunAnyCommandUnderWin 1:", err)
-		//panic(err)
+		panic(err)
 	}
-	//fmt.Println("stderr:", stderr)
 
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		fmt.Println("RunAnyCommandUnderWin 2:", scanner.Text())
-		//panic("xxx")
+	// 4. Read output line-by-line while the command runs
+	scanner := bufio.NewScanner(stdout)
+	go func() {
+		for scanner.Scan() {
+			//fmt.Println("RunAnyCommandUnderWin output:", scanner.Text())
+		}
+	}()
+
+	// 5. Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		//fmt.Println("RunAnyCommandUnderWin finished with error:", err)
 	}
 
 	return nil
