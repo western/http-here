@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	//"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -54,6 +54,7 @@ func Core() {
 
 	arg_help := flag.Bool("help", false, "Show help")
 
+	arg_host := flag.String("host", "", "Listen host")
 	arg_port := flag.Int("port", 8000, "Port to use")
 	arg_tls := flag.Bool("tls", false, "Start HTTPS")
 	arg_tls_debug := flag.Bool("tls-debug", false, "Start HTTPS with verbosity")
@@ -106,6 +107,7 @@ func Core() {
 			``,
 			`options:`,
 			``,
+			`     --host ` + white_clr(`[str]`) + `              Listen host [all interfaces]`,
 			`     --port ` + white_clr(`[int]`) + `              Port to use [8000]`,
 			`     --tls                     Start HTTPS`,
 			``,
@@ -676,34 +678,46 @@ func Core() {
 			fmt.Println("  Server port " + cian_clr(strconv.Itoa(*arg_port)))
 		}
 
-		fmt.Println("")
-		ifaces, err := net.Interfaces()
-		if err != nil {
-			fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
-			return
-		}
-		for _, i := range ifaces {
-			addrs, err := i.Addrs()
+		if len(*arg_host) > 0 {
+
+			if *arg_tls {
+				fmt.Println("     https://" + *arg_host + ":" + cian_clr(strconv.Itoa(*arg_port)))
+			} else {
+				fmt.Println("     http://" + *arg_host + ":" + cian_clr(strconv.Itoa(*arg_port)))
+			}
+
+		} else {
+
+			fmt.Println("")
+			ifaces, err := net.Interfaces()
 			if err != nil {
 				fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
-				continue
+				return
 			}
-			for _, a := range addrs {
-				switch v := a.(type) {
+			for _, i := range ifaces {
+				addrs, err := i.Addrs()
+				if err != nil {
+					fmt.Print(fmt.Errorf("localAddresses: %+v\n", err.Error()))
+					continue
+				}
+				for _, a := range addrs {
+					switch v := a.(type) {
 
-				case *net.IPNet:
+					case *net.IPNet:
 
-					if v.IP.To4() != nil {
+						if v.IP.To4() != nil {
 
-						if *arg_tls {
-							fmt.Println("     https://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
-						} else {
-							fmt.Println("     http://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
+							if *arg_tls {
+								fmt.Println("     https://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
+							} else {
+								fmt.Println("     http://" + v.IP.String() + ":" + cian_clr(strconv.Itoa(*arg_port)))
+							}
 						}
 					}
-				}
 
+				}
 			}
+
 		}
 
 		fmt.Println("")
@@ -716,11 +730,19 @@ func Core() {
 
 	if *arg_tls {
 
-		log.Fatal(app.ListenTLS(":"+strconv.Itoa(*arg_port), crt_filename, key_filename))
+		err := app.ListenTLS(*arg_host+":"+strconv.Itoa(*arg_port), crt_filename, key_filename)
+		if err != nil {
+			fmt.Print(fmt.Errorf("app.ListenTLS: %+v\n", err.Error()))
+			return
+		}
 
 	} else {
 
-		log.Fatal(app.Listen(":" + strconv.Itoa(*arg_port)))
+		err := app.Listen(*arg_host + ":" + strconv.Itoa(*arg_port))
+		if err != nil {
+			fmt.Print(fmt.Errorf("app.Listen: %+v\n", err.Error()))
+			return
+		}
 	}
 
 }
