@@ -3,7 +3,7 @@ package util
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
+	//"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -18,6 +18,8 @@ import (
 	//"sync"
 	"context"
 	"time"
+
+	"github.com/western/http-here/v2/internal/conf"
 )
 
 func init() {
@@ -87,18 +89,22 @@ func PrettyByteSize(b int64) string {
 
 func RunAnyCommandUnderWin(longCmdString string) error {
 
-	homepath, err := os.UserHomeDir()
-	if err != nil {
-		return errors.New("homepath detect error")
-	}
-
-	filepath_tmp := path.Join(homepath, ".httphere", "temp")
-
-	if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
-		if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
-			return err
+	/*
+		homepath, err := os.UserHomeDir()
+		if err != nil {
+			return errors.New("homepath detect error")
 		}
-	}
+
+		filepath_tmp := path.Join(homepath, ".httphere", "temp")
+
+		if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
+			if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
+				return err
+			}
+		}
+	*/
+
+	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
 	pid := strconv.Itoa(os.Getpid())
 	cmd_filename := path.Join(filepath_tmp, "run"+pid+".cmd")
