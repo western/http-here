@@ -89,21 +89,6 @@ func PrettyByteSize(b int64) string {
 
 func RunAnyCommandUnderWin(longCmdString string) error {
 
-	/*
-		homepath, err := os.UserHomeDir()
-		if err != nil {
-			return errors.New("homepath detect error")
-		}
-
-		filepath_tmp := path.Join(homepath, ".httphere", "temp")
-
-		if _, err := os.Stat(path.Join(homepath, ".httphere", "temp")); err != nil {
-			if err := os.MkdirAll(path.Join(homepath, ".httphere", "temp"), os.ModePerm); err != nil {
-				return err
-			}
-		}
-	*/
-
 	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
 	pid := strconv.Itoa(os.Getpid())
@@ -124,28 +109,11 @@ func RunAnyCommandUnderWin(longCmdString string) error {
 
 	// ----------------------------------------------------------------------------------------------------------------------------------
 
-	/*
-		cmd := exec.Command(cmd_filename)
-
-		stderr, _ := cmd.StderrPipe()
-		if err := cmd.Start(); err != nil {
-			fmt.Println("RunAnyCommandUnderWin 1:", err)
-		}
-
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			fmt.Println("RunAnyCommandUnderWin 2:", scanner.Text())
-		}
-	*/
-
-	// ----------------------------------------------------------------------------------------------------------------------------------
-
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "cmd", "/C", cmd_filename)
 
-	// 3. Pipe Stdout to read output in real-time
 	//stdout, _ := cmd.StdoutPipe()
 
 	stdout, _ := cmd.StderrPipe()
@@ -155,7 +123,6 @@ func RunAnyCommandUnderWin(longCmdString string) error {
 		panic(err)
 	}
 
-	// 4. Read output line-by-line while the command runs
 	scanner := bufio.NewScanner(stdout)
 	go func() {
 		for scanner.Scan() {
@@ -163,7 +130,6 @@ func RunAnyCommandUnderWin(longCmdString string) error {
 		}
 	}()
 
-	// 5. Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
 		//fmt.Println("RunAnyCommandUnderWin finished with error:", err)
 	}
