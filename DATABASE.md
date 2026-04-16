@@ -1,8 +1,9 @@
 # http-here database
 
 ## Goals
-- `User table` for save specific person login/password
-- `Log table` for save information
+- [`User table`](#users-some-examples) for save specific person login/password
+- [`Log table`](#log-some-examples)
+- `File table`
 
 Database is disabled by default. So, you should run app with `--usedb` arg.
 
@@ -73,4 +74,9 @@ Print all log data to stdout
 ```code
 http-here log --dump
 ```
+
+
+## File table
+
+For old versions of `http-here` it was place for store info about files and use it for `search` or `image thumbnails`.
 
