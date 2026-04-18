@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v2.2.1 https://github.com/western/http-here
+git clone --branch v2.3.0 https://github.com/western/http-here
 cd http-here
 make build
 
@@ -43,7 +43,7 @@ cp http-here ~/bin
 ```
 or
 ```console
-go install github.com/western/http-here/v2/cmd/http-here@v2.2.1
+go install github.com/western/http-here/v2/cmd/http-here@v2.3.0
 ```
 
 
@@ -57,7 +57,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v2.2.1/http-here.gz
+wget https://github.com/western/http-here/releases/download/v2.3.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,7 +66,7 @@ chmod +x http-here
 windows / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.2.1/http-here.zip
+https://github.com/western/http-here/releases/download/v2.3.0/http-here.zip
 
 # Unpack it
 # Open `cmd` and run
@@ -75,7 +75,7 @@ https://github.com/western/http-here/releases/download/v2.2.1/http-here.zip
 darwin / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.2.1/http-here.darwin.amd64.gz
+https://github.com/western/http-here/releases/download/v2.3.0/http-here.darwin.amd64.gz
 ```
 
 ## Run
@@ -309,6 +309,11 @@ https://github.com/western/http-here/issues
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
 - [x] REST restructure
+
+### 2.3.0
+- [x] new flag `--host`
+- [x] reorganize thumbnail functions
+- [x] change RunAnyCommandUnderWin code
 
 ### 2.2.0
 - [x] new `--logto` and `--jsonto` flags
