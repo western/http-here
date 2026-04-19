@@ -354,10 +354,10 @@ func cmdSubcommandLog() {
 
 func cmdSubcommandFile() {
 
-	fileCmd := flag.NewFlagSet("user", flag.ExitOnError)
+	fileCmd := flag.NewFlagSet("file", flag.ExitOnError)
 	arg_help := fileCmd.Bool("help", false, "Show help")
 
-	arg_list := fileCmd.Bool("list", false, "Print all user accounts")
+	arg_list := fileCmd.Bool("list", false, "Print all database files")
 	arg_truncate := fileCmd.Bool("truncate", false, "Recreate File storage with drop all records")
 
 	fileCmd.Parse(os.Args[2:])
@@ -398,6 +398,83 @@ func cmdSubcommandFile() {
 	if *arg_truncate {
 
 		model2.FileTruncate()
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	os.Exit(0)
+
+}
+
+func cmdSubcommandDatabase() {
+
+	databaseCmd := flag.NewFlagSet("database", flag.ExitOnError)
+	arg_help := databaseCmd.Bool("help", false, "Show help")
+
+	arg_dumpto := databaseCmd.String("dumpto", "", "Filename for dump")
+
+	arg_restore := databaseCmd.String("restore", "", "Filename for restore")
+
+	arg_destroy := databaseCmd.Bool("destroy", false, "Destroy database")
+
+	databaseCmd.Parse(os.Args[2:])
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_help {
+
+		inf := []string{
+			``,
+			``,
+			`usage: ` + green_clr(`http-here database`) + ` [options] `,
+			``,
+			`options:`,
+			``,
+			`     --dumpto ` + white_clr(`[str]`) + `              Filename for dump`,
+			``,
+			``,
+			`     --restore ` + white_clr(`[str]`) + `              Filename for restore`,
+			``,
+			``,
+			`     --destroy                  Destroy database`,
+			``,
+			``,
+		}
+
+		fmt.Println(strings.Join(inf[:], "\n"))
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_dumpto) > 0 {
+
+		model2.BadgerDumpTo(*arg_dumpto)
+		os.Exit(0)
+	}
+
+	/*
+		if len(*arg_jsonto) > 0 {
+
+			model2.BadgerJsonTo(*arg_jsonto)
+			os.Exit(0)
+		}
+	*/
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if len(*arg_restore) > 0 {
+
+		model2.BadgerRestoreFrom(*arg_restore)
+		os.Exit(0)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	if *arg_destroy {
+
+		model2.BadgerDestroy()
 		os.Exit(0)
 	}
 
