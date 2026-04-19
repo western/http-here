@@ -9,7 +9,7 @@ import (
 
 	badger "github.com/dgraph-io/badger/v4"
 	"github.com/gofiber/fiber/v2"
-	"github.com/valyala/fasthttp"
+	//"github.com/valyala/fasthttp"
 )
 
 type DBSE struct {
@@ -35,12 +35,6 @@ func Open() error {
 		panic(err)
 	}
 
-	/*
-		Dbse = DBSE{
-			BadgerEnable: true,
-			Badger:       db1,
-		}
-	*/
 	Dbse.BadgerEnable = true
 	Dbse.Badger = db1
 
@@ -150,12 +144,61 @@ func BadgerGetOne(findKey string) ([]byte, bool) {
 	return ret, false
 }
 
-func FakeFiberCtx() *fiber.Ctx {
-	app := fiber.New()
-	fctx := &fasthttp.RequestCtx{}
-	c := app.AcquireCtx(fctx)
+func BadgerDumpTo(toFile string) {
 
-	return c
+	if Dbse.BadgerEnable {
+
+		var err error
+		var srcfd *os.File
+
+		srcfd, err = os.OpenFile(toFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer srcfd.Close()
+
+		_, err = Dbse.Badger.Backup(srcfd, 0)
+		if err != nil {
+			panic(err)
+		}
+
+		EventLogAdd(nil, 200, "BadgerDumpTo", "Database dumped to "+toFile)
+	}
+}
+
+func BadgerRestoreFrom(fromFile string) {
+
+	if Dbse.BadgerEnable {
+
+		var err error
+		var srcfd *os.File
+
+		srcfd, err = os.Open(fromFile)
+		if err != nil {
+			panic(err)
+		}
+		defer srcfd.Close()
+
+		err = Dbse.Badger.Load(srcfd, 16)
+		if err != nil {
+			panic(err)
+		}
+
+		EventLogAdd(nil, 200, "BadgerRestoreFrom", "Database restored from "+fromFile)
+	}
+}
+
+func BadgerDestroy() {
+
+	if Dbse.BadgerEnable {
+
+		err := Dbse.Badger.DropAll()
+		if err != nil {
+			panic(err)
+		}
+
+		EventLogAdd(nil, 200, "BadgerDestroy", "Database destroyed")
+	}
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
