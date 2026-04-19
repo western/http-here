@@ -434,10 +434,10 @@ func cmdSubcommandDatabase() {
 			`     --dumpto ` + white_clr(`[str]`) + `              Filename for dump`,
 			``,
 			``,
-			`     --restore ` + white_clr(`[str]`) + `              Filename for restore`,
+			`     --restore ` + white_clr(`[str]`) + `             Filename for restore`,
 			``,
 			``,
-			`     --destroy                  Destroy database`,
+			`     --destroy                   Destroy database`,
 			``,
 			``,
 		}
