@@ -20,6 +20,6 @@ GOOS=darwin GOARCH=amd64 go build -o http-here -ldflags "-w -s" cmd/http-here/ma
 gzip -S .darwin.amd64.gz -9 http-here
 
 
-GOOS=freebsd GOARCH=amd64 go build -o http-here -ldflags "-w -s" cmd/http-here/main.go
-gzip -S .freebsd.amd64.gz -9 http-here
+#GOOS=freebsd GOARCH=amd64 go build -o http-here -ldflags "-w -s" cmd/http-here/main.go
+#gzip -S .freebsd.amd64.gz -9 http-here
 
