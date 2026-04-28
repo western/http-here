@@ -78,5 +78,5 @@ http-here log --dump
 
 ## File table
 
-For old versions of `http-here` it was place for store info about files and use it for `search` or `image thumbnails`.
+For old versions of `http-here` it was a place to store meta about files and use it for `search` or `image thumbnails`.
 
