@@ -1,8 +1,8 @@
 # http-here database
 
 ## Goals
-- [`User table`](#users-some-examples) for save specific person login/password
-- [`Log table`](#log-some-examples)
+- [`User table`](#users-some-examples) for persistent users login/password
+- [`Log table`](#log-some-examples) store event info in one place
 - `File table`
 
 Database is disabled by default. So, you should run app with `--usedb` arg.
