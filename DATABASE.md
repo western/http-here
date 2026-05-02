@@ -5,7 +5,10 @@
 - [`Log table`](#log-some-examples) store event info in one place
 - `File table`
 
-Database is disabled by default. So, you should run app with `--usedb` arg.
+> [!CAUTION]
+> Database is disabled by default
+
+So, you should run app with `--usedb` arg.
 
 ## Help information
 
