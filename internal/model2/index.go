@@ -9,7 +9,6 @@ import (
 
 	badger "github.com/dgraph-io/badger/v4"
 	"github.com/gofiber/fiber/v2"
-	//"github.com/valyala/fasthttp"
 )
 
 type DBSE struct {
@@ -31,7 +30,7 @@ func Open() error {
 
 	db1, err := ConnectToBadger()
 	if err != nil {
-		fmt.Println("ConnectToBadger err=", err)
+		fmt.Println("Open err1=", err)
 		panic(err)
 	}
 
@@ -87,14 +86,27 @@ func ConnectToBadger() (*badger.DB, error) {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	opts := badger.DefaultOptions(dbPath).
-		WithLoggingLevel(badger.ERROR)
+	opts := badger.DefaultOptions(dbPath)
+
+	// one of DEBUG, INFO, WARNING or ERROR levels
+	// The default value of LoggingLevel is INFO
+
+	//opts = opts.WithLoggingLevel(badger.INFO)
+	opts = opts.WithLoggingLevel(badger.ERROR)
 
 	//db, err := badger.Open(badger.DefaultOptions(dbPath))
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
 	}
+
+	// SERVICE
+	/*
+		err = db.RunValueLogGC(0.5)
+		if err != nil {
+			fmt.Println("db.RunValueLogGC err=", err)
+		}
+	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
