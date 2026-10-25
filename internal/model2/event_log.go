@@ -15,6 +15,7 @@ import (
 	badger "github.com/dgraph-io/badger/v4"
 	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/basicauth"
 )
 
 var (
@@ -105,8 +106,10 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 	}
 
 	_user := ""
-	if c != nil && c.Locals("username") != nil {
-		_user = c.Locals("username").(string)
+	//if c != nil && c.Locals("username") != nil {
+	if c != nil {
+		//_user = c.Locals("username").(string)
+		_user = basicauth.UsernameFromContext(c)
 	}
 
 	if len(_user) > 0 {

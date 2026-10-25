@@ -1,7 +1,9 @@
 package app
 
 import (
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -487,7 +489,9 @@ func Core() {
 			login := "login" + strconv.Itoa(i) + util.RandStringRunes(2)
 			password := util.RandStringRunes(16)
 
-			password_list[login] = password
+			sum := sha256.Sum256([]byte(password))
+
+			password_list[login] = hex.EncodeToString(sum[:])
 
 			fmt.Println("         " + login + "    " + password)
 		}
@@ -532,7 +536,9 @@ func Core() {
 		var password_list = map[string]string{}
 		for _, el := range user_list {
 
-			password_list[el.Login] = el.Password
+			sum := sha256.Sum256([]byte(el.Password))
+
+			password_list[el.Login] = hex.EncodeToString(sum[:])
 
 			t.AppendRows([]table.Row{
 				{el.ID, el.Login, el.Password, el.Label},
