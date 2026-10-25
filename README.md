@@ -308,7 +308,7 @@ https://github.com/western/http-here/issues
 - [x] prepare frontend REACT repo (repo already exist, but only local)
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
-- [x] REST restructure
+- [ ] remove SPA
 
 ### 2.3.0
 - [x] new flag `--host`
