@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"crypto/sha256"
+	"encoding/hex"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -43,4 +44,12 @@ func WriteToFile(fileName string, writeBytes []byte) {
 	}
 	f.Close()
 
+}
+
+// generate password HASH for BASIC auth
+func GenerateHashPassword(pass string) string {
+
+	sum := sha256.Sum256([]byte(pass))
+
+	return hex.EncodeToString(sum[:])
 }

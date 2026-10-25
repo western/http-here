@@ -1,9 +1,7 @@
 package app
 
 import (
-	"crypto/sha256"
 	"embed"
-	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -411,6 +409,7 @@ func Core() {
 		c.Locals("arg_nolog", *arg_nolog)
 		c.Locals("arg_usedb", *arg_usedb)
 		c.Locals("arg_cache_dir", *arg_cache_dir)
+		c.Locals("arg_csrf_disable", *arg_csrf_disable)
 
 		return c.Next()
 	})
@@ -442,7 +441,7 @@ func Core() {
 
 			ErrorHandler: func(c fiber.Ctx, err error) error {
 
-				model2.EventLogAdd(c, 403, "CSRF_ERR", path.Join(conf.ArgFold, c.Path()))
+				model2.EventLogAdd(c, 403, "CSRF_ERR", c.Path())
 
 				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 					"code": 403,
@@ -489,9 +488,7 @@ func Core() {
 			login := "login" + strconv.Itoa(i) + util.RandStringRunes(2)
 			password := util.RandStringRunes(16)
 
-			sum := sha256.Sum256([]byte(password))
-
-			password_list[login] = hex.EncodeToString(sum[:])
+			password_list[login] = crypt.GenerateHashPassword(password)
 
 			fmt.Println("         " + login + "    " + password)
 		}
@@ -536,9 +533,7 @@ func Core() {
 		var password_list = map[string]string{}
 		for _, el := range user_list {
 
-			sum := sha256.Sum256([]byte(el.Password))
-
-			password_list[el.Login] = hex.EncodeToString(sum[:])
+			password_list[el.Login] = crypt.GenerateHashPassword(el.Password)
 
 			t.AppendRows([]table.Row{
 				{el.ID, el.Login, el.Password, el.Label},
