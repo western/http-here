@@ -15,7 +15,7 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 	isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")
 )
 
-func GetFileConvert(c *fiber.Ctx) error {
+func GetFileConvert(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -79,7 +79,7 @@ func GetFileConvert(c *fiber.Ctx) error {
 	}, "application/json")
 }
 
-func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
+func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 
 	orig_filename := util.GetFileName(c_path)
 
@@ -175,7 +175,7 @@ func convertOfficeToHTML(c *fiber.Ctx, c_path string) error {
 
 }
 
-func slurpFile(c *fiber.Ctx, c_path string) error {
+func slurpFile(c fiber.Ctx, c_path string) error {
 
 	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 

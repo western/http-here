@@ -4,17 +4,16 @@ import (
 	"net/url"
 	"os"
 	"path"
-	_ "path/filepath"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func PostDelete(c *fiber.Ctx) error {
+func PostDelete(c fiber.Ctx) error {
 
 	referer := c.Get("Referer")
 

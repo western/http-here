@@ -14,10 +14,10 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func PostFile(c *fiber.Ctx) error {
+func PostFile(c fiber.Ctx) error {
 
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 

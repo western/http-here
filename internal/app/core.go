@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	//"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -24,11 +23,13 @@ import (
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/fatih/color"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/basicauth"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/favicon"
-	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/extractors"
+	"github.com/gofiber/fiber/v3/middleware/basicauth"
+	"github.com/gofiber/fiber/v3/middleware/compress"
+	"github.com/gofiber/fiber/v3/middleware/csrf"
+	"github.com/gofiber/fiber/v3/middleware/favicon"
+	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/gofiber/template/html/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -63,6 +64,7 @@ func Core() {
 	arg_password := flag.String("password", "", "Password for user basic auth")
 	arg_basic := flag.Bool("basic", false, "Set basic auth and generate several accounts every time")
 	arg_basic2 := flag.Bool("basic2", false, "Set basic auth and use database accounts")
+	arg_csrf_disable := flag.Bool("csrf-disable", false, "Disable CSRF check")
 
 	arg_upload_disable := flag.Bool("upload-disable", false, "Disable upload API and form controller")
 	arg_folder_make_disable := flag.Bool("folder-make-disable", false, "Disable make folder API and form controller")
@@ -117,6 +119,7 @@ func Core() {
 			``,
 			`     --basic                   Set basic auth and generate several accounts every time`,
 			`     --basic2                  Set basic auth and use database accounts`,
+			`     --csrf-disable            Disable CSRF check`,
 			``,
 			``,
 			`     --index-disable           Disable current folder read`,
@@ -367,11 +370,11 @@ func Core() {
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
 
 	config := fiber.Config{
-		Prefork:               *arg_prefork,
-		DisableStartupMessage: true,
-		ServerHeader:          "",
-		Views:                 engine,
-		BodyLimit:             conf.FieldSizeMax,
+		//Prefork:               *arg_prefork,
+		//DisableStartupMessage: true,
+		ServerHeader: "",
+		Views:        engine,
+		BodyLimit:    conf.FieldSizeMax,
 
 		// Timeouts
 		ReadTimeout:  30 * time.Second, // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
@@ -395,7 +398,7 @@ func Core() {
 
 	app := fiber.New(config)
 
-	app.Use(func(c *fiber.Ctx) error {
+	app.Use(func(c fiber.Ctx) error {
 
 		c.Locals("arg_upload_disable", *arg_upload_disable)
 		c.Locals("arg_folder_make_disable", *arg_folder_make_disable)
@@ -413,19 +416,53 @@ func Core() {
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// MIDDLEWARE
 
-	app.Use(favicon.New())
+	app.Use(favicon.New(favicon.Config{
+		File: "",
+		URL:  "/favicon.ico",
+		Data: []byte{},
+	}))
 
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
 	}))
 
+	if !*arg_csrf_disable {
+
+		app.Use(csrf.New(csrf.Config{
+			CookieName: "csrf_",
+			//CookieName:        "__Host-csrf_",
+			//CookieSecure:      true,
+			//CookieHTTPOnly:    true,       // Required for JavaScript access to tokens
+			//CookieSameSite:    "Lax",
+			//CookieSessionOnly: true,
+			Extractor: extractors.FromHeader("csrf-token"),
+			//Session:           sessionStore,
+
+			ErrorHandler: func(c fiber.Ctx, err error) error {
+
+				model2.EventLogAdd(c, 403, "CSRF_ERR", path.Join(conf.ArgFold, c.Path()))
+
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+					"code": 403,
+					"msg":  "Forbidden",
+				})
+			},
+		}))
+	}
+
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// ASSETS
 
-	app.Use("/__assets", filesystem.New(filesystem.Config{
-		Root:       http.FS(embedDirStatic),
-		PathPrefix: "",
-		Browse:     false,
+	/*
+		app.Use("/__assets", static.New(static.Config{
+			Root:       http.FS(embedDirStatic),
+			PathPrefix: "",
+			Browse:     false,
+		}))*/
+
+	app.Get("/__assets*", static.New("", static.Config{
+		FS:     embedDirStatic,
+		Browse: false,
 	}))
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -459,7 +496,7 @@ func Core() {
 
 			Users: password_list,
 
-			Unauthorized: func(c *fiber.Ctx) error {
+			Unauthorized: func(c fiber.Ctx) error {
 
 				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
 
@@ -507,7 +544,7 @@ func Core() {
 
 			Users: password_list,
 
-			Unauthorized: func(c *fiber.Ctx) error {
+			Unauthorized: func(c fiber.Ctx) error {
 
 				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
 
@@ -521,14 +558,14 @@ func Core() {
 
 		app.Use(basicauth.New(basicauth.Config{
 
-			Authorizer: func(user, pass string) bool {
+			Authorizer: func(user, pass string, c fiber.Ctx) bool {
 				if user == *arg_login && pass == *arg_password {
 					return true
 				}
 
 				return false
 			},
-			Unauthorized: func(c *fiber.Ctx) error {
+			Unauthorized: func(c fiber.Ctx) error {
 
 				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
 
@@ -550,7 +587,7 @@ func Core() {
 		app.Get("/__thumb/*", GetThumb)
 	}
 
-	app.Get("/__temp/*", func(c *fiber.Ctx) error {
+	app.Get("/__temp/*", func(c fiber.Ctx) error {
 
 		c_path, err := url.QueryUnescape(c.Path())
 		c_path = strings.TrimLeft(c_path, "/__temp")
@@ -635,7 +672,7 @@ func Core() {
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// BAD REQUEST
 
-	app.Use(func(c *fiber.Ctx) error {
+	app.Use(func(c fiber.Ctx) error {
 
 		model2.EventLogAdd(c, 404, "last_handle", path.Join(conf.ArgFold, c.Path()))
 
@@ -737,7 +774,14 @@ func Core() {
 
 	if *arg_tls {
 
-		err := app.ListenTLS(*arg_host+":"+strconv.Itoa(*arg_port), crt_filename, key_filename)
+		//err := app.ListenTLS(*arg_host+":"+strconv.Itoa(*arg_port), crt_filename, key_filename)
+		err := app.Listen(*arg_host+":"+strconv.Itoa(*arg_port), fiber.ListenConfig{
+			CertFile:    crt_filename,
+			CertKeyFile: key_filename,
+
+			EnablePrefork:         *arg_prefork,
+			DisableStartupMessage: true,
+		})
 		if err != nil {
 			fmt.Print(fmt.Errorf("app.ListenTLS: %+v\n", err.Error()))
 			return
@@ -745,7 +789,11 @@ func Core() {
 
 	} else {
 
-		err := app.Listen(*arg_host + ":" + strconv.Itoa(*arg_port))
+		err := app.Listen(*arg_host+":"+strconv.Itoa(*arg_port), fiber.ListenConfig{
+
+			EnablePrefork:         *arg_prefork,
+			DisableStartupMessage: true,
+		})
 		if err != nil {
 			fmt.Print(fmt.Errorf("app.Listen: %+v\n", err.Error()))
 			return

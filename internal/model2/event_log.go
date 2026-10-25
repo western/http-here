@@ -14,7 +14,7 @@ import (
 
 	badger "github.com/dgraph-io/badger/v4"
 	"github.com/fatih/color"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var (
@@ -72,7 +72,7 @@ func EventLogGetPrimaryId() uint64 {
 	return 0
 }
 
-func EventLogAdd(c *fiber.Ctx, status int, tag, msg string) {
+func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 
 	pref := ""
 

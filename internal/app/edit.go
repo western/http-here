@@ -17,12 +17,12 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var isOfficeRegex = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
 
-func GetEditDoc(c *fiber.Ctx) error {
+func GetEditDoc(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -152,7 +152,7 @@ func GetEditDoc(c *fiber.Ctx) error {
 
 var isSimpleSourceRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")
 
-func GetEditCode(c *fiber.Ctx) error {
+func GetEditCode(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -216,7 +216,7 @@ func GetEditCode(c *fiber.Ctx) error {
 
 }
 
-func GetEditMd(c *fiber.Ctx) error {
+func GetEditMd(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -280,7 +280,7 @@ func GetEditMd(c *fiber.Ctx) error {
 
 }
 
-func PostFileEdit(c *fiber.Ctx) error {
+func PostFileEdit(c fiber.Ctx) error {
 
 	full_path := c.FormValue("full_path")
 

@@ -18,10 +18,11 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/csrf"
 )
 
-func GetAll(c *fiber.Ctx) error {
+func GetAll(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -74,7 +75,7 @@ func GetAll(c *fiber.Ctx) error {
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
-func serveDirectory(c *fiber.Ctx) error {
+func serveDirectory(c fiber.Ctx) error {
 
 	arg_upload_disable := GetBoolFromLocals(c, "arg_upload_disable")
 	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
@@ -82,6 +83,7 @@ func serveDirectory(c *fiber.Ctx) error {
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 	arg_spa := GetBoolFromLocals(c, "arg_spa")
 	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
+	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
@@ -99,7 +101,8 @@ func serveDirectory(c *fiber.Ctx) error {
 	if arg_spa {
 
 		model2.EventLogAdd(c, 302, "CORE", "SPA application, redirect to /#!"+c_path)
-		return c.Redirect("/#!"+c_path, 302)
+		//return c.Redirect("/#!"+c_path, 302)
+		return c.Redirect().To("/#!" + c_path)
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -108,7 +111,8 @@ func serveDirectory(c *fiber.Ctx) error {
 	if _, err := os.Stat(path.Join(readTarget, "index.html")); err == nil {
 
 		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readTarget, "index.html"))
-		return c.SendFile(path.Join(readTarget, "index.html"), false)
+		//return c.SendFile(path.Join(readTarget, "index.html"), false)
+		return c.SendFile(path.Join(readTarget, "index.html"))
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -203,6 +207,11 @@ func serveDirectory(c *fiber.Ctx) error {
 		sort_size = true
 	}
 
+	csrf_token := ""
+	if !arg_csrf_disable {
+		csrf_token = csrf.TokenFromContext(c)
+	}
+
 	return c.Render("view/"+template_file, fiber.Map{
 
 		"Breadcrumb": template.HTML(breadcrumb),
@@ -224,13 +233,15 @@ func serveDirectory(c *fiber.Ctx) error {
 		"arg_upload_disable":      arg_upload_disable,
 		"arg_folder_make_disable": arg_folder_make_disable,
 		"arg_usedb":               arg_usedb,
+
+		"csrf_token": csrf_token,
 	}, "view/layout/default")
 
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
-func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
+func serveFile(c fiber.Ctx, fileMode os.FileMode) error {
 
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
@@ -294,7 +305,7 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
 		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+readTarget+" as "+fname)
 
-		return c.SendFile(fileDecrupt.Name(), false)
+		return c.SendFile(fileDecrupt.Name())
 
 	} else {
 
@@ -311,7 +322,7 @@ func serveFile(c *fiber.Ctx, fileMode os.FileMode) error {
 
 		model2.EventLogAdd(c, 200, "CORE", "SendFile "+readTarget)
 
-		return c.SendFile(readTarget, false)
+		return c.SendFile(readTarget)
 	}
 }
 
@@ -326,7 +337,7 @@ var (
 	editMdRegex   = regexp.MustCompile("^(md)$")
 )
 
-func generateRows(c *fiber.Ctx, s_sort string) ([]FileRow, error) {
+func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_cache_dir := GetIntFromLocals(c, "arg_cache_dir", 30)

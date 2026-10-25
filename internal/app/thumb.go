@@ -22,7 +22,7 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 
 	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
@@ -39,7 +39,7 @@ var (
 	previewAllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 )
 
-func GetThumb(c *fiber.Ctx) error {
+func GetThumb(c fiber.Ctx) error {
 
 	if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb")); err != nil {
 
@@ -171,7 +171,7 @@ func GetThumb(c *fiber.Ctx) error {
 
 		model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
-		return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
+		return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 
 	}
 
@@ -183,7 +183,7 @@ func GetThumb(c *fiber.Ctx) error {
 		if fileInfoOriginal.Size() < 50*1024 {
 
 			model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig file without resize "+path.Join(c_path)+", size is small")
-			return c.SendFile(path.Join(conf.ArgFold, c_path), false)
+			return c.SendFile(path.Join(conf.ArgFold, c_path))
 		}
 
 		return ServeImgFile(c, c_path, hex_name)
@@ -203,7 +203,7 @@ func GetThumb(c *fiber.Ctx) error {
 
 }
 
-func ServeImgFile(c *fiber.Ctx, c_path string, hex_name string) error {
+func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 
 	file_ext := util.GetExtNorm(c_path)
 	var err error
@@ -260,7 +260,7 @@ func ServeImgFile(c *fiber.Ctx, c_path string, hex_name string) error {
 			panic(err)
 		}
 
-		return c.SendFile(path.Join(conf.ArgFold, c_path), false)
+		return c.SendFile(path.Join(conf.ArgFold, c_path))
 	}
 
 	// Resize:
@@ -295,11 +295,11 @@ func ServeImgFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 	model2.EventLogAdd(c, 200, "ServeImgFile", "Resize and SendFile "+path.Join(c_path))
 
-	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
+	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 
 }
 
-func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
+func ServeOfficeFile(c fiber.Ctx, c_path string, hex_name string) error {
 
 	orig_filename := util.GetFileName(c_path)
 	var err error
@@ -353,7 +353,7 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 			model2.EventLogAdd(c, 200, "ServeOfficeFile", "SendFile thumb/cache "+path.Join(c_path))
 
-			return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
+			return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 		}
 	}
 
@@ -484,5 +484,5 @@ func ServeOfficeFile(c *fiber.Ctx, c_path string, hex_name string) error {
 
 	model2.EventLogAdd(c, 200, "ServeOfficeFile", "Make office thumbnail and SendFile "+path.Join(c_path))
 
-	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
+	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 }

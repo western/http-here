@@ -8,10 +8,10 @@ import (
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func GetList(c *fiber.Ctx) error {
+func GetList(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 

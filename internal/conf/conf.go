@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 const Version = "v2.3.0"
