@@ -18,6 +18,7 @@ import (
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/csrf"
 )
 
 var isOfficeRegex = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
@@ -81,6 +82,13 @@ func GetEditDoc(c fiber.Ctx) error {
 
 	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
 
+	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
+
+	csrf_token := ""
+	if !arg_csrf_disable {
+		csrf_token = csrf.TokenFromContext(c)
+	}
+
 	if runtime.GOOS == "windows" {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -109,6 +117,8 @@ func GetEditDoc(c fiber.Ctx) error {
 			"full_path": c_path,
 
 			"file_data": template.HTML(string(b)),
+
+			"csrf_token": csrf_token,
 		}, "view/layout/default")
 
 	} else {
@@ -145,6 +155,8 @@ func GetEditDoc(c fiber.Ctx) error {
 			"full_path": c_path,
 
 			"file_data": template.HTML(string(b)),
+
+			"csrf_token": csrf_token,
 		}, "view/layout/default")
 	}
 
@@ -205,6 +217,13 @@ func GetEditCode(c fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
+	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
+
+	csrf_token := ""
+	if !arg_csrf_disable {
+		csrf_token = csrf.TokenFromContext(c)
+	}
+
 	model2.EventLogAdd(c, 200, "GetEditCode", "Open for edit "+path.Join(conf.ArgFold, c_path))
 
 	return c.Render("view/edit/edit_code", fiber.Map{
@@ -212,6 +231,8 @@ func GetEditCode(c fiber.Ctx) error {
 		"full_path": c_path,
 
 		"file_data": template.HTML(string(b)),
+
+		"csrf_token": csrf_token,
 	}, "view/layout/default")
 
 }
@@ -269,6 +290,13 @@ func GetEditMd(c fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
+	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
+
+	csrf_token := ""
+	if !arg_csrf_disable {
+		csrf_token = csrf.TokenFromContext(c)
+	}
+
 	model2.EventLogAdd(c, 200, "GetEditMd", "Open for edit "+path.Join(conf.ArgFold, c_path))
 
 	return c.Render("view/edit/edit_md", fiber.Map{
@@ -276,6 +304,8 @@ func GetEditMd(c fiber.Ctx) error {
 		"full_path": c_path,
 
 		"file_data": template.HTML(string(b)),
+
+		"csrf_token": csrf_token,
 	}, "view/layout/default")
 
 }

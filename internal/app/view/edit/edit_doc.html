@@ -103,10 +103,18 @@ if (typeof window.$$ != 'function') {
                 formData.append('full_path', full_path);
                 formData.append('body', body);
                 
+                let csrf_token = $('meta[name="csrf-token"]');
+                if (csrf_token) {
+                    csrf_token = csrf_token.getAttribute('content');
+                }
+                
 
                 fetch('/api/file/edit', {
                     method: 'POST',
                     body: formData,
+                    headers: {
+                        'csrf-token': csrf_token,
+                    },
                 })
                     .then((r) => r.json())
                     .then((js) => {
