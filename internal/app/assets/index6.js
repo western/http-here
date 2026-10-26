@@ -27,6 +27,8 @@ window.onerror = function (msg, source, lineNo, columnNo, error) {
     //return true;
 };
 
+// --------------------------------------------------------------------------------------------------------------------------------------
+
 if (typeof window.$ != 'function') {
     window.$ = (query, cntx = document) => {
         const el = cntx.querySelector(query);
