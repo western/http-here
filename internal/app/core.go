@@ -675,7 +675,7 @@ func Core() {
 
 	app.Use(func(c fiber.Ctx) error {
 
-		model2.EventLogAdd(c, 404, "last_handle", path.Join(conf.ArgFold, c.Path()))
+		model2.EventLogAdd(c, 404, "last_handle", c.Path())
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	})
