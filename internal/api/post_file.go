@@ -74,7 +74,7 @@ func PostFile(c fiber.Ctx) error {
 	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------
-	// reopen root with full targetPath
+	// open root with trust ArgFold
 
 	Root, err := os.OpenRoot(conf.ArgFold)
 	if err != nil {
@@ -103,11 +103,25 @@ func PostFile(c fiber.Ctx) error {
 
 	if !fileInfo.IsDir() {
 
-		model2.EventLogAdd(c, 500, "PostFile", "It is not path. "+targetPath)
+		model2.EventLogAdd(c, 500, "PostFile", "It is not directory. "+targetPath)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "It is not path",
+			"msg":  "It is not directory",
+		})
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// reopen targetRoot with full targetPath
+
+	targetRoot, err := os.OpenRoot(targetPath)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFile", "open storage targetRoot err1. "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "open storage targetRoot err1",
 		})
 	}
 
@@ -143,14 +157,14 @@ func PostFile(c fiber.Ctx) error {
 
 		if arg_crypt && len(code) > 0 {
 
-			err := uploadAndCrypt(c, file, targetPath, fileName, code)
+			err := uploadAndCrypt(c, file, targetRoot, fileName, code)
 			if err != nil {
 				return err
 			}
 
 		} else {
 
-			err := uploadOnly(c, file, targetPath, fileName)
+			err := uploadOnly(c, file, targetRoot, fileName)
 			if err != nil {
 				return err
 			}
@@ -165,28 +179,48 @@ func PostFile(c fiber.Ctx) error {
 	})
 }
 
-func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetPath, fileName string) error {
+func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName string) error {
 
-	targetPathFilename := path.Join(targetPath, fileName)
+	//fmt.Println("targetRoot.Name()=", targetRoot.Name())
 
-	if fileInfo, err := os.Stat(targetPathFilename); err == nil {
+	targetPathFilename := path.Join(targetRoot.Name(), fileName)
 
-		if !fileInfo.IsDir() {
+	/*
+		targetPathFilename := path.Join(targetPath, fileName)
 
-			model2.EventLogAdd(c, 200, "PostFile", "'"+targetPathFilename+"' already exists. It will be rewrite.")
+		if fileInfo, err := os.Stat(targetPathFilename); err == nil {
+
+			if !fileInfo.IsDir() {
+
+				model2.EventLogAdd(c, 200, "PostFile", "'"+targetPathFilename+"' already exists. It will be rewrite.")
+			}
 		}
-	}
+	*/
 
 	// ----------------------------------------------------------------------------------------------------------------------
 
-	out, err := os.Create(targetPathFilename)
+	/*
+		out, err := os.Create(targetPathFilename)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFile", "Error create "+targetPathFilename+" "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error create " + targetPathFilename,
+			})
+		}
+		defer out.Close()
+	*/
+
+	out, err := targetRoot.Create(fileName)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "Error create "+targetPathFilename+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "Error create "+fileName+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error create " + targetPathFilename,
+			"msg":  "Error create " + fileName,
 		})
 	}
 	defer out.Close()
@@ -195,20 +229,20 @@ func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetPath, fileName st
 	_, err = io.Copy(out, readerFile)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "Error copy "+targetPathFilename+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "Error copy "+fileName+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error copy " + targetPathFilename,
+			"msg":  "Error copy " + fileName,
 		})
 	}
 
-	model2.EventLogAdd(c, 200, "PostFile", "Save '"+targetPathFilename+"'")
+	model2.EventLogAdd(c, 200, "PostFile", "Saved '"+targetPathFilename+"'")
 
 	return nil
 }
 
-func uploadAndCrypt(c fiber.Ctx, file *multipart.FileHeader, targetPath, fileName, code string) error {
+func uploadAndCrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName, code string) error {
 
 	// ------------------------------------------------------------------------------------------------------------------
 
@@ -247,16 +281,33 @@ func uploadAndCrypt(c fiber.Ctx, file *multipart.FileHeader, targetPath, fileNam
 
 	// ------------------------------------------------------------------------------------------------------------------
 
-	targetPathFilenameCrypt := path.Join(targetPath, fileName+".crypt")
+	fileName_crypt := fileName + ".crypt"
+	targetPathFilenameCrypt := path.Join(targetRoot.Name(), fileName_crypt)
 
-	out, err := os.Create(targetPathFilenameCrypt)
+	/*
+		targetPathFilenameCrypt := path.Join(targetPath, fileName+".crypt")
+
+		out, err := os.Create(targetPathFilenameCrypt)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFile", "Error create "+targetPathFilenameCrypt+" "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Error create " + targetPathFilenameCrypt,
+			})
+		}
+		defer out.Close()
+	*/
+
+	out, err := targetRoot.Create(fileName_crypt)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "Error create "+targetPathFilenameCrypt+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "Error create "+fileName_crypt+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error create " + targetPathFilenameCrypt,
+			"msg":  "Error create " + fileName_crypt,
 		})
 	}
 	defer out.Close()
