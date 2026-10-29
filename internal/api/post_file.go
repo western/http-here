@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"regexp"
+	//"regexp"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -133,7 +133,7 @@ func PostFile(c fiber.Ctx) error {
 	// file = type *multipart.FileHeader
 	for _, file := range files {
 
-		fileName, err := GetClearFilename(file.Filename)
+		fileName, err := util.GetClearFilename(file.Filename)
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "PostFile", "Error clear file name "+err.Error())
@@ -324,39 +324,4 @@ func uploadAndEncrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Ro
 
 	return nil
 
-}
-
-/*
-fileName, err := api.GetClearFilename("image1.jpg")
-fmt.Println("fileName=", fileName, " err=",err)
-fileName, err = api.GetClearFilename("/path/to/image2.jpg")
-fmt.Println("fileName=", fileName, " err=",err)
-fileName, err = api.GetClearFilename(`\path\to\ima  ge3.jpg`)
-fmt.Println("fileName=", fileName, " err=",err)
-*/
-func GetClearFilename(dirty_Filename string) (string, error) {
-
-	var (
-		regexpSpaceSymbols = regexp.MustCompile("\\s+")
-		//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
-	)
-
-	unescape_Filename, err := url.QueryUnescape(dirty_Filename)
-	if err != nil {
-
-		return "", err
-	}
-
-	file_ext := util.GetExtNorm(unescape_Filename)
-	originalFileName := util.GetFileName(unescape_Filename)
-
-	originalFileName = strings.ReplaceAll(originalFileName, `/`, "")
-	originalFileName = strings.ReplaceAll(originalFileName, `\`, "")
-	originalFileName = regexpSpaceSymbols.ReplaceAllLiteralString(originalFileName, " ")
-	//originalFileName = regexpDoubleDash.ReplaceAllLiteralString(originalFileName, "-")
-
-	filename := originalFileName + "." + file_ext
-	filename = util.CleanDirtyPath(filename)
-
-	return filename, nil
 }
