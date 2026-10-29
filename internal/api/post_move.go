@@ -162,7 +162,6 @@ func PostMove(c fiber.Ctx) error {
 
 	}
 
-	go model2.FileChkAsync()
 	RemoveCacheDir(path.Join(conf.ArgFold, from_path))
 	RemoveCacheDir(path.Join(conf.ArgFold, to_path))
 
