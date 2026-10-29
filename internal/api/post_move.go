@@ -40,7 +40,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "from_path is empty",
-		}, "application/json")
+		})
 	}
 
 	_, err = os.Stat(path.Join(conf.ArgFold, from_path))
@@ -51,7 +51,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + path.Join(from_path) + "' not exists",
-		}, "application/json")
+		})
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"code": 500,
 			"msg":  "to_path is empty",
-		}, "application/json")
+		})
 	}
 
 	_, err = os.Stat(path.Join(conf.ArgFold, to_path))
@@ -89,7 +89,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "'" + path.Join(to_path) + "' not exists",
-		}, "application/json")
+		})
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Source and target paths '" + from_path + "' are identical",
-		}, "application/json")
+		})
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ func PostMove(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
-		}, "application/json")
+		})
 	}
 
 	var err_list []string
@@ -194,11 +194,11 @@ func PostMove(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  err_list[0],
-		}, "application/json")
+		})
 	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 
 }
