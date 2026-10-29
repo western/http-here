@@ -48,15 +48,56 @@ func PostFile(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// check path if exists
+	// check is directory
 
-	fileInfo, err := os.Stat(targetPath)
+	/*
+		fileInfo, err := os.Stat(targetPath)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFile", "Path not found. "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Path not found",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostFile", "It is not path. "+targetPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not path",
+			})
+		}
+	*/
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// reopen root with full targetPath
+
+	Root, err := os.OpenRoot(conf.ArgFold)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "Path not found. "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "open storage Root err1. "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Path not found",
+			"msg":  "open storage Root err1",
+		})
+	}
+
+	//fmt.Println("url_Path=", url_Path)
+	//fmt.Println("url_Path=", strings.TrimPrefix(url_Path, "/"))
+
+	fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFile", "stat err "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "stat err",
 		})
 	}
 
@@ -69,22 +110,6 @@ func PostFile(c fiber.Ctx) error {
 			"msg":  "It is not path",
 		})
 	}
-
-	// -------------------------------------------------------------------------------------------------------------------------
-	// reopen root with full targetPath
-
-	/*
-		targetRoot, err := os.OpenRoot(targetPath)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostFile", "open storage targetRoot err2. "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "open storage targetRoot err2",
-			})
-		}
-	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
