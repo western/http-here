@@ -29,17 +29,70 @@ func PostDelete(c fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	u_path := util.CleanDirtyPath(u.Path)
+	url_Path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
 	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
-		u_path = form_path
+		url_Path = form_path
 	}
 
-	readTarget := path.Join(conf.ArgFold, u_path)
+	targetPath := path.Join(conf.ArgFold, url_Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// open root with trust ArgFold
+
+	Root, err := os.OpenRoot(conf.ArgFold)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostDelete", "open storage Root err1. "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "open storage Root err1",
+		})
+	}
+
+	//fmt.Println("url_Path=", url_Path)
+	//fmt.Println("url_Path=", strings.TrimPrefix(url_Path, "/"))
+
+	fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostDelete", "stat err "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "stat err",
+		})
+	}
+
+	if !fileInfo.IsDir() {
+
+		model2.EventLogAdd(c, 500, "PostDelete", "It is not directory. "+targetPath)
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "It is not directory",
+		})
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// reopen targetRoot with full targetPath
+
+	targetRoot, err := os.OpenRoot(targetPath)
+	//_, err = os.OpenRoot(targetPath)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostDelete", "open storage targetRoot err1. "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "open storage targetRoot err1",
+		})
+	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -53,79 +106,73 @@ func PostDelete(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "form is empty",
-		}, "application/json")
+		})
 	}
 
 	var err_list []string
 
-	for _, val := range names {
+	for _, name := range names {
 
-		if len(val) > 0 {
+		//name, _ = util.GetClearFilename(name)
 
-			name := strings.ReplaceAll(val, "/", "")
-			//re := regexp.MustCompile("\\s+")
-			//name = re.ReplaceAllLiteralString(name, " ")
+		if len(name) == 0 {
+			model2.EventLogAdd(c, 500, "PostDelete", "name is empty")
+			err_list = append(err_list, "name is empty")
+			continue
+		}
 
-			name = util.CleanDirtyPath(name)
+		targetPathName := path.Join(targetRoot.Name(), name)
 
-			if len(name) == 0 {
-				model2.EventLogAdd(c, 500, "PostDelete", "name is empty")
-				err_list = append(err_list, "name is empty")
+		fileInfo, err := targetRoot.Stat(name)
+
+		if err != nil {
+			model2.EventLogAdd(c, 500, "PostDelete", "'"+targetPathName+"' not exists")
+			err_list = append(err_list, "'"+targetPathName+"' not exists")
+			continue
+		}
+
+		if fileInfo.IsDir() {
+
+			// remove fold and all inside data
+
+			if err := targetRoot.RemoveAll(name); err != nil {
+				model2.EventLogAdd(c, 500, "PostDelete", "'"+targetPathName+"' err "+err.Error())
+				err_list = append(err_list, "'"+targetPathName+"' err "+err.Error())
 				continue
 			}
 
-			fileInfo, err := os.Stat(path.Join(readTarget, name))
+			RemoveCacheDir(path.Join(targetPath, name))
 
-			if err != nil {
-				model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' not exists")
-				err_list = append(err_list, "'"+path.Join(readTarget, name)+"' not exists")
+			model2.EventLogAdd(c, 200, "PostDelete", "Remove fold '"+targetPathName+"'")
+
+		} else {
+
+			// remove one file
+
+			if err := targetRoot.Remove(name); err != nil {
+				model2.EventLogAdd(c, 500, "PostDelete", "'"+targetPathName+"' err "+err.Error())
+				err_list = append(err_list, "'"+targetPathName+"' err "+err.Error())
 				continue
 			}
 
-			if fileInfo.IsDir() {
-
-				// remove fold and all inside data
-
-				if err := os.RemoveAll(path.Join(readTarget, name)); err != nil {
-					model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
-					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
-					continue
-				}
-
-				RemoveCacheDir(path.Join(readTarget, name))
-
-				model2.EventLogAdd(c, 200, "PostDelete", "Remove fold '"+path.Join(readTarget, name)+"'")
-
-			} else {
-
-				// remove one file
-
-				if err := os.Remove(path.Join(readTarget, name)); err != nil {
-					model2.EventLogAdd(c, 500, "PostDelete", "'"+path.Join(readTarget, name)+"' err "+err.Error())
-					err_list = append(err_list, "'"+path.Join(readTarget, name)+"' err "+err.Error())
-					continue
-				}
-
-				model2.EventLogAdd(c, 200, "PostDelete", "Remove '"+path.Join(readTarget, name)+"'")
-
-			}
+			model2.EventLogAdd(c, 200, "PostDelete", "Remove '"+targetPathName+"'")
 
 		}
+
 	}
 
-	go model2.FileChkAsync()
-	RemoveCacheDir(readTarget)
+	RemoveCacheDir(targetPath)
 
 	if len(err_list) > 0 {
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  err_list[0],
-		}, "application/json")
+		})
 	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 
 }
