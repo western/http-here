@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	//"path/filepath"
+	"errors"
 	"time"
 )
 
@@ -241,4 +242,19 @@ func MultipartToFile(file *multipart.FileHeader) *os.File {
 	file2, _ := os.Open(f.Name())
 
 	return file2
+}
+
+func IsDirectory(targetPath string) (bool, error) {
+
+	fileInfo, err := os.Stat(targetPath)
+	if err != nil {
+		return false, err
+	}
+
+	if fileInfo.IsDir() {
+
+		return true, nil
+	}
+
+	return false, errors.New("It is not directory")
 }
