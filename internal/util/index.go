@@ -17,6 +17,7 @@ import (
 	"strings"
 	//"sync"
 	"context"
+	"net/url"
 	"time"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -84,6 +85,41 @@ func CleanDirtyPath(dirty_Str string) string {
 	return dirty_Str
 }
 
+/*
+fileName, err := util.GetClearFilename("image1.jpg")
+fmt.Println("fileName=", fileName, " err=",err)
+fileName, err = util.GetClearFilename("/path/to/image2.jpg")
+fmt.Println("fileName=", fileName, " err=",err)
+fileName, err = util.GetClearFilename(`\path\to\ima  ge3.jpg`)
+fmt.Println("fileName=", fileName, " err=",err)
+*/
+func GetClearFilename(dirty_Filename string) (string, error) {
+
+	var (
+		regexpSpaceSymbols = regexp.MustCompile("\\s+")
+		//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
+	)
+
+	unescape_Filename, err := url.QueryUnescape(dirty_Filename)
+	if err != nil {
+
+		return "", err
+	}
+
+	file_ext := GetExtNorm(unescape_Filename)
+	originalFileName := GetFileName(unescape_Filename)
+
+	originalFileName = strings.ReplaceAll(originalFileName, `/`, "")
+	originalFileName = strings.ReplaceAll(originalFileName, `\`, "")
+	originalFileName = regexpSpaceSymbols.ReplaceAllLiteralString(originalFileName, " ")
+	//originalFileName = regexpDoubleDash.ReplaceAllLiteralString(originalFileName, "-")
+
+	filename := originalFileName + "." + file_ext
+	filename = CleanDirtyPath(filename)
+
+	return filename, nil
+}
+
 // change all slashes \ to /
 func RotateSlash(p string) string {
 	return strings.Replace(p, "\\", "/", -1)
@@ -102,6 +138,14 @@ func GetExtNorm(path string) string {
 	return ext
 }
 
+/*
+fileName := util.GetFileName("image1.jpg")
+fmt.Println("fileName=", fileName)
+fileName = util.GetFileName("/path/to/image2.jpg")
+fmt.Println("fileName=", fileName)
+fileName = util.GetFileName(`\path\to\ima  ge3.jpg`)
+fmt.Println("fileName=", fileName)
+*/
 func GetFileName(path string) string {
 
 	filename := strings.TrimSuffix(
