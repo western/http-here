@@ -172,7 +172,7 @@ func WalkAndClearOld(path_ string, maxAge time.Duration) {
 			// maxAge = 1*time.Hour
 			if time.Now().Sub(fileInfo.ModTime()) > maxAge {
 
-				fmt.Println("file to del: ", full_name)
+				//fmt.Println("file to del: ", full_name)
 
 				err := os.Remove(full_name)
 				if err != nil {
@@ -180,7 +180,7 @@ func WalkAndClearOld(path_ string, maxAge time.Duration) {
 				}
 			} else {
 
-				fmt.Println("file not del: ", full_name)
+				//fmt.Println("file not del: ", full_name)
 			}
 
 		} else if file.IsDir() {
