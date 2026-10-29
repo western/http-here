@@ -32,6 +32,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/gofiber/template/html/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jellydator/ttlcache/v3"
 )
 
 //go:embed view/*
@@ -294,6 +295,11 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
+	api.CacheUniqueKeyTTL = ttlcache.New[string, string](
+		ttlcache.WithTTL[string, string](30 * time.Minute),
+	)
+	go api.CacheUniqueKeyTTL.Start()
+
 	if *arg_usedb {
 
 		model2.Open()
@@ -346,17 +352,31 @@ func Core() {
 			fmt.Println("")
 			//fmt.Println(yellow_clr("  Clear temp folder"))
 
-			if err = os.RemoveAll(path.Join(conf.ConfigRoot, "temp")); err != nil {
-				fmt.Println(err)
-				return
-			}
+			/*
+				if err = os.RemoveAll(path.Join(conf.ConfigRoot, "temp")); err != nil {
+					fmt.Println(err)
+					return
+				}
 
-			if err = os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
-				fmt.Println(err)
-				return
-			}
+				if err = os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
+					fmt.Println(err)
+					return
+				}
+			*/
+			go util.WalkAndClearOld(path.Join(conf.ConfigRoot, "temp"), 1*time.Hour)
 
 		}
+
+		if _, err := os.Stat(path.Join(conf.ConfigRoot, "parts")); os.IsNotExist(err) {
+			if err := os.MkdirAll(path.Join(conf.ConfigRoot, "parts"), os.ModePerm); err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else {
+
+			go util.WalkAndClearOld(path.Join(conf.ConfigRoot, "parts"), 1*time.Hour)
+		}
+
 	}
 
 	if !fiber.IsChild() {
@@ -643,6 +663,10 @@ func Core() {
 
 	if !*arg_upload_disable {
 		app.Post("/api/file", api.PostFile)
+
+		//app.Post("/api/file/part/init", api.PostFilePartInit)
+		app.Post("/api/file/part", api.PostFilePart)
+		app.Post("/api/file/part/done", api.PostFilePartDone)
 	}
 
 	if !*arg_folder_make_disable {
