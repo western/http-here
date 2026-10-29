@@ -2,7 +2,7 @@ package api
 
 import (
 	//"fmt"
-	//"net/url"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -19,6 +19,18 @@ func PostCopy(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	from_path := c.FormValue("from_path")
+
+	from_path, err := url.QueryUnescape(from_path)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostCopy", err.Error())
+
+		return c.JSON(fiber.Map{
+			"code": 500,
+			"msg":  err.Error(),
+		})
+	}
+
 	from_path = util.CleanDirtyPath(from_path)
 
 	if len(from_path) == 0 {
@@ -31,7 +43,7 @@ func PostCopy(c fiber.Ctx) error {
 		}, "application/json")
 	}
 
-	_, err := os.Stat(path.Join(conf.ArgFold, from_path))
+	_, err = os.Stat(path.Join(conf.ArgFold, from_path))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostCopy", "'"+path.Join(conf.ArgFold, from_path)+"' not exists "+err.Error())
@@ -45,6 +57,18 @@ func PostCopy(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	to_path := c.FormValue("to_path")
+
+	to_path, err = url.QueryUnescape(to_path)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostCopy", err.Error())
+
+		return c.JSON(fiber.Map{
+			"code": 500,
+			"msg":  err.Error(),
+		})
+	}
+
 	to_path = util.CleanDirtyPath(to_path)
 
 	if len(to_path) == 0 {
