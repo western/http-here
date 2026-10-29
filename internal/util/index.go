@@ -24,7 +24,7 @@ import (
 
 // transparent-png24-1px.png
 // PNG image data, 1 x 1, 8-bit/color RGBA, non-interlaced
-var PNGImage = []byte{
+var PNGPixel = []byte{
 	137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 25, 116, 69, 88, 116, 83, 111, 102, 116, 119, 97, 114, 101, 0, 65, 100, 111, 98, 101,
 	32, 73, 109, 97, 103, 101, 82, 101, 97, 100, 121, 113, 201, 101, 60, 0, 0, 3, 34, 105, 84, 88, 116, 88, 77, 76, 58, 99, 111, 109, 46, 97, 100, 111, 98, 101, 46, 120, 109, 112, 0, 0, 0, 0, 0, 60, 63, 120, 112,
 	97, 99, 107, 101, 116, 32, 98, 101, 103, 105, 110, 61, 34, 239, 187, 191, 34, 32, 105, 100, 61, 34, 87, 53, 77, 48, 77, 112, 67, 101, 104, 105, 72, 122, 114, 101, 83, 122, 78, 84, 99, 122, 107, 99, 57, 100,
@@ -60,17 +60,28 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-func CleanDirtyPath(p string) string {
+/*
+fmt.Println("../../etc/passwd", util.CleanDirtyPath("../../etc/passwd"));
+fmt.Println("..%2f..%2fsecret.txt", util.CleanDirtyPath("..%2f..%2fsecret.txt"));
+fmt.Println("..\\..\\secret.txt", util.CleanDirtyPath("..\\..\\secret.txt"));
+*/
+func CleanDirtyPath(dirty_Str string) string {
 
+	// double slash
 	re := regexp.MustCompile("/+")
-	p = re.ReplaceAllLiteralString(p, "/")
+	dirty_Str = re.ReplaceAllLiteralString(dirty_Str, "/")
 
-	re2 := regexp.MustCompile("\\.{2,}")
-	p = re2.ReplaceAllLiteralString(p, ".")
+	// windows separators
+	re2 := regexp.MustCompile("\\+")
+	dirty_Str = re2.ReplaceAllLiteralString(dirty_Str, "")
 
-	//p = filepath.Clean(p)
+	// points, from two
+	re3 := regexp.MustCompile("\\.{2,}")
+	dirty_Str = re3.ReplaceAllLiteralString(dirty_Str, ".")
 
-	return p
+	//dirty_Str = filepath.Clean(dirty_Str)
+
+	return dirty_Str
 }
 
 // change all slashes \ to /
@@ -173,4 +184,9 @@ var regexpAnsiColor = regexp.MustCompile("[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?
 
 func StringClearColor(msg string) string {
 	return regexpAnsiColor.ReplaceAllString(msg, "")
+}
+
+func IsInt(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
 }

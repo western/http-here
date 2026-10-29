@@ -38,6 +38,31 @@ func CopyFile(src, dst string) error {
 	return os.Chmod(dst, srcinfo.Mode())
 }
 
+func ROOTCopyFile(srcRoot *os.Root, src string, dstRoot *os.Root, dst string) error {
+	var err error
+	var srcfd *os.File
+	var dstfd *os.File
+	var srcinfo os.FileInfo
+
+	if srcfd, err = srcRoot.Open(src); err != nil {
+		return err
+	}
+	defer srcfd.Close()
+
+	if dstfd, err = dstRoot.Create(dst); err != nil {
+		return err
+	}
+	defer dstfd.Close()
+
+	if _, err = io.Copy(dstfd, srcfd); err != nil {
+		return err
+	}
+	if srcinfo, err = srcRoot.Stat(src); err != nil {
+		return err
+	}
+	return dstRoot.Chmod(dst, srcinfo.Mode())
+}
+
 func MoveFile(src, dst string) error {
 	var err error
 	var srcfd *os.File
@@ -126,11 +151,11 @@ func GetMd5File(path string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func WalkAndClearOld(path_ string) {
+func WalkAndClearOld(path_ string, maxAge time.Duration) {
 
 	files, err := os.ReadDir(path_)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, file := range files {
@@ -139,17 +164,27 @@ func WalkAndClearOld(path_ string) {
 
 		if !file.IsDir() {
 
-			fileInfo, _ := os.Stat(full_name)
+			fileInfo, err := os.Stat(full_name)
+			if err != nil {
+				panic(err)
+			}
 
-			if time.Now().Sub(fileInfo.ModTime()) > 30*24*time.Hour {
-				//fmt.Println( "to del:", full_name )
-				os.Remove(full_name)
+			// maxAge = 1*time.Hour
+			if time.Now().Sub(fileInfo.ModTime()) > maxAge {
+
+				fmt.Println("file to del: ", full_name)
+
+				err := os.Remove(full_name)
+				if err != nil {
+					panic(err)
+				}
 			} else {
-				//fmt.Println( "file:", full_name )
+
+				fmt.Println("file not del: ", full_name)
 			}
 
 		} else if file.IsDir() {
-			WalkAndClearOld(full_name)
+			WalkAndClearOld(full_name, maxAge)
 		}
 	}
 }
