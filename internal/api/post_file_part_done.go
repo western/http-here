@@ -7,8 +7,8 @@ import (
 	"os"
 	"path"
 	//"regexp"
-	//"strings"
 	"strconv"
+	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
 	//"github.com/western/http-here/v2/internal/crypt"
@@ -165,19 +165,73 @@ func PostFilePartDone(c fiber.Ctx) error {
 
 	out.Close()
 
-	// ----------------------------------------------------------------------------------------------------------------------
-	// copyAssembledTo
+	// -------------------------------------------------------------------------------------------------------------------------
+	// open root with trust ArgFold
+
+	Root, err := os.OpenRoot(conf.ArgFold)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage Root err1. "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "open storage Root err1",
+		})
+	}
+
+	//fmt.Println("to_path=", to_path)
+	//fmt.Println("to_path=", strings.TrimPrefix(to_path, "/"))
+
+	fileInfo, err := Root.Stat(strings.TrimPrefix(to_path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFilePartDone", "stat err "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "stat err",
+		})
+	}
+
+	if !fileInfo.IsDir() {
+
+		model2.EventLogAdd(c, 500, "PostFilePartDone", "It is not directory. "+to_path)
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "It is not directory",
+		})
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// reopen dstRoot with full targetPath
 
 	dstRoot, err := os.OpenRoot(path.Join(conf.ArgFold, to_path))
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage dstRoot err "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage dstRoot err1. "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "open storage dstRoot err",
+			"msg":  "open storage dstRoot err1",
 		})
 	}
+
+	// ----------------------------------------------------------------------------------------------------------------------
+	// copyAssembledTo
+
+	/*
+		dstRoot, err := os.OpenRoot(path.Join(conf.ArgFold, to_path))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage dstRoot err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "open storage dstRoot err",
+			})
+		}
+	*/
 
 	//src_file_path := path.Join(conf.ArgFold, from_path, name)
 	//target_file_path := path.Join(conf.ArgFold, to_path, name)
