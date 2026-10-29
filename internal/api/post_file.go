@@ -157,7 +157,7 @@ func PostFile(c fiber.Ctx) error {
 
 		if arg_crypt && len(code) > 0 {
 
-			err := uploadAndCrypt(c, file, targetRoot, fileName, code)
+			err := uploadAndEncrypt(c, file, targetRoot, fileName, code)
 			if err != nil {
 				return err
 			}
@@ -242,7 +242,7 @@ func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fi
 	return nil
 }
 
-func uploadAndCrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName, code string) error {
+func uploadAndEncrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName, code string) error {
 
 	// ------------------------------------------------------------------------------------------------------------------
 
