@@ -83,7 +83,6 @@ func PostDelete(c fiber.Ctx) error {
 	// reopen targetRoot with full targetPath
 
 	targetRoot, err := os.OpenRoot(targetPath)
-	//_, err = os.OpenRoot(targetPath)
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostDelete", "open storage targetRoot err1. "+err.Error())
