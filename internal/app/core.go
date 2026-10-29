@@ -665,8 +665,8 @@ func Core() {
 		app.Post("/api/file", api.PostFile)
 
 		//app.Post("/api/file/part/init", api.PostFilePartInit)
-		app.Post("/api/file/part", api.PostFilePart)
-		app.Post("/api/file/part/done", api.PostFilePartDone)
+		//app.Post("/api/file/part", api.PostFilePart)
+		//app.Post("/api/file/part/done", api.PostFilePartDone)
 	}
 
 	if !*arg_folder_make_disable {
