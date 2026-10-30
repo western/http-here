@@ -43,9 +43,6 @@ func PostDelete(c fiber.Ctx) error {
 		})
 	}
 
-	//fmt.Println("url_Path=", url_Path)
-	//fmt.Println("url_Path=", strings.TrimPrefix(url_Path, "/"))
-
 	if url_Path != "/" {
 
 		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
