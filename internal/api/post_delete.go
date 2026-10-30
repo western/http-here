@@ -1,10 +1,11 @@
 package api
 
 import (
-	"net/url"
+	//"net/url"
 	"os"
 	"path"
 	"strings"
+	//"fmt"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -15,28 +16,15 @@ import (
 
 func PostDelete(c fiber.Ctx) error {
 
-	referer := c.Get("Referer")
-
-	// already decoded
-	u, err := url.Parse(referer)
+	url_Path, err := util.RefererOrPath(c)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostDelete", "Error url parse "+referer+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostDelete", "RefererOrPath error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error url parse " + referer,
-		}, "application/json")
-	}
-
-	url_Path := util.CleanDirtyPath(u.Path)
-
-	// -------------------------------------------------------------------------------------------------------------------------
-
-	form_path := c.FormValue("path")
-	form_path = util.CleanDirtyPath(form_path)
-	if len(form_path) > 0 {
-		url_Path = form_path
+			"msg":  "RefererOrPath error",
+		})
 	}
 
 	targetPath := path.Join(conf.ArgFold, url_Path)
@@ -58,26 +46,33 @@ func PostDelete(c fiber.Ctx) error {
 	//fmt.Println("url_Path=", url_Path)
 	//fmt.Println("url_Path=", strings.TrimPrefix(url_Path, "/"))
 
-	fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
-	if err != nil {
+	if url_Path != "/" {
 
-		model2.EventLogAdd(c, 500, "PostDelete", "stat err "+err.Error())
+		//fmt.Println("check inside=", url_Path)
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "stat err",
-		})
+		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostDelete", "stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostDelete", "It is not directory. "+targetPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
 	}
 
-	if !fileInfo.IsDir() {
-
-		model2.EventLogAdd(c, 500, "PostDelete", "It is not directory. "+targetPath)
-
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "It is not directory",
-		})
-	}
+	//fmt.Println("targetPath=", targetPath)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// reopen targetRoot with full targetPath

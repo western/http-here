@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"io"
 	"mime/multipart"
-	"net/url"
+	//"net/url"
 	"os"
 	"path"
 	//"regexp"
@@ -20,58 +20,18 @@ import (
 
 func PostFile(c fiber.Ctx) error {
 
-	referer := c.Get("Referer")
-
-	// already decoded
-	u, err := url.Parse(referer)
+	url_Path, err := util.RefererOrPath(c)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "Error url parse "+referer+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "RefererOrPath error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error url parse " + referer,
+			"msg":  "RefererOrPath error",
 		})
 	}
 
-	url_Path := util.CleanDirtyPath(u.Path)
-
-	// -------------------------------------------------------------------------------------------------------------------------
-
-	form_path := c.FormValue("path")
-	form_path = util.CleanDirtyPath(form_path)
-	if len(form_path) > 0 {
-		url_Path = form_path
-	}
-
 	targetPath := path.Join(conf.ArgFold, url_Path)
-
-	// -------------------------------------------------------------------------------------------------------------------------
-	// check path if exists
-	// check is directory
-
-	/*
-		fileInfo, err := os.Stat(targetPath)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostFile", "Path not found. "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Path not found",
-			})
-		}
-
-		if !fileInfo.IsDir() {
-
-			model2.EventLogAdd(c, 500, "PostFile", "It is not path. "+targetPath)
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "It is not path",
-			})
-		}
-	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
@@ -90,25 +50,28 @@ func PostFile(c fiber.Ctx) error {
 	//fmt.Println("url_Path=", url_Path)
 	//fmt.Println("url_Path=", strings.TrimPrefix(url_Path, "/"))
 
-	fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
-	if err != nil {
+	if url_Path != "/" {
 
-		model2.EventLogAdd(c, 500, "PostFile", "stat err "+err.Error())
+		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+		if err != nil {
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "stat err",
-		})
-	}
+			model2.EventLogAdd(c, 500, "PostFile", "stat err "+err.Error())
 
-	if !fileInfo.IsDir() {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
 
-		model2.EventLogAdd(c, 500, "PostFile", "It is not directory. "+targetPath)
+		if !fileInfo.IsDir() {
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "It is not directory",
-		})
+			model2.EventLogAdd(c, 500, "PostFile", "It is not directory. "+targetPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
