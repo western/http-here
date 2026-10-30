@@ -1,10 +1,76 @@
 package util
 
 import (
+	"errors"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strings"
+	//"fmt"
+
+	"github.com/gofiber/fiber/v3"
 )
+
+func CleanPath(name string) (string, error) {
+
+	//fmt.Println("CleanPath [", name, "]")
+
+	if name == "" ||
+		//filepath.IsAbs(name) ||
+		strings.ContainsRune(name, '\x00') {
+		return "", errors.New("Invalid path (1)")
+	}
+
+	/*
+	   filepath.Clean
+	   ------------------------------------------------------------------------------------------------
+	   1. Reduces multiple consecutive slashes to a single one (e.g., `a//b` becomes `a/b`).
+	   2. Removes references to the current directory (`.`) (e.g., `a/./b` becomes `a/b`).
+	   3. Processes parent directory references (`..`) by collapsing them along with the preceding path segment (e.g., `a/b/../c` becomes `a/c`).
+	   4. Returns `.` if an empty string (`""`) is provided as input.
+	   5. Clears `..` references at the root level (e.g., `/../` becomes `/` on Unix-like systems).
+	   6. Removes trailing slashes (unless the path is a root directory, such as `/` or `C:\`) — for example, `a/b/` becomes `a/b`.
+	   7. Accounts for the operating system: uses forward slashes (`/`) on Unix or backslashes (`\`) on Windows.
+	*/
+	name = filepath.Clean(name)
+
+	if name == "." || name == ".." ||
+		strings.HasPrefix(name, ".."+string(filepath.Separator)) {
+		return "", errors.New("Invalid path (2)")
+	}
+
+	return name, nil
+}
+
+func RefererOrPath(c fiber.Ctx) (string, error) {
+
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
+	if err != nil {
+		return "", err
+	}
+
+	//url_Path := util.CleanDirtyPath(u.Path)
+	url_Path, err := CleanPath(u.Path)
+	if err != nil {
+		return "", err
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	//form_Path := c.FormValue("path")
+	//form_Path = CleanDirtyPath(form_Path)
+
+	form_Path, _ := CleanPath(c.FormValue("path"))
+
+	if len(form_Path) > 0 {
+		url_Path = form_Path
+	}
+
+	return url_Path, nil
+}
 
 /*
 fmt.Println("../../etc/passwd", util.CleanDirtyPath("../../etc/passwd"));
