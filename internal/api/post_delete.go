@@ -48,8 +48,6 @@ func PostDelete(c fiber.Ctx) error {
 
 	if url_Path != "/" {
 
-		//fmt.Println("check inside=", url_Path)
-
 		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
 		if err != nil {
 
