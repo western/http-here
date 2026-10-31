@@ -58,7 +58,7 @@ func cleanPath(name string) (string, error) {
 	if name == "" ||
 		filepath.IsAbs(name) ||
 		strings.ContainsRune(name, '\x00') {
-		return "", ErrInvalidPath
+		return "", fmt.Errorf("Invalid path error1: %s", name)
 	}
 
 	/*
@@ -76,7 +76,7 @@ func cleanPath(name string) (string, error) {
 
 	if name == "." || name == ".." ||
 		strings.HasPrefix(name, ".."+string(filepath.Separator)) {
-		return "", ErrInvalidPath
+		return "", fmt.Errorf("Invalid path error2: %s", name)
 	}
 
 	return name, nil
@@ -127,7 +127,7 @@ func (r *RootFS) ReadFile(name string) ([]byte, error) {
 		return nil, err
 	}
 
-	name, err = cleanPath(name)
+	name, err := cleanPath(name)
 	if err != nil {
 		return nil, err
 	}
@@ -279,6 +279,20 @@ func (r *RootFS) Copy(src, dst string) error {
 	return closeErr
 }
 
+func (r *RootFS) Move(src, dst string) error {
+	err := r.Copy(src, dst)
+	if err != nil {
+		return err
+	}
+
+	err = r.Remove(src)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Walk walks the root directory.
 func (r *RootFS) Walk(
 	fn fs.WalkDirFunc,
@@ -288,4 +302,28 @@ func (r *RootFS) Walk(
 	}
 
 	return fs.WalkDir(r.root.FS(), ".", fn)
+}
+
+// ReadDir reads the named directory and returns a list of
+// directory entries sorted by filename.
+// entries []os.DirEntry
+func (r *RootFS) ReadDir(name string) ([]fs.DirEntry, error) {
+	if err := r.valid(); err != nil {
+		return nil, err
+	}
+
+	name, err := cleanPath(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.ReadDir(r.root.FS(), name)
+}
+
+func (r *RootFS) ReadCurrentDir() ([]fs.DirEntry, error) {
+	if err := r.valid(); err != nil {
+		return nil, err
+	}
+
+	return fs.ReadDir(r.root.FS(), ".")
 }
