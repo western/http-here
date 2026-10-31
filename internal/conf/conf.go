@@ -2,8 +2,11 @@ package conf
 
 import (
 	//"fmt"
+	"flag"
 	"os"
 	"path"
+
+	"github.com/western/http-here/v2/internal/safefs"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -14,8 +17,12 @@ const FilesCountMax = 200
 const FieldSizeMax = 14 * 1024 * 1024 * 1024
 const FieldSizeMaxHuman = "14 Gb"
 
+var Flag *Flag
+
 var ConfigRoot string
+
 var ArgFold string
+var ArgFoldRootFS *safefs.RootFS
 
 var MasterPID int
 
