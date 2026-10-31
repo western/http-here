@@ -2,7 +2,7 @@ package conf
 
 import (
 	//"fmt"
-	"flag"
+	//"flag"
 	"os"
 	"path"
 
@@ -17,7 +17,7 @@ const FilesCountMax = 200
 const FieldSizeMax = 14 * 1024 * 1024 * 1024
 const FieldSizeMaxHuman = "14 Gb"
 
-var Flag *Flag
+//var Flag *flag.Flag
 
 var ConfigRoot string
 
