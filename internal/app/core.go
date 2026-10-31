@@ -20,6 +20,7 @@ import (
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/fatih/color"
@@ -74,7 +75,7 @@ func Core() {
 
 	arg_extend_mode := flag.Bool("extend-mode", false, "Enable delete mechanics. Be very careful. It disabled by default.")
 	arg_crypt := flag.Bool("crypt", false, "Enable encrypt file support.")
-	arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
+	//arg_spa := flag.Bool("spa", false, "Enable frontend SPA (Single Page Application)")
 
 	arg_prefork := flag.Bool("prefork", false, "Enable spawn multiple processes")
 
@@ -120,6 +121,7 @@ func Core() {
 			``,
 			`     --basic                   Set basic auth and generate several accounts every time`,
 			`     --basic2                  Set basic auth and use database accounts`,
+			``,
 			`     --csrf-disable            Disable CSRF check`,
 			``,
 			``,
@@ -133,7 +135,7 @@ func Core() {
 			``,
 			`     --crypt                   Enable encrypt file support`,
 			``,
-			`     --spa                     Enable frontend SPA (Single Page Application)`,
+			//`     --spa                     Enable frontend SPA (Single Page Application)`,
 			``,
 			``,
 			`     --silence                 Disable all console messages`,
@@ -184,6 +186,13 @@ func Core() {
 
 		fmt.Println("")
 		fmt.Println("You can not run --prefork with --usedb")
+		return
+	}
+
+	if *arg_share_only && *arg_extend_mode {
+
+		fmt.Println("")
+		fmt.Println("You can not run --share-only with --extend-mode")
 		return
 	}
 
@@ -257,6 +266,7 @@ func Core() {
 	}()
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// arg_fold
 
 	arg_fold, err := os.Getwd()
 	if err != nil {
@@ -290,6 +300,13 @@ func Core() {
 	}
 
 	conf.ArgFold = arg_fold
+
+	rfs, err := safefs.OpenRoot(arg_fold)
+	if err != nil {
+		fmt.Println("Safefs err: ", err.Error())
+		return
+	}
+	conf.ArgFoldRootFS = rfs
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -424,7 +441,7 @@ func Core() {
 		c.Locals("arg_folder_make_disable", *arg_folder_make_disable)
 		c.Locals("arg_extend_mode", *arg_extend_mode)
 		c.Locals("arg_crypt", *arg_crypt)
-		c.Locals("arg_spa", *arg_spa)
+		//c.Locals("arg_spa", *arg_spa)
 		c.Locals("arg_silence", *arg_silence)
 		c.Locals("arg_nolog", *arg_nolog)
 		c.Locals("arg_usedb", *arg_usedb)
@@ -658,7 +675,7 @@ func Core() {
 			app.Post("/api/file/edit", PostFileEdit)
 		}
 
-		app.Get("/api/list", api.GetList)
+		//app.Get("/api/list", api.GetList)
 	}
 
 	if !*arg_upload_disable {
@@ -686,12 +703,16 @@ func Core() {
 
 	if !*arg_index_disable {
 
-		if *arg_spa {
-			app.Get("/", GetSpa)
-			app.Get("/*", api.GetAll)
-		} else {
-			app.Get("/*", api.GetAll)
-		}
+		/*
+			if *arg_spa {
+				app.Get("/", GetSpa)
+				app.Get("/*", api.GetAll)
+			} else {
+				app.Get("/*", api.GetAll)
+			}
+		*/
+
+		app.Get("/*", api.GetAll)
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
