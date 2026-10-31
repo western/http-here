@@ -17,6 +17,7 @@ var (
 
 type RootFS struct {
 	root *os.Root
+	//fileInfo fs.FileInfo
 	path string
 }
 
@@ -41,8 +42,16 @@ func OpenRoot(path string) (*RootFS, error) {
 		return nil, fmt.Errorf("Open root: %w", err)
 	}
 
+	/*
+		fileInfo, err := os.Stat(abs)
+		if err != nil {
+			return nil, fmt.Errorf("Stat err: %w", err)
+		}
+	*/
+
 	return &RootFS{
 		root: root,
+		//fileInfo: fileInfo,
 		path: abs,
 	}, nil
 }
@@ -105,6 +114,14 @@ func (r *RootFS) MkdirAll(name string, perm fs.FileMode) error {
 	}
 
 	return r.root.MkdirAll(name, perm)
+}
+
+func (r *RootFS) Name() string {
+	if err := r.valid(); err != nil {
+		return ""
+	}
+
+	return r.root.Name()
 }
 
 // Open opens a file for reading.
@@ -248,6 +265,14 @@ func (r *RootFS) Stat(name string) (fs.FileInfo, error) {
 	return r.root.Stat(name)
 }
 
+func (r *RootFS) RootStat() (fs.FileInfo, error) {
+	if err := r.valid(); err != nil {
+		return nil, err
+	}
+
+	return r.root.Stat(".")
+}
+
 // Copy copies a file within the root.
 func (r *RootFS) Copy(src, dst string) error {
 	in, err := r.Open(src)
@@ -320,7 +345,7 @@ func (r *RootFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return fs.ReadDir(r.root.FS(), name)
 }
 
-func (r *RootFS) ReadCurrentDir() ([]fs.DirEntry, error) {
+func (r *RootFS) ReadRootDir() ([]fs.DirEntry, error) {
 	if err := r.valid(); err != nil {
 		return nil, err
 	}
