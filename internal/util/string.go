@@ -84,8 +84,9 @@ func CleanDirtyPath(dirty_Str string) string {
 	dirty_Str = re.ReplaceAllLiteralString(dirty_Str, "/")
 
 	// windows separators
-	re2 := regexp.MustCompile("\\+")
-	dirty_Str = re2.ReplaceAllLiteralString(dirty_Str, "")
+	//re2 := regexp.MustCompile("\\+")
+	//dirty_Str = re2.ReplaceAllLiteralString(dirty_Str, "")
+	dirty_Str = strings.ReplaceAll(dirty_Str, `\`, "")
 
 	// points, from two
 	re3 := regexp.MustCompile("\\.{2,}")

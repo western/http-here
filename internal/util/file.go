@@ -228,7 +228,7 @@ func WalkAndClearZeroFile(path_ string, deep int) {
 func MultipartToFile(file *multipart.FileHeader) *os.File {
 
 	f, err := os.CreateTemp("", "httphere_convert*")
-	fmt.Println("MultipartToFile Temp file name:", f.Name())
+	//fmt.Println("MultipartToFile Temp file name:", f.Name())
 	defer os.Remove(f.Name())
 
 	readerFile, _ := file.Open()
