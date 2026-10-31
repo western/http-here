@@ -1,6 +1,6 @@
 module github.com/western/http-here/v2
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/charlievieth/fastwalk v1.0.14
@@ -24,7 +24,7 @@ require (
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/gofiber/schema v1.9.1 // indirect
+	github.com/gofiber/schema v1.9.2 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.2.0 // indirect
 	github.com/gofiber/utils/v2 v2.6.3 // indirect
