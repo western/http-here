@@ -81,7 +81,7 @@ func serveDirectory(c fiber.Ctx) error {
 	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
 	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
-	arg_spa := GetBoolFromLocals(c, "arg_spa")
+	//arg_spa := GetBoolFromLocals(c, "arg_spa")
 	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
 	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
 
@@ -98,12 +98,14 @@ func serveDirectory(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	if arg_spa {
+	/*
+		if arg_spa {
 
-		model2.EventLogAdd(c, 302, "CORE", "SPA application, redirect to /#!"+c_path)
-		//return c.Redirect("/#!"+c_path, 302)
-		return c.Redirect().To("/#!" + c_path)
-	}
+			model2.EventLogAdd(c, 302, "CORE", "SPA application, redirect to /#!"+c_path)
+			//return c.Redirect("/#!"+c_path, 302)
+			return c.Redirect().To("/#!" + c_path)
+		}
+	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
