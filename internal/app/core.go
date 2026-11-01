@@ -402,6 +402,13 @@ func Core() {
 		//go WalkAndClearOld(path.Join(conf.ConfigRoot, "thumb"))
 	}
 
+	tempFS, err := safefs.NewSafeFS(path.Join(conf.ConfigRoot, "temp"))
+	if err != nil {
+		fmt.Println("Safefs err: ", err.Error())
+		return
+	}
+	conf.TempRootFS = tempFS
+
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	engine := html.NewFileSystem(http.FS(view_fs), ".html")
@@ -627,36 +634,55 @@ func Core() {
 
 	app.Get("/__temp/*", func(c fiber.Ctx) error {
 
-		c_path, err := url.QueryUnescape(c.Path())
-		c_path = strings.TrimLeft(c_path, "/__temp")
+		c_Path, err := url.QueryUnescape(c.Path())
+		c_Path = strings.TrimLeft(c_Path, "/__temp")
 
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "__temp", "Error "+path.Join(conf.ConfigRoot, "temp", c_path)+" "+err.Error())
+			model2.EventLogAdd(c, 500, "__temp", "Error "+c_Path+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 		}
 
-		c_path = util.CleanDirtyPath(c_path)
-		full_filename := path.Join(conf.ConfigRoot, "temp", c_path)
+		c_Path = util.CleanDirtyPath(c_Path)
+		targetTempPath := path.Join(conf.ConfigRoot, "temp", c_Path)
 
 		if runtime.GOOS == "windows" {
-			full_filename = util.RotateSlash(full_filename)
+			targetTempPath = util.RotateSlash(targetTempPath)
 		}
 
-		_, err = os.Stat(full_filename)
+		// ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+		Root := conf.TempRootFS
+
+		fileInfo, err := Root.Stat(strings.TrimPrefix(c_Path, "/"))
+
 		if err != nil {
 
-			model2.EventLogAdd(c, 404, "__temp", "'"+full_filename+"' not found")
+			model2.EventLogAdd(c, 500, "__temp", "Root.Stat err "+err.Error())
 
-			return c.JSON(fiber.Map{
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"code": 404,
-				"msg":  path.Join(c_path) + " not found",
-			}, "application/json")
+				"msg":  c_Path + " not found",
+			})
 		}
 
-		model2.EventLogAdd(c, 200, "__temp", "Temp get "+full_filename)
+		fileMode := fileInfo.Mode()
 
-		return c.SendFile(full_filename)
+		if !fileMode.IsRegular() {
+
+			model2.EventLogAdd(c, 500, "__temp", "It is not regular file. "+targetTempPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not regular file",
+			})
+		}
+
+		// ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+		model2.EventLogAdd(c, 200, "__temp", "Temp get "+targetTempPath)
+
+		return c.SendFile(targetTempPath)
 	})
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
