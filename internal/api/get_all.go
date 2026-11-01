@@ -1,8 +1,8 @@
 package api
 
 import (
-	//"fmt"
 	"errors"
+	"fmt"
 	"html/template"
 	"net/url"
 	"os"
@@ -16,6 +16,7 @@ import (
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -24,58 +25,101 @@ import (
 
 func GetAll(c fiber.Ctx) error {
 
-	c_path, err := url.QueryUnescape(c.Path())
+	c_Path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "QueryUnescape Error: "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	c_path = util.CleanDirtyPath(c_path)
+	c_Path = util.CleanDirtyPath(c_Path)
 
-	readTarget := path.Join(conf.ArgFold, c_path)
+	targetPath := path.Join(conf.ArgFold, c_Path)
 
-	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------------------------------
+	// root with trust ArgFold
 
-	fileInfo, err := os.Lstat(readTarget)
+	Root := conf.ArgFoldRootFS
+
+	fileInfo, err := Root.RootStat()
+
+	if c_Path != "/" {
+		fileInfo, err = Root.Stat(strings.TrimPrefix(c_Path, "/"))
+	}
 
 	if errors.Is(err, os.ErrNotExist) {
 
-		model2.EventLogAdd(c, 404, "CORE", readTarget)
+		model2.EventLogAdd(c, 404, "CORE", targetPath)
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{
-			"File": c_path,
+			"File": c_Path,
 		}, "view/layout/error")
 	}
 
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "CORE", "Error "+readTarget+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "Root.Stat err "+err.Error())
+
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
 	fileMode := fileInfo.Mode()
-
-	if fileMode.IsDir() {
-
-		return serveDirectory(c)
-	}
 
 	if fileMode.IsRegular() {
 
-		return serveFile(c, fileMode)
+		// --------------------------------------------------------------------
+
+		targetDir := filepath.Dir(targetPath)
+
+		fmt.Println("1) targetPath=", targetPath)
+		fmt.Println("1) targetDir=", targetDir)
+
+		targetRoot, err := safefs.OpenRoot(targetDir)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "CORE", "Open storage targetRoot err: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		// --------------------------------------------------------------------
+
+		return serveFile(c, targetRoot)
 	}
+
+	if fileMode.IsDir() {
+
+		// --------------------------------------------------------------------
+
+		targetRoot, err := safefs.OpenRoot(targetPath)
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "CORE", "Open storage targetRoot err: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+		}
+
+		// --------------------------------------------------------------------
+
+		return serveDirectory(c, targetRoot)
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	// FILE is not Regular and not Directory
 	// 500 Internal Server Error
 
-	model2.EventLogAdd(c, 500, "CORE", "Error "+readTarget+" is NOT regular file and NOT directory")
+	model2.EventLogAdd(c, 500, "CORE", "Error "+targetPath+" is NOT regular file and NOT directory")
 	return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 }
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
-func serveDirectory(c fiber.Ctx) error {
+func serveDirectory(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 	arg_upload_disable := GetBoolFromLocals(c, "arg_upload_disable")
 	arg_folder_make_disable := GetBoolFromLocals(c, "arg_folder_make_disable")
@@ -85,46 +129,34 @@ func serveDirectory(c fiber.Ctx) error {
 	arg_usedb := GetBoolFromLocals(c, "arg_usedb")
 	arg_csrf_disable := GetBoolFromLocals(c, "arg_csrf_disable")
 
-	c_path, err := url.QueryUnescape(c.Path())
+	c_Path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "QueryUnescape Error: "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	c_path = util.CleanDirtyPath(c_path)
+	c_Path = util.CleanDirtyPath(c_Path)
 
-	readTarget := path.Join(conf.ArgFold, c_path)
-
-	// -------------------------------------------------------------------------------------------------------------------------------------------
-
-	/*
-		if arg_spa {
-
-			model2.EventLogAdd(c, 302, "CORE", "SPA application, redirect to /#!"+c_path)
-			//return c.Redirect("/#!"+c_path, 302)
-			return c.Redirect().To("/#!" + c_path)
-		}
-	*/
+	targetPath := targetRoot.Name()
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
-
 	// check index.html inside
-	if _, err := os.Stat(path.Join(readTarget, "index.html")); err == nil {
 
-		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_path+"', SendFile "+path.Join(readTarget, "index.html"))
-		//return c.SendFile(path.Join(readTarget, "index.html"), false)
-		return c.SendFile(path.Join(readTarget, "index.html"))
+	if _, err := targetRoot.Stat("index.html"); err == nil {
+
+		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_Path+"', SendFile "+path.Join(targetPath, "index.html"))
+		return c.SendFile(path.Join(targetPath, "index.html"))
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	model2.EventLogAdd(c, 200, "CORE", "Dir "+readTarget)
+	model2.EventLogAdd(c, 200, "CORE", "Dir "+targetPath)
 
 	breadcrumb := ""
 	separator := "/"
 
-	res1 := strings.Split(c_path, separator)
+	res1 := strings.Split(c_Path, separator)
 	pt := ""
 	for indx, el := range res1 {
 		if indx == 0 {
@@ -168,12 +200,12 @@ func serveDirectory(c fiber.Ctx) error {
 		setCookie(c, "sort", s_sort)
 	}
 
-	rows, err := generateRows(c, s_sort)
+	rows, err := generateRows(c, targetRoot, s_sort)
 	if err != nil {
 
 		if os.IsPermission(err) {
 
-			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+readTarget)
+			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+targetPath)
 			return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
 				"Title":   "403",
 				"Message": "Forbidden",
@@ -243,20 +275,68 @@ func serveDirectory(c fiber.Ctx) error {
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
-func serveFile(c fiber.Ctx, fileMode os.FileMode) error {
+func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
-	c_path, err := url.QueryUnescape(c.Path())
+	c_Path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "CORE", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "QueryUnescape Error: "+err.Error())
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
 
-	c_path = util.CleanDirtyPath(c_path)
+	c_Path = util.CleanDirtyPath(c_Path)
 
-	readTarget := path.Join(conf.ArgFold, c_path)
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// EXTRACT filename from path
+
+	targetFileName := util.GetFileName(c_Path)
+	//fmt.Println("serveFile", " targetFileName1=", targetFileName)
+
+	targetFileExt := filepath.Ext(c_Path) // ext with point, as ".jpg"
+	//fmt.Println("serveFile", " targetFileExt=", targetFileExt)
+
+	targetFileName += targetFileExt
+	//fmt.Println("serveFile", " targetFileName2=", targetFileName)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+
+	//targetPath := path.Join(conf.ArgFold, c_Path)
+	//targetPath := targetRoot.Name()
+	targetPath := path.Join(targetRoot.Name(), targetFileName)
+
+	//fmt.Println("path.Join(conf.ArgFold, c_Path)=", path.Join(conf.ArgFold, c_Path))
+	//fmt.Println("serveFile", " targetPath=", targetPath)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// check file inside TRUST environment
+
+	//fmt.Println("CHK ", targetRoot.Name(), ":", c_Path)
+
+	fileInfo, err := targetRoot.Stat(targetFileName)
+
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "CORE", "stat err "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).Render("view/error", fiber.Map{
+			"Title":   "500",
+			"Message": "stat err",
+		}, "view/layout/error")
+	}
+
+	fileMode := fileInfo.Mode()
+
+	if !fileMode.IsRegular() {
+
+		model2.EventLogAdd(c, 500, "CORE", "It is not regular file. "+targetPath)
+
+		return c.Status(fiber.StatusInternalServerError).Render("view/error", fiber.Map{
+			"Title":   "500",
+			"Message": "It is not regular file",
+		}, "view/layout/error")
+	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -273,7 +353,7 @@ func serveFile(c fiber.Ctx, fileMode os.FileMode) error {
 		setCookie(c, "code", "")
 	}
 
-	is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_path)
+	is_crypt_ext, _ := regexp.MatchString("\\.crypt$", c_Path)
 
 	if (is_crypt_ext && arg_crypt && len(code) > 0) || (is_crypt_ext && len(code) > 0) {
 
@@ -285,13 +365,13 @@ func serveFile(c fiber.Ctx, fileMode os.FileMode) error {
 
 		// ------------------------------------------------------------------------------------------------------------------
 
-		if err := crypt.GCMDecryptFile([]byte(code), readTarget, fileDecrupt.Name()); err != nil {
+		if err := crypt.GCMDecryptFile([]byte(code), targetPath, fileDecrupt.Name()); err != nil {
 
-			file_ext := util.GetExtNorm(readTarget)
-			originalFileName := util.GetFileName(readTarget)
+			file_ext := util.GetExtNorm(targetPath)
+			originalFileName := util.GetFileName(targetPath)
 			filename := originalFileName + "." + file_ext
 
-			model2.EventLogAdd(c, 500, "CORE", "Error DecryptFile "+readTarget+" "+err.Error())
+			model2.EventLogAdd(c, 500, "CORE", "Error DecryptFile "+targetPath+" "+err.Error())
 			return c.Status(fiber.StatusInternalServerError).Render("view/error", fiber.Map{
 				"Title":   "500",
 				"Message": "Error DecryptFile " + filename,
@@ -300,31 +380,34 @@ func serveFile(c fiber.Ctx, fileMode os.FileMode) error {
 
 		// ------------------------------------------------------------------------------------------------------------------
 
-		fname := filepath.Base(c_path)
+		fname := filepath.Base(c_Path)
 		fname = strings.Replace(fname, ".crypt", "", 1)
 
 		c.Set(fiber.HeaderContentDisposition, `attachment; filename="`+fname+`"`)
 
-		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+readTarget+" as "+fname)
+		model2.EventLogAdd(c, 200, "CORE", "SendFile decrypt "+targetPath+" as "+fname)
 
 		return c.SendFile(fileDecrupt.Name())
 
 	} else {
 
+		//fileInfo, _ := targetRoot.RootStat()
+		fileMode := fileInfo.Mode()
+
 		if fileMode.Perm()&0444 == 0444 {
 
 		} else {
 
-			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+readTarget)
+			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+targetPath)
 			return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
 				"Title":   "403",
 				"Message": "Forbidden",
 			}, "view/layout/error")
 		}
 
-		model2.EventLogAdd(c, 200, "CORE", "SendFile "+readTarget)
+		model2.EventLogAdd(c, 200, "CORE", "SendFile "+targetPath)
 
-		return c.SendFile(readTarget)
+		return c.SendFile(targetPath)
 	}
 }
 
@@ -339,9 +422,9 @@ var (
 	editMdRegex   = regexp.MustCompile("^(md)$")
 )
 
-func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
+func generateRows(c fiber.Ctx, targetRoot *safefs.RootFS, s_sort string) ([]FileRow, error) {
 
-	arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
+	//arg_extend_mode := GetBoolFromLocals(c, "arg_extend_mode")
 	arg_cache_dir := GetIntFromLocals(c, "arg_cache_dir", 30)
 	arg_crypt := GetBoolFromLocals(c, "arg_crypt")
 
@@ -352,25 +435,28 @@ func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 
 	c_path = util.CleanDirtyPath(c_path)
 
-	readTarget := path.Join(conf.ArgFold, c_path)
+	//targetPath := path.Join(conf.ArgFold, c_path)
+	targetPath := targetRoot.Name()
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// FOR request with PARAM path=
 
-	u_path := c.FormValue("path")
+	/*
+		u_path := c.FormValue("path")
 
-	u_path = util.CleanDirtyPath(u_path)
+		u_path = util.CleanDirtyPath(u_path)
 
-	if len(u_path) > 0 {
-		c_path = u_path
-		readTarget = path.Join(conf.ArgFold, u_path)
-	}
+		if len(u_path) > 0 {
+			c_path = u_path
+			targetPath = path.Join(conf.ArgFold, u_path)
+		}
+	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// CACHE
 
 	dirCacheMux.RLock()
-	cached, exists := dirCache[readTarget]
+	cached, exists := dirCache[targetPath]
 	dirCacheMux.RUnlock()
 
 	if !arg_crypt && exists && !cached.isExpired(arg_cache_dir) {
@@ -387,10 +473,11 @@ func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// entries []os.DirEntry
 
-	entries, err := os.ReadDir(readTarget)
+	//entries, err := os.ReadDir(targetPath)
+	entries, err := targetRoot.ReadRootDir()
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "generateRows", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "CORE", "ReadRootDir "+targetPath+" Error: "+err.Error())
 
 		return []FileRow{}, err
 	}
@@ -417,7 +504,8 @@ func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 		is_edit_code := editCodeRegex.MatchString(ext)
 		is_edit_md := editMdRegex.MatchString(ext)
 
-		if fileInfo, err := os.Stat(path.Join(readTarget, e.Name())); err == nil {
+		//if fileInfo, err := os.Stat(path.Join(targetPath, e.Name())); err == nil {
+		if fileInfo, err := targetRoot.Stat(e.Name()); err == nil {
 
 			modtime := fileInfo.ModTime()
 			modtime_human := modtime.Format("2006-01-02 15:04:05")
@@ -464,9 +552,9 @@ func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 					Rndm:         util.RandStringRunes(2),
 				})
 
-				if arg_extend_mode {
-					//model2.FileAdd(path.Join(readTarget, e.Name()))
-				}
+				//if arg_extend_mode {
+				//model2.FileAdd(path.Join(targetPath, e.Name()))
+				//}
 			}
 
 		}
@@ -476,7 +564,7 @@ func generateRows(c fiber.Ctx, s_sort string) ([]FileRow, error) {
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
 	dirCacheMux.Lock()
-	dirCache[readTarget] = &cachedDir{
+	dirCache[targetPath] = &cachedDir{
 
 		rows_dir:  rows_dir,
 		rows_file: rows_file,
