@@ -79,6 +79,9 @@ fmt.Println("..\\..\\secret.txt", util.CleanDirtyPath("..\\..\\secret.txt"));
 */
 func CleanDirtyPath(dirty_Str string) string {
 
+	// TrimSpace returns a slice (substring) of the string s, with all leading and trailing white space removed, as defined by Unicode.
+	dirty_Str = strings.TrimSpace(dirty_Str)
+
 	// double slash
 	re := regexp.MustCompile("/+")
 	dirty_Str = re.ReplaceAllLiteralString(dirty_Str, "/")
