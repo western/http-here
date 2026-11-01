@@ -69,18 +69,6 @@ func GetList(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	/*
-		if _, err := targetRoot.Stat(form_Path); err != nil {
-
-			model2.EventLogAdd(c, 500, "GetList", "'"+targetPath+"' not exists")
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  form_Path + " not exists",
-			})
-		}
-	*/
-
 	var s_sort string = "name"
 
 	s_sort = c.Cookies("sort")

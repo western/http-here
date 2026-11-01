@@ -292,13 +292,10 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 	// EXTRACT filename from path
 
 	targetFileName := util.GetFileName(c_Path)
-	//fmt.Println("serveFile", " targetFileName1=", targetFileName)
 
 	targetFileExt := filepath.Ext(c_Path) // ext with point, as ".jpg"
-	//fmt.Println("serveFile", " targetFileExt=", targetFileExt)
 
 	targetFileName += targetFileExt
-	//fmt.Println("serveFile", " targetFileName2=", targetFileName)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -306,13 +303,8 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 	//targetPath := targetRoot.Name()
 	targetPath := path.Join(targetRoot.Name(), targetFileName)
 
-	//fmt.Println("path.Join(conf.ArgFold, c_Path)=", path.Join(conf.ArgFold, c_Path))
-	//fmt.Println("serveFile", " targetPath=", targetPath)
-
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// check file inside TRUST environment
-
-	//fmt.Println("CHK ", targetRoot.Name(), ":", c_Path)
 
 	fileInfo, err := targetRoot.Stat(targetFileName)
 
