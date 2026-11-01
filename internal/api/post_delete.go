@@ -32,19 +32,6 @@ func PostDelete(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
 
-	/*
-		Root, err := os.OpenRoot(conf.ArgFold)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostDelete", "open storage Root err1. "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "open storage Root err1",
-			})
-		}
-	*/
-
 	Root := conf.ArgFoldRootFS
 
 	if url_Path != "/" {
