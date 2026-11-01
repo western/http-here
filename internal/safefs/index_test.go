@@ -15,9 +15,9 @@ func openTestRoot(t *testing.T) (*RootFS, string) {
 
 	dir := t.TempDir()
 
-	root, err := OpenRoot(dir)
+	root, err := NewSafeFS(dir)
 	if err != nil {
-		t.Fatalf("OpenRoot(%s): %v", dir, err)
+		t.Fatalf("NewSafeFS(%s): %v", dir, err)
 	}
 
 	t.Cleanup(func() {
@@ -28,49 +28,117 @@ func openTestRoot(t *testing.T) (*RootFS, string) {
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
-// OpenRoot
+// NewSafeFS
 
-func TestOpenRoot_ok(t *testing.T) {
+func TestNewSafeFS_ok(t *testing.T) {
 
 	root, dir := openTestRoot(t)
 
 	if root == nil {
-		t.Fatal("OpenRoot returned nil root")
+		t.Fatal("NewSafeFS returned nil root")
 	}
 
 	if root.path != dir {
 		t.Errorf("root.path = %q, want %q (absolute)", root.path, dir)
 	}
+
+	if got := root.Name(); got != dir {
+		t.Errorf("Name() = %q, want %q", got, dir)
+	}
 }
 
-func TestOpenRoot_emptyPath(t *testing.T) {
+func TestNewSafeFS_emptyPath(t *testing.T) {
 
 	for _, p := range []string{"", "   ", "\t"} {
 
-		root, err := OpenRoot(p)
+		root, err := NewSafeFS(p)
 
 		if !errors.Is(err, ErrInvalidPath) {
-			t.Errorf("OpenRoot(%q) error = %v, want ErrInvalidPath", p, err)
+			t.Errorf("NewSafeFS(%q) error = %v, want ErrInvalidPath", p, err)
 		}
 
 		if root != nil {
-			t.Errorf("OpenRoot(%q) returned non-nil root", p)
+			t.Errorf("NewSafeFS(%q) returned non-nil root", p)
 		}
 	}
 }
 
-func TestOpenRoot_nonexistentPath(t *testing.T) {
+func TestNewSafeFS_nonexistentPath(t *testing.T) {
 
-	root, err := OpenRoot(filepath.Join(t.TempDir(), "does-not-exist"))
+	root, err := NewSafeFS(filepath.Join(t.TempDir(), "does-not-exist"))
 
 	if err == nil {
-		t.Error("OpenRoot(nonexistent) expected error, got nil")
+		t.Error("NewSafeFS(nonexistent) expected error, got nil")
 		root.Close()
 	}
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
-// cleanPath: traversal protection
+// cleanPath: path validation
+
+func TestCleanPath_valid(t *testing.T) {
+
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{in: "a.txt", want: "a.txt"},
+		{in: filepath.Join("a", "b"), want: filepath.Join("a", "b")},
+		{in: "./a.txt", want: "a.txt"},
+		{in: "a//b", want: filepath.Join("a", "b")},
+		{in: "a/./b", want: filepath.Join("a", "b")},
+		{in: "a/b/", want: filepath.Join("a", "b")},
+		{in: "a/b/../c", want: filepath.Join("a", "c")},
+	}
+
+	for _, tc := range cases {
+
+		got, err := cleanPath(tc.in)
+
+		if err != nil {
+			t.Errorf("cleanPath(%q) unexpected error: %v", tc.in, err)
+			continue
+		}
+
+		if got != tc.want {
+			t.Errorf("cleanPath(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+func TestCleanPath_invalid(t *testing.T) {
+
+	bad := []string{
+		"",
+		".",
+		"..",
+		"../outside.txt",
+		"a/../../outside.txt",
+		"a\x00b",
+		filepath.Join(t.TempDir(), "abs.txt"), // absolute path
+	}
+
+	// "/abs.txt" is absolute only on Unix-like systems
+	if filepath.IsAbs("/abs.txt") {
+		bad = append(bad, "/abs.txt")
+	}
+
+	for _, name := range bad {
+
+		got, err := cleanPath(name)
+
+		if err == nil {
+			t.Errorf("cleanPath(%q) expected error, got %q", name, got)
+		}
+
+		if got != "" {
+			t.Errorf("cleanPath(%q) must return empty string on error, got %q", name, got)
+		}
+	}
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// cleanPath via API: traversal protection
 
 func TestRootFS_traversalRejected(t *testing.T) {
 
@@ -205,6 +273,66 @@ func TestRootFS_mkdirOpenWriteReadRemove(t *testing.T) {
 	}
 }
 
+func TestRootFS_mkdirNonRecursive(t *testing.T) {
+
+	root, dir := openTestRoot(t)
+
+	// simple Mkdir works
+	if err := root.Mkdir("dir1", 0755); err != nil {
+		t.Fatalf("Mkdir: %v", err)
+	}
+
+	if fi, err := os.Stat(filepath.Join(dir, "dir1")); err != nil || !fi.IsDir() {
+		t.Fatalf("Mkdir did not create dir: %v", err)
+	}
+
+	// Mkdir does not create parent dirs
+	if err := root.Mkdir("a/b/c", 0755); err == nil {
+		t.Error("Mkdir('a/b/c') expected error when parent is absent, got nil")
+	}
+
+	// traversal input is rejected
+	if err := root.Mkdir("..", 0755); err == nil {
+		t.Error("Mkdir('..') expected error, got nil")
+	}
+}
+
+func TestRootFS_rename(t *testing.T) {
+
+	root, _ := openTestRoot(t)
+
+	if err := root.WriteFile("old.txt", []byte("rename me"), 0644); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	if err := root.Mkdir("sub", 0755); err != nil {
+		t.Fatalf("Mkdir: %v", err)
+	}
+
+	// rename into a subdir
+	if err := root.Rename("old.txt", "sub/new.txt"); err != nil {
+		t.Fatalf("Rename: %v", err)
+	}
+
+	if _, err := root.Stat("old.txt"); err == nil {
+		t.Error("old.txt still exists after Rename")
+	}
+
+	got, err := root.ReadFile("sub/new.txt")
+	if err != nil || string(got) != "rename me" {
+		t.Errorf("Rename result = %q, %v", got, err)
+	}
+
+	// invalid input is rejected
+	if err := root.Rename("../out.txt", "x.txt"); err == nil {
+		t.Error("Rename('../out.txt', ...) expected error, got nil")
+	}
+
+	if err := root.Rename("sub/new.txt", ""); err == nil {
+		t.Error("Rename(..., '') expected error, got nil")
+	}
+}
+
 func TestRootFS_copyMove(t *testing.T) {
 
 	root, _ := openTestRoot(t)
@@ -223,6 +351,11 @@ func TestRootFS_copyMove(t *testing.T) {
 		t.Errorf("Copy result = %q, %v", got, err)
 	}
 
+	// source must survive Copy
+	if _, err := root.Stat("src.txt"); err != nil {
+		t.Errorf("src.txt missing after Copy: %v", err)
+	}
+
 	// Move
 	if err := root.Move("dst.txt", "moved.txt"); err != nil {
 		t.Fatalf("Move: %v", err)
@@ -236,7 +369,49 @@ func TestRootFS_copyMove(t *testing.T) {
 	if err != nil || string(got) != "copy me" {
 		t.Errorf("Move result = %q, %v", got, err)
 	}
+
+	// Move of absent source must fail
+	if err := root.Move("absent.txt", "out.txt"); err == nil {
+		t.Error("Move('absent.txt', ...) expected error, got nil")
+	}
 }
+
+func TestRootFS_writeFileOverwrite(t *testing.T) {
+
+	root, dir := openTestRoot(t)
+
+	if err := root.WriteFile("file.txt", []byte("version-1"), 0644); err != nil {
+		t.Fatalf("WriteFile v1: %v", err)
+	}
+
+	if err := root.WriteFile("file.txt", []byte("version-2-longer"), 0644); err != nil {
+		t.Fatalf("WriteFile v2: %v", err)
+	}
+
+	got, err := root.ReadFile("file.txt")
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+
+	if string(got) != "version-2-longer" {
+		t.Errorf("ReadFile = %q, want %q", got, "version-2-longer")
+	}
+
+	// no temporary files must be left behind
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("ReadDir(root dir): %v", err)
+	}
+
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), ".tmp-") {
+			t.Errorf("leftover temporary file: %s", e.Name())
+		}
+	}
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// listing and walking
 
 func TestRootFS_readDirWalk(t *testing.T) {
 
@@ -258,13 +433,13 @@ func TestRootFS_readDirWalk(t *testing.T) {
 		t.Fatalf("ReadDir: must not read POINT")
 	}
 
-	entries, err = root.ReadCurrentDir()
+	entries, err = root.ReadRootDir()
 	if err != nil {
-		t.Fatalf("ReadDir: %v", err)
+		t.Fatalf("ReadRootDir: %v", err)
 	}
 
 	if len(entries) != 2 { // one.txt + sub
-		t.Errorf("ReadDir('.') count = %d, want 2", len(entries))
+		t.Errorf("ReadRootDir count = %d, want 2", len(entries))
 	}
 
 	// ReadDir of subdir
@@ -303,6 +478,27 @@ func TestRootFS_readDirWalk(t *testing.T) {
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
+// RootStat
+
+func TestRootFS_rootStat(t *testing.T) {
+
+	root, _ := openTestRoot(t)
+
+	fi, err := root.RootStat()
+	if err != nil {
+		t.Fatalf("RootStat: %v", err)
+	}
+
+	if !fi.IsDir() {
+		t.Errorf("RootStat = %v, want a directory", fi)
+	}
+
+	if fi.Name() != filepath.Base(root.Name()) {
+		t.Errorf("RootStat name = %q, want %q", fi.Name(), filepath.Base(root.Name()))
+	}
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
 // Close / ErrRootClosed
 
 func TestRootFS_closeAndUse(t *testing.T) {
@@ -322,8 +518,11 @@ func TestRootFS_closeAndUse(t *testing.T) {
 		name string
 		fn   func() error
 	}{
+		{"Mkdir", func() error { return root.Mkdir("x", 0755) }},
 		{"MkdirAll", func() error { return root.MkdirAll("x", 0755) }},
 		{"WriteFile", func() error { return root.WriteFile("x", nil, 0644) }},
+		{"Rename", func() error { return root.Rename("x", "y") }},
+		{"Move", func() error { return root.Move("x", "y") }},
 		{"Remove", func() error { return root.Remove("x") }},
 		{"RemoveAll", func() error { return root.RemoveAll("x") }},
 		{"Copy", func() error { return root.Copy("x", "y") }},
@@ -349,10 +548,50 @@ func TestRootFS_closeAndUse(t *testing.T) {
 		t.Errorf("Stat after Close: err = %v, want ErrRootClosed", err)
 	}
 
+	if _, err := root.RootStat(); !errors.Is(err, ErrRootClosed) {
+		t.Errorf("RootStat after Close: err = %v, want ErrRootClosed", err)
+	}
+
 	if _, err := root.ReadDir("x"); !errors.Is(err, ErrRootClosed) {
 		t.Errorf("ReadDir after Close: err = %v, want ErrRootClosed", err)
 	}
+
+	if _, err := root.ReadRootDir(); !errors.Is(err, ErrRootClosed) {
+		t.Errorf("ReadRootDir after Close: err = %v, want ErrRootClosed", err)
+	}
+
+	if got := root.Name(); got != "" {
+		t.Errorf("Name after Close = %q, want empty string", got)
+	}
 }
+
+func TestRootFS_nilReceiver(t *testing.T) {
+
+	var r *RootFS
+
+	if err := r.Close(); err != nil {
+		t.Errorf("nil Close: err = %v, want nil", err)
+	}
+
+	if got := r.Name(); got != "" {
+		t.Errorf("nil Name = %q, want empty string", got)
+	}
+
+	if _, err := r.Open("x"); !errors.Is(err, ErrRootClosed) {
+		t.Errorf("nil Open: err = %v, want ErrRootClosed", err)
+	}
+
+	if _, err := r.Stat("x"); !errors.Is(err, ErrRootClosed) {
+		t.Errorf("nil Stat: err = %v, want ErrRootClosed", err)
+	}
+
+	if err := r.Remove("x"); !errors.Is(err, ErrRootClosed) {
+		t.Errorf("nil Remove: err = %v, want ErrRootClosed", err)
+	}
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// security
 
 func TestRootFS_escapeIsImpossible(t *testing.T) {
 
