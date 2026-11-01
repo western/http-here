@@ -94,7 +94,21 @@ func (r *RootFS) Close() error {
 	return root.Close()
 }
 
-// MkdirAll creates directories inside the root.
+// Mkdir creates directory inside the root.
+func (r *RootFS) Mkdir(name string, perm fs.FileMode) error {
+	if err := r.valid(); err != nil {
+		return err
+	}
+
+	name, err := cleanPath(name)
+	if err != nil {
+		return err
+	}
+
+	return r.root.Mkdir(name, perm)
+}
+
+// MkdirAll creates path of directories inside the root.
 func (r *RootFS) MkdirAll(name string, perm fs.FileMode) error {
 	if err := r.valid(); err != nil {
 		return err
