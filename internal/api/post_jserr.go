@@ -1,13 +1,7 @@
 package api
 
 import (
-	//"io"
 	"net/url"
-	//"os"
-	//"path"
-	//"regexp"
-	//"strings"
-	//"fmt"
 
 	//"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -31,7 +25,7 @@ func PostJserr(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
-		}, "application/json")
+		})
 	}
 
 	u_path := util.CleanDirtyPath(u.Path)
@@ -58,6 +52,6 @@ func PostJserr(c fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 
 }
