@@ -230,6 +230,25 @@ func (r *RootFS) WriteFile(
 	return r.root.Rename(relative, name)
 }
 
+// Rename entity
+func (r *RootFS) Rename(fromName, toName string) error {
+	if err := r.valid(); err != nil {
+		return err
+	}
+
+	fromName, err := cleanPath(fromName)
+	if err != nil {
+		return err
+	}
+
+	toName, err = cleanPath(toName)
+	if err != nil {
+		return err
+	}
+
+	return r.root.Rename(fromName, toName)
+}
+
 // Remove deletes a file or empty directory.
 func (r *RootFS) Remove(name string) error {
 	if err := r.valid(); err != nil {
