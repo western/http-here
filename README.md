@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v2.4.4 https://github.com/western/http-here
+git clone --branch v2.4.5 https://github.com/western/http-here
 cd http-here
 make build
 
