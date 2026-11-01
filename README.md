@@ -300,7 +300,7 @@ https://github.com/western/http-here/issues
 
 ### backlog
 - [x] ~~add --log and --tee args for save output (or database?)~~ (`--logto`, `--jsonto` and database for store event log data)
-- [ ] change background actions for FS drivers (i need one abstraction layer)
+- [x] ~~change background actions for FS drivers (i need one abstraction layer)~~ (there is exist now - it is safeFS)
 - [ ] problem: how decide to run md5sum inside some folder
 - [x] ~~database, separate branch without?~~ (app have switch option for database)
 - [ ] tests
@@ -308,7 +308,11 @@ https://github.com/western/http-here/issues
 - [x] prepare frontend REACT repo (repo already exist, but only local)
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
-- [ ] remove SPA
+- [x] remove SPA
+
+### 2.4.4
+- [x] security changes for API
+- [x] prepare API for safeFS
 
 ### 2.4.0
 - [x] add CSRF check security
