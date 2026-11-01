@@ -56,7 +56,7 @@ func GetList(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 	// reopen targetRoot with full targetPath
 
-	targetRoot, err := safefs.OpenRoot(targetPath)
+	targetRoot, err := safefs.NewSafeFS(targetPath)
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "GetList", "Open storage targetRoot err: "+err.Error())

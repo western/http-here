@@ -301,7 +301,7 @@ func Core() {
 
 	conf.ArgFold = arg_fold
 
-	rfs, err := safefs.OpenRoot(arg_fold)
+	rfs, err := safefs.NewSafeFS(arg_fold)
 	if err != nil {
 		fmt.Println("Safefs err: ", err.Error())
 		return
