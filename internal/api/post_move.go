@@ -3,7 +3,7 @@ package api
 import (
 	//"fmt"
 	"net/url"
-	"os"
+	//"os"
 	"path"
 	"strings"
 
@@ -218,7 +218,8 @@ func PostMove(c fiber.Ctx) error {
 
 			model2.EventLogAdd(c, 200, "PostMove", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
-			if err := os.RemoveAll(target_file_path); err != nil {
+			//if err := os.RemoveAll(target_file_path); err != nil {
+			if err := targetRoot.RemoveAll(name); err != nil {
 				model2.EventLogAdd(c, 500, "PostMove", "'"+target_file_path+"' err "+err.Error())
 				err_list = append(err_list, "'"+target_file_path+"' err "+err.Error())
 				continue
@@ -236,7 +237,8 @@ func PostMove(c fiber.Ctx) error {
 			}
 
 			// remove source folder
-			if err := os.RemoveAll(src_file_path); err != nil {
+			//if err := os.RemoveAll(src_file_path); err != nil {
+			if err := sourceRoot.RemoveAll(name); err != nil {
 				model2.EventLogAdd(c, 500, "PostMove", "rm folder '"+src_file_path+"' err "+err.Error())
 				err_list = append(err_list, "'"+src_file_path+"' err "+err.Error())
 				continue
