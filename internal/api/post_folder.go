@@ -9,6 +9,7 @@ import (
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -27,20 +28,63 @@ func PostFolder(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
-		}, "application/json")
+		})
 	}
 
-	u_path := util.CleanDirtyPath(u.Path)
+	url_Path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
 	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
-		u_path = form_path
+		url_Path = form_path
 	}
 
-	readTarget := path.Join(conf.ArgFold, u_path)
+	targetPath := path.Join(conf.ArgFold, url_Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// open root with trust ArgFold
+
+	Root := conf.ArgFoldRootFS
+
+	if url_Path != "/" {
+
+		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFolder", "stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostFolder", "It is not directory. "+targetPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// REOPEN targetRoot for use below
+
+	targetRoot, err := safefs.NewSafeFS(targetPath)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFolder", "Open storage targetRoot err: "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "stat err",
+		})
+	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -63,37 +107,39 @@ func PostFolder(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
-		}, "application/json")
+		})
 	}
 
-	if fileInfo, err := os.Stat(path.Join(readTarget, name)); err == nil {
+	targetPathName := path.Join(targetPath, name)
+
+	if fileInfo, err := targetRoot.Stat(name); err == nil {
 
 		if fileInfo.IsDir() {
 
-			model2.EventLogAdd(c, 500, "PostFolder", "'"+path.Join(readTarget, name)+"' already exists")
+			model2.EventLogAdd(c, 500, "PostFolder", "'"+targetPathName+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  path.Join(u_path, name) + " already exists",
-			}, "application/json")
+				"msg":  path.Join(url_Path, name) + " already exists",
+			})
 		}
 	}
 
-	if err := os.Mkdir(path.Join(readTarget, name), os.ModePerm); err != nil {
+	if err := targetRoot.Mkdir(name, os.ModePerm); err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFolder", "Error mkdir "+path.Join(readTarget, name)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFolder", "Error mkdir "+targetPathName+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error mkdir " + path.Join(readTarget, name),
-		}, "application/json")
+			"msg":  "Error mkdir " + path.Join(url_Path, name),
+		})
 	}
 
-	model2.EventLogAdd(c, 200, "PostFolder", "Mkdir '"+path.Join(readTarget, name)+"'")
+	model2.EventLogAdd(c, 200, "PostFolder", "Mkdir '"+targetPathName+"'")
 
-	RemoveCacheDir(readTarget)
+	RemoveCacheDir(targetPath)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 }
