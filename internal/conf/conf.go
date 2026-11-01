@@ -21,6 +21,7 @@ var ConfigRoot string
 
 var ArgFold string
 var ArgFoldRootFS *safefs.RootFS
+var TempRootFS *safefs.RootFS
 
 var MasterPID int
 
