@@ -1,3 +1,5 @@
+// Package safefs help to secure work with file system
+// it is a part of secure space to work with files
 package safefs
 
 import (
@@ -11,17 +13,19 @@ import (
 )
 
 var (
+	// ErrInvalidPath it is strict error for Invalid path
 	ErrInvalidPath = errors.New("Invalid filesystem path")
-	ErrRootClosed  = errors.New("Filesystem root is closed")
+	// ErrRootClosed strict error for absent or closed file handle
+	ErrRootClosed = errors.New("Filesystem root is closed")
 )
 
 type RootFS struct {
 	root *os.Root
-	//fileInfo fs.FileInfo
 	path string
 }
 
-func OpenRoot(path string) (*RootFS, error) {
+// NewSafeFS constructor
+func NewSafeFS(path string) (*RootFS, error) {
 	if strings.TrimSpace(path) == "" {
 		return nil, ErrInvalidPath
 	}
@@ -31,31 +35,18 @@ func OpenRoot(path string) (*RootFS, error) {
 		return nil, fmt.Errorf("Resolve root: %w", err)
 	}
 
-	/*
-		if err := os.MkdirAll(abs, 0750); err != nil {
-			return nil, fmt.Errorf("Create root: %w", err)
-		}
-	*/
-
 	root, err := os.OpenRoot(abs)
 	if err != nil {
 		return nil, fmt.Errorf("Open root: %w", err)
 	}
 
-	/*
-		fileInfo, err := os.Stat(abs)
-		if err != nil {
-			return nil, fmt.Errorf("Stat err: %w", err)
-		}
-	*/
-
 	return &RootFS{
 		root: root,
-		//fileInfo: fileInfo,
 		path: abs,
 	}, nil
 }
 
+// valid - check if root handle is presence and not closed
 func (r *RootFS) valid() error {
 	if r == nil || r.root == nil {
 		return ErrRootClosed
@@ -63,6 +54,7 @@ func (r *RootFS) valid() error {
 	return nil
 }
 
+// cleanPath - check if path string is valid
 func cleanPath(name string) (string, error) {
 	if name == "" ||
 		filepath.IsAbs(name) ||
@@ -116,6 +108,7 @@ func (r *RootFS) MkdirAll(name string, perm fs.FileMode) error {
 	return r.root.MkdirAll(name, perm)
 }
 
+// Name get full path as string
 func (r *RootFS) Name() string {
 	if err := r.valid(); err != nil {
 		return ""
@@ -265,6 +258,7 @@ func (r *RootFS) Stat(name string) (fs.FileInfo, error) {
 	return r.root.Stat(name)
 }
 
+// Stat for Root path
 func (r *RootFS) RootStat() (fs.FileInfo, error) {
 	if err := r.valid(); err != nil {
 		return nil, err
@@ -304,6 +298,7 @@ func (r *RootFS) Copy(src, dst string) error {
 	return closeErr
 }
 
+// Move make copy file to new destination and then remove source file
 func (r *RootFS) Move(src, dst string) error {
 	err := r.Copy(src, dst)
 	if err != nil {
@@ -337,6 +332,7 @@ func (r *RootFS) ReadDir(name string) ([]fs.DirEntry, error) {
 		return nil, err
 	}
 
+	// You can not use "." as name
 	name, err := cleanPath(name)
 	if err != nil {
 		return nil, err
@@ -345,6 +341,9 @@ func (r *RootFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return fs.ReadDir(r.root.FS(), name)
 }
 
+// ReadRootDir reads the Root directory and returns a list of
+// directory entries sorted by filename.
+// entries []os.DirEntry
 func (r *RootFS) ReadRootDir() ([]fs.DirEntry, error) {
 	if err := r.valid(); err != nil {
 		return nil, err
