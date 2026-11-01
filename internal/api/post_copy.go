@@ -3,12 +3,13 @@ package api
 import (
 	//"fmt"
 	"net/url"
-	"os"
+	//"os"
 	"path"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -43,16 +44,49 @@ func PostCopy(c fiber.Ctx) error {
 		})
 	}
 
-	_, err = os.Stat(path.Join(conf.ArgFold, from_path))
-	if err != nil {
+	// -------------------------------------------------------------------------------------------------------------------------
+	// check from_path
 
-		model2.EventLogAdd(c, 500, "PostCopy", "'"+path.Join(conf.ArgFold, from_path)+"' not exists "+err.Error())
+	sourceRoot := conf.ArgFoldRootFS
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "'" + path.Join(from_path) + "' not exists",
-		})
+	if from_path != "/" {
+
+		fileInfo, err := sourceRoot.Stat(strings.TrimPrefix(from_path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "sourceRoot.Stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "It is not directory. "+from_path)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
+
+		// REOPEN sourceRoot for use below
+		sourceRoot, err = safefs.NewSafeFS(path.Join(conf.ArgFold, from_path))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "Open storage targetRoot err: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
 	}
+
+	//fmt.Println("PostCopy", " sourceRoot=", sourceRoot.Name())
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -81,16 +115,49 @@ func PostCopy(c fiber.Ctx) error {
 		})
 	}
 
-	_, err = os.Stat(path.Join(conf.ArgFold, to_path))
-	if err != nil {
+	// -------------------------------------------------------------------------------------------------------------------------
+	// check to_path
 
-		model2.EventLogAdd(c, 500, "PostCopy", "'"+path.Join(conf.ArgFold, to_path)+"' not exists "+err.Error())
+	targetRoot := conf.ArgFoldRootFS
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "'" + path.Join(to_path) + "' not exists",
-		})
+	if to_path != "/" {
+
+		fileInfo, err := targetRoot.Stat(strings.TrimPrefix(to_path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "targetRoot.Stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "It is not directory. "+to_path)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
+
+		// REOPEN targetRoot for use below
+		targetRoot, err = safefs.NewSafeFS(path.Join(conf.ArgFold, to_path))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostCopy", "Open storage targetRoot err: "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
 	}
+
+	//fmt.Println("PostCopy", " targetRoot=", targetRoot.Name())
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -132,22 +199,27 @@ func PostCopy(c fiber.Ctx) error {
 			continue
 		}
 
-		src_file_path := path.Join(conf.ArgFold, from_path, name)
-		target_file_path := path.Join(conf.ArgFold, to_path, name)
+		//src_file_path := path.Join(conf.ArgFold, from_path, name)
+		//target_file_path := path.Join(conf.ArgFold, to_path, name)
+		src_file_path := path.Join(sourceRoot.Name(), name)
+		target_file_path := path.Join(targetRoot.Name(), name)
 
-		src_stat, err := os.Stat(src_file_path)
+		//src_stat, err := os.Stat(src_file_path)
+		src_stat, err := sourceRoot.Stat(name)
 		if err != nil {
 			model2.EventLogAdd(c, 500, "PostCopy", "Source '"+src_file_path+"' not exists")
 			err_list = append(err_list, "Source '"+src_file_path+"' not exists")
 			continue
 		}
 
-		_, err = os.Stat(target_file_path)
+		//_, err = os.Stat(target_file_path)
+		_, err = targetRoot.Stat(name)
 		if err == nil {
 
 			model2.EventLogAdd(c, 200, "PostCopy", "Target '"+target_file_path+"' is exists. It will be rewrite.")
 
-			if err := os.RemoveAll(target_file_path); err != nil {
+			//if err := os.RemoveAll(target_file_path); err != nil {
+			if err := targetRoot.RemoveAll(name); err != nil {
 				model2.EventLogAdd(c, 500, "PostCopy", "'"+target_file_path+"' err "+err.Error())
 				err_list = append(err_list, "'"+target_file_path+"' err "+err.Error())
 				continue
@@ -155,6 +227,7 @@ func PostCopy(c fiber.Ctx) error {
 		}
 
 		if src_stat.IsDir() {
+
 			err := util.CopyDir(src_file_path, target_file_path)
 
 			if err != nil {
@@ -166,6 +239,7 @@ func PostCopy(c fiber.Ctx) error {
 			model2.EventLogAdd(c, 200, "PostCopy", "Copy dir '"+src_file_path+"' to "+target_file_path)
 
 		} else {
+
 			err := util.CopyFile(src_file_path, target_file_path)
 
 			if err != nil {
