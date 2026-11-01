@@ -2,11 +2,13 @@ package api
 
 import (
 	"net/url"
-	"os"
+	//"os"
 	"path"
+	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -25,73 +27,154 @@ func PostRename(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Error url parse " + referer,
-		}, "application/json")
+		})
 	}
 
-	u_path := util.CleanDirtyPath(u.Path)
+	url_Path := util.CleanDirtyPath(u.Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	form_path := c.FormValue("path")
 	form_path = util.CleanDirtyPath(form_path)
 	if len(form_path) > 0 {
-		u_path = form_path
+		url_Path = form_path
+	}
+
+	targetPath := path.Join(conf.ArgFold, url_Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// open root with trust ArgFold
+
+	Root := conf.ArgFoldRootFS
+
+	if url_Path != "/" {
+
+		_, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostRename", "stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		/*
+			if !fileInfo.IsDir() {
+
+				model2.EventLogAdd(c, 500, "PostRename", "It is not directory. "+targetPath)
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "It is not directory",
+				})
+			}
+		*/
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// REOPEN targetRoot for use below
+
+	targetRoot, err := safefs.NewSafeFS(targetPath)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostRename", "Open storage targetRoot err: "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "stat err",
+		})
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	to := c.FormValue("to")
-	to = util.CleanDirtyPath(to)
+	fromName := c.FormValue("name")
+	fromName = util.CleanDirtyPath(fromName)
 
-	if len(to) == 0 {
-
-		model2.EventLogAdd(c, 500, "PostRename", "to is empty")
-
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "to is empty",
-		}, "application/json")
-	}
-
-	_, err = os.Stat(path.Join(conf.ArgFold, to))
-	if err == nil {
-
-		model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(conf.ArgFold, to)+"' already exists ")
-
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"msg":  "'" + path.Join(conf.ArgFold, to) + "' already exists",
-		}, "application/json")
-	}
-
-	name := c.FormValue("name")
-	name = util.CleanDirtyPath(name)
-
-	if len(name) == 0 {
+	if len(fromName) == 0 {
 
 		model2.EventLogAdd(c, 500, "PostRename", "name is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
-		}, "application/json")
+		})
 	}
 
-	_, err = os.Stat(path.Join(conf.ArgFold, u_path, name))
+	/*
+		_, err = os.Stat(path.Join(targetPath, fromName))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(targetPath, name)+"' not exists "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "'" + path.Join(targetPath, name) + "' not exists",
+			})
+		}
+	*/
+
+	_, err = targetRoot.Stat(fromName)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(conf.ArgFold, u_path, name)+"' not exists "+err.Error())
+		model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(targetPath, fromName)+"' not exists "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "'" + path.Join(conf.ArgFold, u_path, name) + "' not exists",
-		}, "application/json")
+			"msg":  "'" + path.Join(url_Path, fromName) + "' not exists",
+		})
 	}
 
-	src_file_path := path.Join(conf.ArgFold, u_path, name)
-	target_file_path := path.Join(conf.ArgFold, u_path, to)
+	// -------------------------------------------------------------------------------------------------------------------------
 
-	err = os.Rename(src_file_path, target_file_path)
+	toName := c.FormValue("to")
+	toName = util.CleanDirtyPath(toName)
+
+	if len(toName) == 0 {
+
+		model2.EventLogAdd(c, 500, "PostRename", "to is empty")
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "to is empty",
+		})
+	}
+
+	/*
+		_, err = os.Stat(path.Join(targetPath, to))
+		if err == nil {
+
+			model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(conf.ArgFold, to)+"' already exists ")
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "'" + path.Join(conf.ArgFold, to) + "' already exists",
+			})
+		}
+	*/
+
+	_, err = targetRoot.Stat(toName)
+	if err == nil {
+
+		model2.EventLogAdd(c, 500, "PostRename", "'"+path.Join(targetPath, toName)+"' already exists "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "'" + path.Join(url_Path, toName) + "' already exists",
+		})
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// open root with path.Join(targetPath, to)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	src_file_path := path.Join(targetPath, fromName)
+	target_file_path := path.Join(targetPath, toName)
+
+	//err = os.Rename(src_file_path, target_file_path)
+	err = targetRoot.Rename(fromName, toName)
 
 	if err != nil {
 
@@ -100,18 +183,17 @@ func PostRename(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "Rename error",
-		}, "application/json")
+		})
 
 	} else {
 
 		model2.EventLogAdd(c, 200, "PostRename", "Rename '"+src_file_path+"' => "+target_file_path)
 	}
 
-	go model2.FileChkAsync()
-	RemoveCacheDir(path.Join(conf.ArgFold, u_path))
+	RemoveCacheDir(targetPath)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 
 }
