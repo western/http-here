@@ -118,6 +118,9 @@ func GetClearFilename(dirty_Filename string) (string, error) {
 		return "", err
 	}
 
+	// TrimSpace returns a slice (substring) of the string s, with all leading and trailing white space removed, as defined by Unicode.
+	unescape_Filename = strings.TrimSpace(unescape_Filename)
+
 	file_ext := GetExtNorm(unescape_Filename)
 	originalFileName := GetFileName(unescape_Filename)
 
