@@ -2,7 +2,7 @@ package api
 
 import (
 	"errors"
-	"fmt"
+	//"fmt"
 	"html/template"
 	"net/url"
 	"os"
@@ -75,8 +75,8 @@ func GetAll(c fiber.Ctx) error {
 
 		targetDir := filepath.Dir(targetPath)
 
-		fmt.Println("1) targetPath=", targetPath)
-		fmt.Println("1) targetDir=", targetDir)
+		//fmt.Println("1) targetPath=", targetPath)
+		//fmt.Println("1) targetDir=", targetDir)
 
 		targetRoot, err := safefs.NewSafeFS(targetDir)
 		if err != nil {
