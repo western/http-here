@@ -16,21 +16,21 @@ import (
 	//"context"
 	"strings"
 	//"syscall"
-	"time"
-
-	"github.com/western/http-here/v2/internal/conf"
-	"github.com/western/http-here/v2/internal/model2"
-	"github.com/western/http-here/v2/internal/util"
-
-	"github.com/gofiber/fiber/v3"
-
-	"github.com/edwvee/exiffix"
 	"golang.org/x/image/draw"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"math"
+	"time"
+
+	"github.com/western/http-here/v2/internal/conf"
+	"github.com/western/http-here/v2/internal/model2"
+	//"github.com/western/http-here/v2/internal/safefs"
+	"github.com/western/http-here/v2/internal/util"
+
+	"github.com/edwvee/exiffix"
+	"github.com/gofiber/fiber/v3"
 )
 
 var (
@@ -50,55 +50,66 @@ func GetThumb(c fiber.Ctx) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error thumbnails folder create",
-			}, "application/json")
+			})
 		}
 	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
 
 	c_path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetThumb", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "GetThumb", "Error "+c_path+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error " + path.Join(conf.ArgFold, c_path),
-		}, "application/json")
+			"msg":  "Error " + c_path,
+		})
 	}
 
 	c_path = util.CleanDirtyPath(c_path)
 	c_path = strings.Replace(c_path, "/__thumb", "", 1)
 
+	targetPath := path.Join(conf.ArgFold, c_path)
+
 	// ------------------------------------------------------------------------------------------------------------------------------
+	// open root with trust ArgFold
 
-	fileInfoOriginal, err := os.Stat(path.Join(conf.ArgFold, c_path))
-	fileModeOriginal := fileInfoOriginal.Mode()
+	Root := conf.ArgFoldRootFS
 
-	if err == nil {
+	fileInfoOriginal, err := Root.Stat(strings.TrimPrefix(c_path, "/"))
+	if err != nil {
 
-		if !fileModeOriginal.IsRegular() {
+		model2.EventLogAdd(c, 500, "GetThumb", "stat err "+err.Error())
 
-			model2.EventLogAdd(c, 500, "GetThumb", "Error "+path.Join(conf.ArgFold, c_path)+" It is not a regular file")
-
+		/*
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"file": path.Join("/__thumb/", c_path),
-				"msg":  "It is not a regular file",
-			}, "application/json")
-		}
-
-	} else if errors.Is(err, os.ErrNotExist) {
-
-		model2.EventLogAdd(c, 404, "GetThumb", path.Join(conf.ArgFold, c_path))
-
+				"msg":  "stat err",
+			})
+		*/
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
 			"file": path.Join("/__thumb/", c_path),
 			"msg":  "Not found",
-		}, "application/json")
+		})
 	}
 
-	file_ext := util.GetExtNorm(c_path)
-	//orig_filename := util.GetFileName(c_path)
+	fileModeOriginal := fileInfoOriginal.Mode()
+
+	if !fileModeOriginal.IsRegular() {
+
+		model2.EventLogAdd(c, 500, "GetThumb", "It is not regular file. "+targetPath)
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "It is not regular file",
+		})
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	file_ext := util.GetExtNorm(c_path) // EXT without prefix point and without JPEG exts
 
 	is_preview_match := previewAllRegex.MatchString(file_ext)
 	if !is_preview_match {
@@ -109,41 +120,10 @@ func GetThumb(c fiber.Ctx) error {
 			"code": 500,
 			"file": path.Join("/__thumb/", c_path),
 			"msg":  "Only for JPEG, PNG, GIF and office files",
-		}, "application/json")
+		})
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------------------
-
-	hex_name := ""
-
-	if model2.Dbse.BadgerEnable {
-
-		/*
-			var row model2.File
-			result := db.Select("md5, full_path").Where("full_path = ?", path.Join(conf.ArgFold, c_path)).First(&row)
-
-			if result.Error == nil {
-
-				hex_name = row.MD5
-
-				if len(hex_name) == 0 {
-
-					model2.EventLogAdd( c, "500", "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty")
-
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"code": 500,
-						"file": path.Join("/__thumb/", c_path),
-					}, "application/json")
-				}
-
-				if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err == nil {
-
-					model2.EventLogAdd( c, "200", "GetThumb", "SendFile db thumb/cache "+path.Join(c_path))
-					return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name), false)
-				}
-			}
-		*/
-	}
 
 	if fileInfoOriginal.Size() > 20*1024*1024 {
 
@@ -152,10 +132,10 @@ func GetThumb(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"file": path.Join("/__thumb/", c_path),
-		}, "application/json")
+		})
 	}
 
-	hex_name = util.GetMd5File(path.Join(conf.ArgFold, c_path))
+	hex_name := util.GetMd5File(path.Join(conf.ArgFold, c_path))
 
 	if len(hex_name) == 0 {
 
@@ -164,15 +144,17 @@ func GetThumb(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"file": path.Join("/__thumb/", c_path),
-		}, "application/json")
+		})
 	}
 
-	if _, err := os.Stat(path.Join(conf.ConfigRoot, "thumb", hex_name)); err == nil {
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// RETURN CACHE file from disk
+
+	if _, err := conf.ThumbRootFS.Stat(hex_name); err == nil {
 
 		model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
 
 		return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
-
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------------------
@@ -199,7 +181,7 @@ func GetThumb(c fiber.Ctx) error {
 		"code": 400,
 		"file": path.Join(c_path),
 		"msg":  "Bad request",
-	}, "application/json")
+	})
 
 }
 
