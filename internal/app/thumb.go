@@ -96,7 +96,7 @@ func GetThumb(c fiber.Ctx) error {
 	fileInfoOriginal, err := Root.Stat(strings.TrimPrefix(c_Path, "/"))
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetThumb", "stat err "+err.Error())
+		model2.EventLogAdd(c, 404, "GetThumb", "stat err "+err.Error())
 
 		/*
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

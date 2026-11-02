@@ -316,6 +316,7 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 			"Title":   "500",
 			"Message": "stat err",
 		}, "view/layout/error")
+
 	}
 
 	fileMode := fileInfo.Mode()
