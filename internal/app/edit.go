@@ -23,6 +23,11 @@ import (
 
 var isOfficeRegex = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
 
+// trimRootPath - make path relative for use under RootFS
+func trimRootPath(p string) string {
+	return strings.TrimPrefix(p, "/")
+}
+
 func GetEditDoc(c fiber.Ctx) error {
 
 	c_path, err := url.QueryUnescape(c.Path())
@@ -37,17 +42,22 @@ func GetEditDoc(c fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__doc", "")
 
-	if _, err := os.Stat(path.Join(conf.ArgFold, c_path)); err != nil {
+	// --------------------------------------------------------------------------------------------------------------------------------
 
-		model2.EventLogAdd(c, 404, "GetEditDoc", path.Join(conf.ArgFold, c_path))
+	Root := conf.ArgFoldRootFS
+
+	// stat under confined root of ArgFold
+	if _, err := Root.Stat(trimRootPath(c_path)); err != nil {
+
+		model2.EventLogAdd(c, 404, "GetEditDoc", path.Join(conf.ArgFold, c_path)+" "+err.Error())
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
 
+	// --------------------------------------------------------------------------------------------------------------------------------
+
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
-
-	// --------------------------------------------------------------------------------------------------------------------------------
 
 	// html|rtf|doc|docx|odt
 	is_office_match := isOfficeRegex.MatchString(file_ext)
@@ -89,6 +99,8 @@ func GetEditDoc(c fiber.Ctx) error {
 		csrf_token = csrf.TokenFromContext(c)
 	}
 
+	tempRoot := conf.TempRootFS
+
 	if runtime.GOOS == "windows" {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
@@ -100,7 +112,7 @@ func GetEditDoc(c fiber.Ctx) error {
 
 		util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		b, err := tempRoot.ReadFile(orig_filename + ".html")
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
@@ -138,7 +150,7 @@ func GetEditDoc(c fiber.Ctx) error {
 			//fmt.Println("libreoffice:", scanner.Text())
 		}
 
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		b, err := tempRoot.ReadFile(orig_filename + ".html")
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "GetEditDoc", "Error libreoffice, open file "+err.Error())
@@ -178,17 +190,22 @@ func GetEditCode(c fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__code", "")
 
-	if _, err := os.Stat(path.Join(conf.ArgFold, c_path)); err != nil {
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	Root := conf.ArgFoldRootFS
+
+	// stat under confined root of ArgFold
+	if _, err := Root.Stat(trimRootPath(c_path)); err != nil {
 
 		model2.EventLogAdd(c, 404, "GetEditCode", path.Join(conf.ArgFold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
 
+	// --------------------------------------------------------------------------------------------------------------------------------
+
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
-
-	// --------------------------------------------------------------------------------------------------------------------------------
 
 	// html|txt|js|css|md
 	is_simple_source_match := isSimpleSourceRegex.MatchString(file_ext)
@@ -200,17 +217,11 @@ func GetEditCode(c fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-
-	util.CopyFile(
-		path.Join(conf.ArgFold, c_path),
-		path.Join(filepath_tmp, orig_filename+"."+file_ext),
-	)
-
-	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+	// read source file under confined root of ArgFold
+	b, err := Root.ReadFile(trimRootPath(c_path))
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetEditCode", "Error open temp source file: "+err.Error())
+		model2.EventLogAdd(c, 500, "GetEditCode", "Error open source file: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
@@ -251,17 +262,22 @@ func GetEditMd(c fiber.Ctx) error {
 
 	c_path = strings.ReplaceAll(c_path, "/__md", "")
 
-	if _, err := os.Stat(path.Join(conf.ArgFold, c_path)); err != nil {
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	Root := conf.ArgFoldRootFS
+
+	// stat under confined root of ArgFold
+	if _, err := Root.Stat(trimRootPath(c_path)); err != nil {
 
 		model2.EventLogAdd(c, 404, "GetEditMd", path.Join(conf.ArgFold, c_path))
 
 		return c.Status(fiber.StatusNotFound).Render("view/404", fiber.Map{}, "view/layout/error")
 	}
 
+	// --------------------------------------------------------------------------------------------------------------------------------
+
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
-
-	// --------------------------------------------------------------------------------------------------------------------------------
 
 	is_md_match, _ := regexp.MatchString("^(md)$", file_ext)
 
@@ -273,17 +289,11 @@ func GetEditMd(c fiber.Ctx) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-
-	util.CopyFile(
-		path.Join(conf.ArgFold, c_path),
-		path.Join(filepath_tmp, orig_filename+"."+file_ext),
-	)
-
-	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+	// read source file under confined root of ArgFold
+	b, err := Root.ReadFile(trimRootPath(c_path))
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetEditMd", "Error open temp source file: "+err.Error())
+		model2.EventLogAdd(c, 500, "GetEditMd", "Error open source file: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
 	}
@@ -312,9 +322,14 @@ func GetEditMd(c fiber.Ctx) error {
 
 func PostFileEdit(c fiber.Ctx) error {
 
-	full_path := c.FormValue("full_path")
+	full_path := util.CleanDirtyPath(c.FormValue("full_path"))
 
-	if _, err := os.Stat(path.Join(conf.ArgFold, full_path)); err != nil {
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	Root := conf.ArgFoldRootFS
+
+	// stat under confined root of ArgFold
+	if _, err := Root.Stat(trimRootPath(full_path)); err != nil {
 
 		model2.EventLogAdd(c, 500, "PostFileEdit", path.Join(conf.ArgFold, full_path))
 
@@ -323,6 +338,8 @@ func PostFileEdit(c fiber.Ctx) error {
 			"msg":  path.Join(conf.ArgFold, full_path) + " not found",
 		}, "application/json")
 	}
+
+	// --------------------------------------------------------------------------------------------------------------------------------
 
 	file_ext := util.GetExtNorm(full_path)
 	orig_filename := util.GetFileName(full_path)
@@ -335,55 +352,25 @@ func PostFileEdit(c fiber.Ctx) error {
 
 	if save_as_source == "1" {
 
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
-
-		if runtime.GOOS == "windows" {
-			filepath_tmp = util.RotateSlash(filepath_tmp)
-			source_temp_file = util.RotateSlash(source_temp_file)
-		}
-
-		f, err := os.Create(source_temp_file)
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = f.WriteString(body)
-		if err != nil {
-			panic(err)
-		}
-		f.Close()
-
-		model2.EventLogAdd(c, 200, "PostFileEdit", "Update "+source_temp_file)
-
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		target_file := path.Join(conf.ArgFold, full_path)
-
-		if runtime.GOOS == "windows" {
-			target_file = util.RotateSlash(target_file)
-		}
-
-		err = util.MoveFile(source_temp_file, target_file)
+		// write body atomically under confined root of ArgFold
+		err := Root.WriteFile(trimRootPath(full_path), []byte(body), 0644)
 
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "PostFileEdit", "Rename error "+err.Error())
+			model2.EventLogAdd(c, 500, "PostFileEdit", "Update error "+err.Error())
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  "Rename error ",
+				"msg":  "Update error ",
 			}, "application/json")
 
 		} else {
 
-			go model2.FileDelAsync(path.Join(conf.ArgFold, full_path))
+			//go model2.FileDelAsync(path.Join(conf.ArgFold, full_path))
 
-			model2.EventLogAdd(c, 200, "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
+			model2.EventLogAdd(c, 200, "PostFileEdit", "Update "+path.Join(conf.ArgFold, full_path))
 
-			api.RemoveCacheDir(path.Dir(target_file))
+			api.RemoveCacheDir(path.Dir(path.Join(conf.ArgFold, full_path)))
 
 			return c.JSON(fiber.Map{
 				"code": 200,
@@ -393,6 +380,8 @@ func PostFileEdit(c fiber.Ctx) error {
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 	}
+
+	tempRoot := conf.TempRootFS
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
@@ -404,41 +393,21 @@ func PostFileEdit(c fiber.Ctx) error {
 		// --------------------------------------------------------------------------------------------------------------------------------
 
 		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-		html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
-		if runtime.GOOS == "windows" {
-			filepath_tmp = util.RotateSlash(filepath_tmp)
-			html_temp_file = util.RotateSlash(html_temp_file)
+		// write html body atomically under confined root of temp
+		if err := tempRoot.WriteFile(orig_filename+".html", []byte(body), 0644); err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFileEdit", "Update error "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Update error ",
+			}, "application/json")
 		}
 
-		f, err := os.Create(html_temp_file)
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = f.WriteString(body)
-		if err != nil {
-			panic(err)
-		}
-		f.Close()
-
-		model2.EventLogAdd(c, 200, "PostFileEdit", "Update "+html_temp_file)
+		model2.EventLogAdd(c, 200, "PostFileEdit", "Update "+path.Join(filepath_tmp, orig_filename+".html"))
 
 		// --------------------------------------------------------------------------------------------------------------------------------
-
-		/*
-			_, err = exec.Command("bash", "-c", "libreoffice --help").Output()
-			if err != nil {
-
-
-				model.EventLogAdd(db, c, "500", "PostFileEdit", "Error libreoffice not found "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"msg":  "Libreoffice not found ",
-				}, "application/json")
-			}
-		*/
 
 		if runtime.GOOS == "windows" {
 
@@ -469,8 +438,6 @@ func PostFileEdit(c fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		// --------------------------------------------------------------------------------------------------------------------------------
-
 		convert_format := ""
 
 		switch file_ext {
@@ -484,15 +451,11 @@ func PostFileEdit(c fiber.Ctx) error {
 			convert_format = "rtf:Rich Text Format"
 		}
 
-		//filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-		//html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
+		html_temp_file := path.Join(filepath_tmp, orig_filename+".html")
 
 		if runtime.GOOS == "windows" {
 
 			// --------------------------------------------------------------------------------------------------------------------------------
-
-			//filepath_tmp := util.RotateSlash(path.Join(conf.ConfigRoot, "temp"))
-			//html_temp_file := util.RotateSlash(path.Join(filepath_tmp, orig_filename+".html"))
 
 			util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to "` + convert_format + `" --outdir "` + filepath_tmp + `" "` + html_temp_file + `"`)
 
@@ -517,17 +480,21 @@ func PostFileEdit(c fiber.Ctx) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		source_temp_file := path.Join(filepath_tmp, orig_filename+"."+file_ext)
-		target_file := path.Join(conf.ArgFold, full_path)
+		// read converted file under confined root of temp
+		b, err := tempRoot.ReadFile(orig_filename + "." + file_ext)
 
-		/*
-			if runtime.GOOS == "windows" {
-			    source_temp_file = util.RotateSlash(source_temp_file)
-			    target_file = util.RotateSlash(target_file)
-			}
-		*/
+		if err != nil {
 
-		err = util.MoveFile(source_temp_file, target_file)
+			model2.EventLogAdd(c, 500, "PostFileEdit", "Convert error "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Convert error ",
+			}, "application/json")
+		}
+
+		// write converted result atomically under confined root of ArgFold
+		err = Root.WriteFile(trimRootPath(full_path), b, 0644)
 
 		if err != nil {
 
@@ -541,18 +508,15 @@ func PostFileEdit(c fiber.Ctx) error {
 		} else {
 
 			// remove temporary html
-			if _, err := os.Stat(path.Join(filepath_tmp, orig_filename+".html")); err == nil {
+			tempRoot.Remove(orig_filename + ".html")
 
-				os.Remove(path.Join(filepath_tmp, orig_filename+".html"))
-			}
+			//model2.FileDelMd5Async(path.Join(conf.ArgFold, full_path))
 
-			model2.FileDelMd5Async(path.Join(conf.ArgFold, full_path))
+			//model2.FileDelAsync(path.Join(conf.ArgFold, full_path))
 
-			model2.FileDelAsync(path.Join(conf.ArgFold, full_path))
+			model2.EventLogAdd(c, 200, "PostFileEdit", "Update "+path.Join(conf.ArgFold, full_path))
 
-			model2.EventLogAdd(c, 200, "PostFileEdit", "Move "+source_temp_file+" => "+target_file)
-
-			api.RemoveCacheDir(path.Dir(target_file))
+			api.RemoveCacheDir(path.Dir(path.Join(conf.ArgFold, full_path)))
 
 			return c.JSON(fiber.Map{
 				"code": 200,
