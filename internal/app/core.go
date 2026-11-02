@@ -718,7 +718,7 @@ func Core() {
 			app.Get("/__doc/*", GetEditDoc)
 			app.Get("/__code/*", GetEditCode)
 			app.Get("/__md/*", GetEditMd)
-			app.Get("/__search/", GetSearch)
+			app.Get("/__search/", api.PageSearch)
 			//app.Get("/api/file/convert/*", api.GetFileConvert)
 			app.Post("/api/file/edit", PostFileEdit)
 		}
@@ -746,7 +746,7 @@ func Core() {
 		app.Post("/api/rename", api.PostRename)
 		app.Post("/api/zip", api.PostZip)
 
-		app.Get("/api/search", api.GetSearch)
+		//app.Get("/api/search", api.GetSearch)
 	}
 
 	if !*arg_index_disable {

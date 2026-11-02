@@ -6,21 +6,21 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+// TODO: deprecated?
+// It is work for SPA
 func GetSearch(c fiber.Ctx) error {
 
-	// -------------------------------------------------------------------------------------------------------------------------
-
-	s := c.Query("s")
+	searchString := c.Query("s")
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	result_list := model2.FileSearchResult(s)
+	result_list := FileFastSearchResult(searchString)
 
-	model2.EventLogAdd(c, 200, "GetSearch", "Get api search '"+s+"'")
+	model2.EventLogAdd(c, 200, "GetSearch", "Get api search '"+searchString+"'")
 
 	return c.JSON(fiber.Map{
 		"code":        200,
 		"result_list": result_list,
-	}, "application/json")
+	})
 
 }
