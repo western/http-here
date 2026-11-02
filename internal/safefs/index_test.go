@@ -493,8 +493,10 @@ func TestRootFS_rootStat(t *testing.T) {
 		t.Errorf("RootStat = %v, want a directory", fi)
 	}
 
-	if fi.Name() != filepath.Base(root.Name()) {
-		t.Errorf("RootStat name = %q, want %q", fi.Name(), filepath.Base(root.Name()))
+	// os.Root.Stat(".") may report the name as "." or as the base dir name
+	// depending on the OS
+	if name := fi.Name(); name != "." && name != filepath.Base(root.Name()) {
+		t.Errorf("RootStat name = %q, want %q or %q", name, ".", filepath.Base(root.Name()))
 	}
 }
 
