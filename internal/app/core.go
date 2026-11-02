@@ -19,6 +19,7 @@ import (
 	"github.com/western/http-here/v2/internal/api"
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
+	"github.com/western/http-here/v2/internal/lopool"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
@@ -328,6 +329,13 @@ func Core() {
 
 		go model2.FileChkAsync()
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// Libreoffice pool
+
+	//fmt.Println("DefaultPoolSize=", lopool.DefaultPoolSize())
+
+	lopool.LibreOfficePool = lopool.NewLOPool(lopool.DefaultPoolSize())
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// FOLDERS
