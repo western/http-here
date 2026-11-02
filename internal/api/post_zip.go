@@ -5,7 +5,8 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"path"
+	//"path"
+	//"fmt"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -21,9 +22,9 @@ import (
 
 func PostZip(c fiber.Ctx) error {
 
-	if _, err := os.Stat(path.Join(conf.ConfigRoot, "temp")); err != nil {
+	if _, err := os.Stat(filepath.Join(conf.ConfigRoot, "temp")); err != nil {
 
-		if err := os.MkdirAll(path.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Join(conf.ConfigRoot, "temp"), os.ModePerm); err != nil {
 
 			model2.EventLogAdd(c, 500, "PostZip", "mkdirall error: "+err.Error())
 
@@ -105,13 +106,13 @@ func PostZip(c fiber.Ctx) error {
 		})
 	}
 
-	defer targetRoot.Close()
+	//defer targetRoot.Close()
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
 	archive_name := "archive-" + time.Now().Format("20060102-150405") + ".zip"
 
-	zip_full_path := path.Join(conf.ConfigRoot, "temp", archive_name)
+	zip_full_path := filepath.Join(conf.ConfigRoot, "temp", archive_name)
 
 	if runtime.GOOS == "windows" {
 		zip_full_path = util.RotateSlash(zip_full_path)
@@ -177,14 +178,14 @@ func PostZip(c fiber.Ctx) error {
 		fileInfo, err := targetRoot.Stat(name)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "PostZip", "'"+path.Join(targetPath, name)+"' not exists")
+			model2.EventLogAdd(c, 500, "PostZip", "'"+filepath.Join(targetPath, name)+"' not exists")
 			continue
 		}
 
 		header, err := zip.FileInfoHeader(fileInfo)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "PostZip", "'"+path.Join(targetPath, name)+"' err: "+err.Error())
+			model2.EventLogAdd(c, 500, "PostZip", "'"+filepath.Join(targetPath, name)+"' err: "+err.Error())
 			continue
 		}
 		header.Method = zip.Store
@@ -198,7 +199,7 @@ func PostZip(c fiber.Ctx) error {
 			f1, err := targetRoot.Open(name)
 			if err != nil {
 
-				model2.EventLogAdd(c, 500, "PostZip", "Read "+path.Join(targetPath, name)+" err: "+err.Error())
+				model2.EventLogAdd(c, 500, "PostZip", "Read "+filepath.Join(targetPath, name)+" err: "+err.Error())
 				continue
 			}
 
@@ -212,7 +213,7 @@ func PostZip(c fiber.Ctx) error {
 
 			if _, err := io.Copy(w1, f1); err != nil {
 
-				model2.EventLogAdd(c, 500, "PostZip", "Copy "+path.Join(targetPath, name)+" err: "+err.Error())
+				model2.EventLogAdd(c, 500, "PostZip", "Copy "+filepath.Join(targetPath, name)+" err: "+err.Error())
 			}
 
 			f1.Close()
@@ -244,27 +245,32 @@ func addFilesToZip(w *zip.Writer, targetRoot *safefs.RootFS, basePath, baseInZip
 
 			fileInfo, err := file.Info()
 			if err != nil {
+				//fmt.Println("addFilesToZip err1: ", err)
 				continue
 			}
 
 			header, err := zip.FileInfoHeader(fileInfo)
 			if err != nil {
+				//fmt.Println("addFilesToZip err2: ", err)
 				continue
 			}
 			header.Method = zip.Store
-			header.Name = path.Join(baseInZip, file.Name())
+			header.Name = filepath.Join(baseInZip, file.Name())
 
 			f, err := w.CreateHeader(header)
 			if err != nil {
+				//fmt.Println("addFilesToZip err3: ", err)
 				continue
 			}
 
-			src, err := targetRoot.Open(path.Join(basePath, file.Name()))
+			src, err := targetRoot.Open(filepath.Join(basePath, file.Name()))
 			if err != nil {
+				//fmt.Println("addFilesToZip err4: ", err)
 				continue
 			}
 
 			if _, err := io.Copy(f, src); err != nil {
+				//fmt.Println("addFilesToZip err5: ", err)
 				src.Close()
 				continue
 			}
@@ -273,9 +279,9 @@ func addFilesToZip(w *zip.Writer, targetRoot *safefs.RootFS, basePath, baseInZip
 
 		} else {
 
-			newBase := path.Join(basePath, file.Name())
+			newBase := filepath.Join(basePath, file.Name())
 
-			addFilesToZip(w, targetRoot, newBase, path.Join(baseInZip, file.Name()))
+			addFilesToZip(w, targetRoot, newBase, filepath.Join(baseInZip, file.Name()))
 		}
 	}
 }

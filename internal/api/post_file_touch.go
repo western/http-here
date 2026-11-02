@@ -3,7 +3,7 @@ package api
 import (
 	//"os"
 	"net/url"
-	"path"
+	//"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -141,7 +141,7 @@ func PostFileTouch(c fiber.Ctx) error {
 
 	out.WriteString("\n")
 
-	model2.EventLogAdd(c, 200, "PostFileTouch", "Create file '"+path.Join(targetPath, formName)+"'")
+	model2.EventLogAdd(c, 200, "PostFileTouch", "Create file '"+filepath.Join(targetPath, formName)+"'")
 	RemoveCacheDir(targetPath)
 
 	return c.JSON(fiber.Map{
