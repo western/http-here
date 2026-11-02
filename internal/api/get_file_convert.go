@@ -13,6 +13,7 @@ import (
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	//"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -26,47 +27,63 @@ var (
 
 func GetFileConvert(c fiber.Ctx) error {
 
-	c_path, err := url.QueryUnescape(c.Path())
+	c_Path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetFileConvert", "Error "+path.Join(conf.ArgFold, c_path)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "GetFileConvert", "Error QueryUnescape "+c_Path+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-		}, "application/json")
+		})
 	}
 
-	c_path = util.CleanDirtyPath(c_path)
+	c_Path = util.CleanDirtyPath(c_Path)
 
-	c_path = strings.ReplaceAll(c_path, "/api/file/convert", "")
+	c_Path = strings.ReplaceAll(c_Path, "/api/file/convert", "")
 
-	readTarget := path.Join(conf.ArgFold, c_path)
+	targetPath := path.Join(conf.ArgFold, c_Path)
 
-	if _, err := os.Stat(readTarget); err != nil {
+	file_ext := util.GetExtNorm(c_Path)
 
-		model2.EventLogAdd(c, 404, "GetFileConvert", readTarget)
+	// --------------------------------------------------------------------------------------------------------------------------------
 
+	Root := conf.ArgFoldRootFS
+
+	fileInfo, err := Root.Stat(strings.TrimPrefix(c_Path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "GetFileConvert", "Stat Root err: "+err.Error())
+
+		// RETURN 404 for security
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-		}, "application/json")
+		})
 	}
 
-	file_ext := util.GetExtNorm(c_path)
+	fileMode := fileInfo.Mode()
+
+	if !fileMode.IsRegular() {
+
+		model2.EventLogAdd(c, 500, "GetFileConvert", "Error "+targetPath+" is NOT regular file")
+
+		// RETURN 404 for security
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"code": 404,
+		})
+	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
 	is_office_match := isOfficeRegex.MatchString(file_ext)
-
 	if is_office_match {
 
-		return convertOfficeToHTML(c, c_path)
+		return convertOfficeToHTML(c, c_Path)
 	}
 
 	is_simple_source_match := isSimpleSourceRegex.MatchString(file_ext)
-
 	if is_simple_source_match {
 
-		return slurpFile(c, c_path)
+		return slurpFile(c, c_Path)
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------
@@ -76,7 +93,7 @@ func GetFileConvert(c fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"code": 500,
 		"msg":  "Error: format of file is not for edit",
-	}, "application/json")
+	})
 }
 
 func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
@@ -95,7 +112,7 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error libreoffice not found",
-			}, "application/json")
+			})
 		}
 
 	} else {
@@ -108,7 +125,7 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
 				"msg":  "Error libreoffice not found",
-			}, "application/json")
+			})
 		}
 	}
 
