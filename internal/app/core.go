@@ -719,7 +719,7 @@ func Core() {
 			app.Get("/__code/*", GetEditCode)
 			app.Get("/__md/*", GetEditMd)
 			app.Get("/__search/", GetSearch)
-			app.Get("/api/file/convert/*", api.GetFileConvert)
+			//app.Get("/api/file/convert/*", api.GetFileConvert)
 			app.Post("/api/file/edit", PostFileEdit)
 		}
 
