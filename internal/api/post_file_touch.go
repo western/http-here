@@ -2,7 +2,9 @@ package api
 
 import (
 	//"os"
+	"net/url"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -16,18 +18,31 @@ import (
 
 func PostFileTouch(c fiber.Ctx) error {
 
-	url_Path, err := util.RefererOrPath(c)
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFileTouch", "RefererOrPath error: "+err.Error())
+		model2.EventLogAdd(c, 500, "PostDelete", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "RefererOrPath error",
+			"msg":  "Error url parse " + referer,
 		})
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	url_Path := util.CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = util.CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		url_Path = form_path
+	}
+
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// check root with trust ArgFold
@@ -103,11 +118,11 @@ func PostFileTouch(c fiber.Ctx) error {
 
 		if fileInfo.IsDir() {
 
-			model2.EventLogAdd(c, 500, "PostFileTouch", "'"+path.Join(targetPath, formName)+"' already exists")
+			model2.EventLogAdd(c, 500, "PostFileTouch", "'"+filepath.Join(targetPath, formName)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  path.Join(url_Path, formName) + " already exists",
+				"msg":  filepath.Join(url_Path, formName) + " already exists",
 			})
 		}
 	}

@@ -5,8 +5,9 @@ import (
 	//"io"
 	//"net/url"
 	"os"
-	"path"
+	//"path"
 	//"regexp"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -91,7 +92,7 @@ func PostFilePartDone(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	srcRoot, err := os.OpenRoot(path.Join(conf.ConfigRoot, "parts"))
+	srcRoot, err := os.OpenRoot(filepath.Join(conf.ConfigRoot, "parts"))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage srcRoot err "+err.Error())
@@ -206,7 +207,7 @@ func PostFilePartDone(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 	// reopen dstRoot with full targetPath
 
-	dstRoot, err := os.OpenRoot(path.Join(conf.ArgFold, to_path))
+	dstRoot, err := os.OpenRoot(filepath.Join(conf.ArgFold, to_path))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostFilePartDone", "open storage dstRoot err1. "+err.Error())
@@ -267,7 +268,7 @@ func PostFilePartDone(c fiber.Ctx) error {
 
 	// ----------------------------------------------------------------------------------------------------------------------
 
-	model2.EventLogAdd(c, 200, "PostFilePartDone", "File assembled and copied to '"+path.Join(conf.ArgFold, to_path, name)+"'")
+	model2.EventLogAdd(c, 200, "PostFilePartDone", "File assembled and copied to '"+filepath.Join(conf.ArgFold, to_path, name)+"'")
 
 	return c.JSON(fiber.Map{
 		"code": 200,

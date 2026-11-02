@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -41,7 +42,7 @@ func GetFileConvert(c fiber.Ctx) error {
 
 	c_Path = strings.ReplaceAll(c_Path, "/api/file/convert", "")
 
-	targetPath := path.Join(conf.ArgFold, c_Path)
+	targetPath := filepath.Join(conf.ArgFold, c_Path)
 
 	file_ext := util.GetExtNorm(c_Path)
 
@@ -133,14 +134,14 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 
 	if runtime.GOOS == "windows" {
 
-		filepath_tmp := util.RotateSlash(path.Join(conf.ConfigRoot, "temp"))
-		arg_fold_path := util.RotateSlash(path.Join(conf.ArgFold, c_path))
+		filepath_tmp := util.RotateSlash(filepath.Join(conf.ConfigRoot, "temp"))
+		arg_fold_path := util.RotateSlash(filepath.Join(conf.ArgFold, c_path))
 
 		util.RunAnyCommandUnderWin(`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --norestore --nologo --convert-to html --outdir "` + filepath_tmp + `" "` + arg_fold_path + `"`)
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
@@ -156,8 +157,8 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 
 	} else {
 
-		filepath_tmp := path.Join(conf.ConfigRoot, "temp")
-		arg_fold_path := path.Join(conf.ArgFold, c_path)
+		filepath_tmp := filepath.Join(conf.ConfigRoot, "temp")
+		arg_fold_path := filepath.Join(conf.ArgFold, c_path)
 
 		cmd := exec.Command("bash", "-c", "libreoffice --headless --norestore --nologo --convert-to html --outdir "+filepath_tmp+" \""+arg_fold_path+"\"")
 		cmd.Dir = conf.ArgFold
@@ -174,7 +175,7 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 
 		// --------------------------------------------------------------------------------------------------------------------------------
 
-		b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+".html"))
+		b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+".html"))
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "convertOfficeToHTML", "Error libreoffice, open file "+err.Error())
@@ -194,7 +195,7 @@ func convertOfficeToHTML(c fiber.Ctx, c_path string) error {
 
 func slurpFile(c fiber.Ctx, c_path string) error {
 
-	filepath_tmp := path.Join(conf.ConfigRoot, "temp")
+	filepath_tmp := filepath.Join(conf.ConfigRoot, "temp")
 
 	file_ext := util.GetExtNorm(c_path)
 	orig_filename := util.GetFileName(c_path)
@@ -206,7 +207,7 @@ func slurpFile(c fiber.Ctx, c_path string) error {
 		path.Join(filepath_tmp, orig_filename+"."+file_ext),
 	)
 
-	b, err := os.ReadFile(path.Join(filepath_tmp, orig_filename+"."+file_ext))
+	b, err := os.ReadFile(filepath.Join(filepath_tmp, orig_filename+"."+file_ext))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "slurpFile", "Error open temp source file: "+err.Error())
@@ -216,7 +217,7 @@ func slurpFile(c fiber.Ctx, c_path string) error {
 
 	// --------------------------------------------------------------------------------------------------------------------------------
 
-	model2.EventLogAdd(c, 200, "slurpFile", "Convert for edit "+path.Join(conf.ArgFold, c_path))
+	model2.EventLogAdd(c, 200, "slurpFile", "Convert for edit "+filepath.Join(conf.ArgFold, c_path))
 
 	return c.JSON(fiber.Map{
 		"code":      200,

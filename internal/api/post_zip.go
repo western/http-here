@@ -3,8 +3,10 @@ package api
 import (
 	"archive/zip"
 	"io"
+	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -34,18 +36,31 @@ func PostZip(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	url_Path, err := util.RefererOrPath(c)
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostZip", "RefererOrPath error: "+err.Error())
+		model2.EventLogAdd(c, 500, "PostZip", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "RefererOrPath error",
+			"msg":  "Error url parse " + referer,
 		})
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	url_Path := util.CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = util.CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		url_Path = form_path
+	}
+
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// check root with trust ArgFold
@@ -104,21 +119,7 @@ func PostZip(c fiber.Ctx) error {
 
 	model2.EventLogAdd(c, 200, "PostZip", "Temp file prepare "+zip_full_path)
 
-	// reopen tempRoot with full ConfigRoot/temp for archive
-	/*
-		tempRoot, err := safefs.NewSafeFS(path.Join(conf.ConfigRoot, "temp"))
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostZip", "open storage tempRoot err1. "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "open storage tempRoot err1",
-			})
-		}
-
-		defer tempRoot.Close()
-	*/
+	// -------------------------------------------------------------------------------------------------------------------------
 
 	tempRoot := conf.TempRootFS
 

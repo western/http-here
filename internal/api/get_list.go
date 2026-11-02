@@ -2,7 +2,8 @@ package api
 
 import (
 	"os"
-	"path"
+	//"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -21,7 +22,7 @@ func GetList(c fiber.Ctx) error {
 
 	form_Path = util.CleanDirtyPath(form_Path)
 
-	targetPath := path.Join(conf.ArgFold, form_Path)
+	targetPath := filepath.Join(conf.ArgFold, form_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 

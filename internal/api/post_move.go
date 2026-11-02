@@ -4,7 +4,8 @@ import (
 	//"fmt"
 	"net/url"
 	//"os"
-	"path"
+	//"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -73,7 +74,7 @@ func PostMove(c fiber.Ctx) error {
 		}
 
 		// REOPEN sourceRoot for use below
-		sourceRoot, err = safefs.NewSafeFS(path.Join(conf.ArgFold, from_path))
+		sourceRoot, err = safefs.NewSafeFS(filepath.Join(conf.ArgFold, from_path))
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "PostMove", "Open storage targetRoot err: "+err.Error())
@@ -144,7 +145,7 @@ func PostMove(c fiber.Ctx) error {
 		}
 
 		// REOPEN targetRoot for use below
-		targetRoot, err = safefs.NewSafeFS(path.Join(conf.ArgFold, to_path))
+		targetRoot, err = safefs.NewSafeFS(filepath.Join(conf.ArgFold, to_path))
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "PostMove", "Open storage targetRoot err: "+err.Error())
@@ -199,10 +200,8 @@ func PostMove(c fiber.Ctx) error {
 			continue
 		}
 
-		//src_file_path := path.Join(conf.ArgFold, from_path, name)
-		//target_file_path := path.Join(conf.ArgFold, to_path, name)
-		src_file_path := path.Join(sourceRoot.Name(), name)
-		target_file_path := path.Join(targetRoot.Name(), name)
+		src_file_path := filepath.Join(sourceRoot.Name(), name)
+		target_file_path := filepath.Join(targetRoot.Name(), name)
 
 		//src_stat, err := os.Stat(src_file_path)
 		src_stat, err := sourceRoot.Stat(name)
@@ -261,8 +260,8 @@ func PostMove(c fiber.Ctx) error {
 
 	}
 
-	RemoveCacheDir(path.Join(conf.ArgFold, from_path))
-	RemoveCacheDir(path.Join(conf.ArgFold, to_path))
+	RemoveCacheDir(filepath.Join(conf.ArgFold, from_path))
+	RemoveCacheDir(filepath.Join(conf.ArgFold, to_path))
 
 	if len(err_list) > 0 {
 

@@ -5,7 +5,8 @@ import (
 	"io"
 	//"net/url"
 	"os"
-	"path"
+	//"path"
+	"path/filepath"
 	//"regexp"
 	//"strings"
 
@@ -117,7 +118,7 @@ func PostFilePart(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	root, err := os.OpenRoot(path.Join(conf.ConfigRoot, "parts"))
+	root, err := os.OpenRoot(filepath.Join(conf.ConfigRoot, "parts"))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostFilePart", "open storage root err "+err.Error())

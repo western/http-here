@@ -4,6 +4,7 @@ import (
 	"net/url"
 	//"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
@@ -40,7 +41,7 @@ func PostRename(c fiber.Ctx) error {
 		url_Path = form_path
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold

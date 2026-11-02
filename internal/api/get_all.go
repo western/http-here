@@ -34,7 +34,7 @@ func GetAll(c fiber.Ctx) error {
 
 	c_Path = util.CleanDirtyPath(c_Path)
 
-	targetPath := path.Join(conf.ArgFold, c_Path)
+	targetPath := filepath.Join(conf.ArgFold, c_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// root with trust ArgFold
@@ -145,8 +145,8 @@ func serveDirectory(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 	if _, err := targetRoot.Stat("index.html"); err == nil {
 
-		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_Path+"', SendFile "+path.Join(targetPath, "index.html"))
-		return c.SendFile(path.Join(targetPath, "index.html"))
+		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_Path+"', SendFile "+filepath.Join(targetPath, "index.html"))
+		return c.SendFile(filepath.Join(targetPath, "index.html"))
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -301,7 +301,7 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 	//targetPath := path.Join(conf.ArgFold, c_Path)
 	//targetPath := targetRoot.Name()
-	targetPath := path.Join(targetRoot.Name(), targetFileName)
+	targetPath := filepath.Join(targetRoot.Name(), targetFileName)
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// check file inside TRUST environment

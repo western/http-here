@@ -1,11 +1,12 @@
 package api
 
 import (
-	//"net/url"
+	"net/url"
 	"os"
-	"path"
+	//"path"
 	"strings"
 	//"fmt"
+	"path/filepath"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -16,18 +17,31 @@ import (
 
 func PostDelete(c fiber.Ctx) error {
 
-	url_Path, err := util.RefererOrPath(c)
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostDelete", "RefererOrPath error: "+err.Error())
+		model2.EventLogAdd(c, 500, "PostDelete", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "RefererOrPath error",
+			"msg":  "Error url parse " + referer,
 		})
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	url_Path := util.CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = util.CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		url_Path = form_path
+	}
+
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
@@ -101,7 +115,7 @@ func PostDelete(c fiber.Ctx) error {
 			continue
 		}
 
-		targetPathName := path.Join(targetRoot.Name(), name)
+		targetPathName := filepath.Join(targetRoot.Name(), name)
 
 		fileInfo, err := targetRoot.Stat(name)
 
@@ -121,7 +135,7 @@ func PostDelete(c fiber.Ctx) error {
 				continue
 			}
 
-			RemoveCacheDir(path.Join(targetPath, name))
+			RemoveCacheDir(targetPathName)
 
 			model2.EventLogAdd(c, 200, "PostDelete", "Remove fold '"+targetPathName+"'")
 

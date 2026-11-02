@@ -4,9 +4,10 @@ import (
 	//"fmt"
 	"io"
 	"mime/multipart"
-	//"net/url"
+	"net/url"
 	"os"
-	"path"
+	//"path"
+	"path/filepath"
 	//"regexp"
 	"strings"
 
@@ -21,18 +22,31 @@ import (
 
 func PostFile(c fiber.Ctx) error {
 
-	url_Path, err := util.RefererOrPath(c)
+	referer := c.Get("Referer")
+
+	// already decoded
+	u, err := url.Parse(referer)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFile", "RefererOrPath error: "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFile", "Error url parse "+referer+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "RefererOrPath error",
+			"msg":  "Error url parse " + referer,
 		})
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	url_Path := util.CleanDirtyPath(u.Path)
+
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	form_path := c.FormValue("path")
+	form_path = util.CleanDirtyPath(form_path)
+	if len(form_path) > 0 {
+		url_Path = form_path
+	}
+
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
@@ -136,7 +150,7 @@ func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *safefs.Root
 
 	//fmt.Println("targetRoot.Name()=", targetRoot.Name())
 
-	targetPathFilename := path.Join(targetRoot.Name(), fileName)
+	targetPathFilename := filepath.Join(targetRoot.Name(), fileName)
 
 	/*
 		targetPathFilename := path.Join(targetPath, fileName)
@@ -235,7 +249,7 @@ func uploadAndEncrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *safef
 	// ------------------------------------------------------------------------------------------------------------------
 
 	fileName_crypt := fileName + ".crypt"
-	targetPathFilenameCrypt := path.Join(targetRoot.Name(), fileName_crypt)
+	targetPathFilenameCrypt := filepath.Join(targetRoot.Name(), fileName_crypt)
 
 	/*
 		targetPathFilenameCrypt := path.Join(targetPath, fileName+".crypt")

@@ -3,7 +3,8 @@ package api
 import (
 	"net/url"
 	"os"
-	"path"
+	//"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -41,7 +42,7 @@ func PostFolder(c fiber.Ctx) error {
 		url_Path = form_path
 	}
 
-	targetPath := path.Join(conf.ArgFold, url_Path)
+	targetPath := filepath.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
@@ -110,7 +111,7 @@ func PostFolder(c fiber.Ctx) error {
 		})
 	}
 
-	targetPathName := path.Join(targetPath, name)
+	targetPathName := filepath.Join(targetPath, name)
 
 	if fileInfo, err := targetRoot.Stat(name); err == nil {
 
@@ -120,7 +121,7 @@ func PostFolder(c fiber.Ctx) error {
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  path.Join(url_Path, name) + " already exists",
+				"msg":  filepath.Join(url_Path, name) + " already exists",
 			})
 		}
 	}
@@ -131,7 +132,7 @@ func PostFolder(c fiber.Ctx) error {
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error mkdir " + path.Join(url_Path, name),
+			"msg":  "Error mkdir " + filepath.Join(url_Path, name),
 		})
 	}
 

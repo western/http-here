@@ -42,7 +42,7 @@ func CleanPath(name string) (string, error) {
 	return name, nil
 }
 
-func RefererOrPath(c fiber.Ctx) (string, error) {
+func RefererOrPath_(c fiber.Ctx) (string, error) {
 
 	referer := c.Get("Referer")
 
@@ -89,7 +89,7 @@ func CleanDirtyPath(dirty_Str string) string {
 	// windows separators
 	//re2 := regexp.MustCompile("\\+")
 	//dirty_Str = re2.ReplaceAllLiteralString(dirty_Str, "")
-	dirty_Str = strings.ReplaceAll(dirty_Str, `\`, "")
+	//dirty_Str = strings.ReplaceAll(dirty_Str, `\`, "")
 
 	// points, from two
 	re3 := regexp.MustCompile("\\.{2,}")
