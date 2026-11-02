@@ -56,28 +56,28 @@ func GetThumb(c fiber.Ctx) error {
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	c_path, err := url.QueryUnescape(c.Path())
+	c_Path, err := url.QueryUnescape(c.Path())
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "GetThumb", "Error "+c_path+" "+err.Error())
+		model2.EventLogAdd(c, 500, "GetThumb", "Error "+c_Path+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error " + c_path,
+			"msg":  "Error " + c_Path,
 		})
 	}
 
-	c_path = util.CleanDirtyPath(c_path)
-	c_path = strings.Replace(c_path, "/__thumb", "", 1)
+	c_Path = util.CleanDirtyPath(c_Path)
+	c_Path = strings.Replace(c_Path, "/__thumb", "", 1)
 
-	targetPath := path.Join(conf.ArgFold, c_path)
+	targetPath := path.Join(conf.ArgFold, c_Path)
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
 
 	Root := conf.ArgFoldRootFS
 
-	fileInfoOriginal, err := Root.Stat(strings.TrimPrefix(c_path, "/"))
+	fileInfoOriginal, err := Root.Stat(strings.TrimPrefix(c_Path, "/"))
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "GetThumb", "stat err "+err.Error())
@@ -90,7 +90,7 @@ func GetThumb(c fiber.Ctx) error {
 		*/
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			"file": path.Join("/__thumb/", c_path),
+			"file": path.Join("/__thumb/", c_Path),
 			"msg":  "Not found",
 		})
 	}
@@ -107,18 +107,30 @@ func GetThumb(c fiber.Ctx) error {
 		})
 	}
 
+	if fileModeOriginal.Perm()&0444 == 0444 {
+
+	} else {
+
+		model2.EventLogAdd(c, 403, "GetThumb", "Forbidden for read "+targetPath)
+
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"code": 403,
+			"msg":  "Forbidden",
+		})
+	}
+
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	file_ext := util.GetExtNorm(c_path) // EXT without prefix point and without JPEG exts
+	file_ext := util.GetExtNorm(c_Path) // EXT without prefix point and without JPEG exts
 
 	is_preview_match := previewAllRegex.MatchString(file_ext)
 	if !is_preview_match {
 
-		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+" Only for JPEG, PNG, GIF and office files")
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_Path)+" Only for JPEG, PNG, GIF and office files")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"file": path.Join("/__thumb/", c_path),
+			"file": path.Join("/__thumb/", c_Path),
 			"msg":  "Only for JPEG, PNG, GIF and office files",
 		})
 	}
@@ -127,23 +139,23 @@ func GetThumb(c fiber.Ctx) error {
 
 	if fileInfoOriginal.Size() > 20*1024*1024 {
 
-		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+", original file size is more than 20 Megabytes")
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_Path)+", original file size is more than 20 Megabytes")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"file": path.Join("/__thumb/", c_path),
+			"file": path.Join("/__thumb/", c_Path),
 		})
 	}
 
-	hex_name := util.GetMd5File(path.Join(conf.ArgFold, c_path))
+	hex_name := util.GetMd5File(path.Join(conf.ArgFold, c_Path))
 
 	if len(hex_name) == 0 {
 
-		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_path)+", hex_name is empty (2)")
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_Path)+", hex_name is empty (2)")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"file": path.Join("/__thumb/", c_path),
+			"file": path.Join("/__thumb/", c_Path),
 		})
 	}
 
@@ -152,7 +164,7 @@ func GetThumb(c fiber.Ctx) error {
 
 	if _, err := conf.ThumbRootFS.Stat(hex_name); err == nil {
 
-		model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+path.Join(c_path))
+		model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+c_Path)
 
 		return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 	}
@@ -164,22 +176,22 @@ func GetThumb(c fiber.Ctx) error {
 
 		if fileInfoOriginal.Size() < 50*1024 {
 
-			model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig file without resize "+path.Join(c_path)+", size is small")
-			return c.SendFile(path.Join(conf.ArgFold, c_path))
+			model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig file without resize "+c_Path+", size is small")
+			return c.SendFile(path.Join(conf.ArgFold, c_Path))
 		}
 
-		return ServeImgFile(c, c_path, hex_name)
+		return ServeImgFile(c, c_Path, hex_name)
 	}
 
 	is_preview_doc := previewDocRegex.MatchString(file_ext)
 	if is_preview_doc {
 
-		return ServeOfficeFile(c, c_path, hex_name)
+		return ServeOfficeFile(c, c_Path, hex_name)
 	}
 
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"code": 400,
-		"file": path.Join(c_path),
+		"file": c_Path,
 		"msg":  "Bad request",
 	})
 
