@@ -73,6 +73,22 @@ func GetThumb(c fiber.Ctx) error {
 	targetPath := path.Join(conf.ArgFold, c_Path)
 
 	// ------------------------------------------------------------------------------------------------------------------------------
+
+	file_ext_norm := util.GetExtNorm(c_Path) // EXT without prefix point and without JPEG exts
+
+	is_preview_match := previewAllRegex.MatchString(file_ext_norm)
+	if !is_preview_match {
+
+		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_Path)+" Only for JPEG, PNG, GIF and office files")
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"file": path.Join("/__thumb/", c_Path),
+			"msg":  "Only for JPEG, PNG, GIF and office files",
+		})
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
 
 	Root := conf.ArgFoldRootFS
@@ -121,20 +137,6 @@ func GetThumb(c fiber.Ctx) error {
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	file_ext := util.GetExtNorm(c_Path) // EXT without prefix point and without JPEG exts
-
-	is_preview_match := previewAllRegex.MatchString(file_ext)
-	if !is_preview_match {
-
-		model2.EventLogAdd(c, 500, "GetThumb", path.Join("/__thumb/", c_Path)+" Only for JPEG, PNG, GIF and office files")
-
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": 500,
-			"file": path.Join("/__thumb/", c_Path),
-			"msg":  "Only for JPEG, PNG, GIF and office files",
-		})
-	}
-
 	// ------------------------------------------------------------------------------------------------------------------------------
 
 	if fileInfoOriginal.Size() > 20*1024*1024 {
@@ -171,7 +173,7 @@ func GetThumb(c fiber.Ctx) error {
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	is_preview_img := previewImgRegex.MatchString(file_ext)
+	is_preview_img := previewImgRegex.MatchString(file_ext_norm)
 	if is_preview_img {
 
 		if fileInfoOriginal.Size() < 50*1024 {
@@ -183,7 +185,7 @@ func GetThumb(c fiber.Ctx) error {
 		return ServeImgFile(c, c_Path, hex_name)
 	}
 
-	is_preview_doc := previewDocRegex.MatchString(file_ext)
+	is_preview_doc := previewDocRegex.MatchString(file_ext_norm)
 	if is_preview_doc {
 
 		return ServeOfficeFile(c, c_Path, hex_name)
