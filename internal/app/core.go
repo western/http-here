@@ -31,7 +31,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/csrf"
 	"github.com/gofiber/fiber/v3/middleware/favicon"
 	"github.com/gofiber/fiber/v3/middleware/static"
-	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/template/html/v3"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jellydator/ttlcache/v3"
 )
@@ -485,7 +485,15 @@ func Core() {
 
 			ErrorHandler: func(c fiber.Ctx, err error) error {
 
-				model2.EventLogAdd(c, 403, "CSRF_ERR", c.Path())
+				c_Path, err := url.QueryUnescape(c.Path())
+				if err != nil {
+
+					model2.EventLogAdd(c, 500, "CSRF_ERR", "Error "+c_Path+" "+err.Error())
+					//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{})
+				}
+
+				model2.EventLogAdd(c, 403, "CSRF_ERR", c_Path)
 
 				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 					"code": 403,
@@ -497,13 +505,6 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// ASSETS
-
-	/*
-		app.Use("/__assets", static.New(static.Config{
-			Root:       http.FS(embedDirStatic),
-			PathPrefix: "",
-			Browse:     false,
-		}))*/
 
 	app.Get("/__assets*", static.New("", static.Config{
 		FS:     embedDirStatic,
@@ -543,7 +544,14 @@ func Core() {
 
 			Unauthorized: func(c fiber.Ctx) error {
 
-				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
+				c_Path, err := url.QueryUnescape(c.Path())
+				if err != nil {
+
+					model2.EventLogAdd(c, 500, "basicauth", "Error "+c_Path+" "+err.Error())
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				}
+
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c_Path))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -591,7 +599,14 @@ func Core() {
 
 			Unauthorized: func(c fiber.Ctx) error {
 
-				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
+				c_Path, err := url.QueryUnescape(c.Path())
+				if err != nil {
+
+					model2.EventLogAdd(c, 500, "basicauth", "Error "+c_Path+" "+err.Error())
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				}
+
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c_Path))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
@@ -612,7 +627,14 @@ func Core() {
 			},
 			Unauthorized: func(c fiber.Ctx) error {
 
-				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c.Path()))
+				c_Path, err := url.QueryUnescape(c.Path())
+				if err != nil {
+
+					model2.EventLogAdd(c, 500, "basicauth", "Error "+c_Path+" "+err.Error())
+					return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+				}
+
+				model2.EventLogAdd(c, 401, "basicauth", path.Join(conf.ArgFold, c_Path))
 
 				c.Set(fiber.HeaderWWWAuthenticate, "Basic realm='Restricted'")
 				return c.Status(fiber.StatusUnauthorized).Render("view/401", fiber.Map{}, "view/layout/error")
