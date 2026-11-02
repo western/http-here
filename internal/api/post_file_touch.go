@@ -1,14 +1,14 @@
 package api
 
 import (
-	"net/url"
-	"os"
+	//"os"
 	"path"
 	"regexp"
 	"strings"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -16,29 +16,64 @@ import (
 
 func PostFileTouch(c fiber.Ctx) error {
 
-	referer := c.Get("Referer")
-
-	// already decoded
-	u, err := url.Parse(referer)
+	url_Path, err := util.RefererOrPath(c)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFileTouch", "Error url parse "+referer+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFileTouch", "RefererOrPath error: "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error url parse " + referer,
-		}, "application/json")
+			"msg":  "RefererOrPath error",
+		})
 	}
 
-	u_path := util.CleanDirtyPath(u.Path)
+	targetPath := path.Join(conf.ArgFold, url_Path)
 
 	// -------------------------------------------------------------------------------------------------------------------------
+	// check root with trust ArgFold
 
-	form_path := c.FormValue("path")
-	form_path = util.CleanDirtyPath(form_path)
-	if len(form_path) > 0 {
-		u_path = form_path
+	Root := conf.ArgFoldRootFS
+
+	if url_Path != "/" {
+
+		fileInfo, err := Root.Stat(strings.TrimPrefix(url_Path, "/"))
+		if err != nil {
+
+			model2.EventLogAdd(c, 500, "PostFileTouch", "stat err "+err.Error())
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "stat err",
+			})
+		}
+
+		if !fileInfo.IsDir() {
+
+			model2.EventLogAdd(c, 500, "PostFileTouch", "It is not directory. "+targetPath)
+
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "It is not directory",
+			})
+		}
 	}
+
+	// -------------------------------------------------------------------------------------------------------------------------
+	// reopen targetRoot with full targetPath
+
+	//targetRoot, err := os.OpenRoot(targetPath)
+	targetRoot, err := safefs.NewSafeFS(targetPath)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFileTouch", "open storage targetRoot err1. "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "open storage targetRoot err1",
+		})
+	}
+
+	defer targetRoot.Close()
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
@@ -47,52 +82,54 @@ func PostFileTouch(c fiber.Ctx) error {
 		//regexpDoubleDash   = regexp.MustCompile("[\\-]{2,}")
 	)
 
-	name := c.FormValue("name")
+	formName := c.FormValue("name")
 
-	name = strings.ReplaceAll(name, "/", "")
-	name = regexpSpaceSymbols.ReplaceAllLiteralString(name, " ")
+	formName = strings.ReplaceAll(formName, "/", "")
+	formName = regexpSpaceSymbols.ReplaceAllLiteralString(formName, " ")
 
-	name = util.CleanDirtyPath(name)
+	formName = util.CleanDirtyPath(formName)
 
-	if len(name) == 0 {
+	if len(formName) == 0 {
 
 		model2.EventLogAdd(c, 500, "PostFileTouch", "name is empty")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
 			"msg":  "name is empty",
-		}, "application/json")
+		})
 	}
 
-	if fileInfo, err := os.Stat(path.Join(conf.ArgFold, u_path, name)); err == nil {
+	if fileInfo, err := targetRoot.Stat(formName); err == nil {
 
 		if fileInfo.IsDir() {
-			model2.EventLogAdd(c, 500, "PostFileTouch", "'"+path.Join(conf.ArgFold, u_path, name)+"' already exists")
+
+			model2.EventLogAdd(c, 500, "PostFileTouch", "'"+path.Join(targetPath, formName)+"' already exists")
 
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"code": 500,
-				"msg":  path.Join(u_path, name) + " already exists",
-			}, "application/json")
+				"msg":  path.Join(url_Path, formName) + " already exists",
+			})
 		}
 	}
 
-	myfile, err := os.Create(path.Join(conf.ArgFold, u_path, name))
+	out, err := targetRoot.Create(formName)
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "PostFileTouch", "Error file create "+path.Join(conf.ArgFold, u_path, name)+" "+err.Error())
+		model2.EventLogAdd(c, 500, "PostFileTouch", "Error create "+formName+" "+err.Error())
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "Error file create " + path.Join(conf.ArgFold, u_path, name),
-		}, "application/json")
+			"msg":  "Error create " + formName,
+		})
 	}
-	myfile.WriteString("\n")
-	myfile.Close()
+	defer out.Close()
 
-	model2.EventLogAdd(c, 200, "PostFileTouch", "Create file '"+path.Join(conf.ArgFold, u_path, name)+"'")
-	RemoveCacheDir(path.Join(conf.ArgFold, u_path))
+	out.WriteString("\n")
+
+	model2.EventLogAdd(c, 200, "PostFileTouch", "Create file '"+path.Join(targetPath, formName)+"'")
+	RemoveCacheDir(targetPath)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
-	}, "application/json")
+	})
 }
