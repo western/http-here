@@ -32,7 +32,7 @@ Simple zero-configuration command line http server with lightweight interface to
 ## Build from sources
 
 ```console
-git clone --branch v2.4.5 https://github.com/western/http-here
+git clone --branch v2.5.0 https://github.com/western/http-here
 cd http-here
 make build
 
@@ -43,7 +43,7 @@ cp http-here ~/bin
 ```
 or
 ```console
-go install github.com/western/http-here/v2/cmd/http-here@v2.4.5
+go install github.com/western/http-here/v2/cmd/http-here@v2.5.0
 ```
 
 
@@ -57,7 +57,7 @@ linux / amd64
 cd ~/bin
 
 # download and unpack
-wget https://github.com/western/http-here/releases/download/v2.4.5/http-here.gz
+wget https://github.com/western/http-here/releases/download/v2.5.0/http-here.gz
 gzip -d http-here.gz
 
 chmod +x http-here
@@ -66,7 +66,7 @@ chmod +x http-here
 windows / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.4.5/http-here.zip
+https://github.com/western/http-here/releases/download/v2.5.0/http-here.zip
 
 # Unpack it
 # Open `cmd` and run
@@ -75,7 +75,7 @@ https://github.com/western/http-here/releases/download/v2.4.5/http-here.zip
 darwin / amd64
 ```console
 # Download this archive
-https://github.com/western/http-here/releases/download/v2.4.5/http-here.darwin.amd64.gz
+https://github.com/western/http-here/releases/download/v2.5.0/http-here.darwin.amd64.gz
 ```
 
 ## Run
@@ -301,7 +301,7 @@ https://github.com/western/http-here/issues
 ### backlog
 - [x] ~~add --log and --tee args for save output (or database?)~~ (`--logto`, `--jsonto` and database for store event log data)
 - [x] ~~change background actions for FS drivers (i need one abstraction layer)~~ (there is exist now - it is safeFS)
-- [ ] problem: how decide to run md5sum inside some folder
+- [ ] ~~problem: how decide to run md5sum inside some folder~~
 - [x] ~~database, separate branch without?~~ (app have switch option for database)
 - [ ] tests
 - [x] make builder for configure compiler - add all libraries to local assets, Bootstrap, Bootstrap-icons (Makefile options added)
@@ -309,6 +309,14 @@ https://github.com/western/http-here/issues
 - [x] prepare CODEMIRROR repo (repo already exist, but only local)
 - [ ] prepare tui.editor repo
 - [x] remove SPA
+
+### 2.5.0
+- [x] security changes for API (safefs)
+- [x] new libreoffice working pool
+- [x] windows support fixes
+- [x] move search code from model to API
+- [x] unescape url path for middleware
+- [x] generate thumbnails image without panic
 
 ### 2.4.4
 - [x] security changes for API
