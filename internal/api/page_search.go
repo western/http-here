@@ -52,7 +52,7 @@ type FileSearchType struct {
 	NameHtml template.HTML
 }
 
-func FileSearchResult(s string) []FileSearchType {
+func FileSearchResult(searchString string) []FileSearchType {
 
 	var ret []FileSearchType
 
@@ -61,9 +61,9 @@ func FileSearchResult(s string) []FileSearchType {
 		return ret
 	}
 
-	repl := regexp.MustCompile(`(?i)` + s)
+	repl := regexp.MustCompile(`(?i)` + searchString)
 
-	resultPathFoundRegex := regexp.MustCompile(s)
+	resultPathFoundRegex := regexp.MustCompile(searchString)
 
 	FileSearchWalk := func(relPath string, de fs.DirEntry, err error) error {
 
@@ -110,9 +110,9 @@ func FileSearchResult(s string) []FileSearchType {
 
 		OnlyFold := filepath.Dir(resultPathCut)
 
-		OnlyFoldHtml := repl.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+s+`</span>`)
+		OnlyFoldHtml := repl.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+searchString+`</span>`)
 
-		NameHtml := repl.ReplaceAllString(name, `<span style="background-color:yellow">`+s+`</span>`)
+		NameHtml := repl.ReplaceAllString(name, `<span style="background-color:yellow">`+searchString+`</span>`)
 
 		// ----------------------------------------------------------------------------------------------
 
@@ -142,12 +142,12 @@ func FileSearchResult(s string) []FileSearchType {
 	return ret
 }
 
-func FileFastSearchResult(s string) []FileSearchType {
+func FileFastSearchResult(searchString string) []FileSearchType {
 
 	var ret []FileSearchType
-	repl := regexp.MustCompile(`(?i)` + s)
+	repl := regexp.MustCompile(`(?i)` + searchString)
 
-	resultPathFoundRegex := regexp.MustCompile(`(?i)` + s)
+	resultPathFoundRegex := regexp.MustCompile(`(?i)` + searchString)
 
 	walkFn := func(resultPath string, de os.DirEntry, err error) error {
 
@@ -182,9 +182,9 @@ func FileFastSearchResult(s string) []FileSearchType {
 
 		OnlyFold := filepath.Dir(resultPathCut)
 
-		OnlyFoldHtml := repl.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+s+`</span>`)
+		OnlyFoldHtml := repl.ReplaceAllString(OnlyFold, `<span style="background-color:yellow">`+searchString+`</span>`)
 
-		NameHtml := repl.ReplaceAllString(name, `<span style="background-color:yellow">`+s+`</span>`)
+		NameHtml := repl.ReplaceAllString(name, `<span style="background-color:yellow">`+searchString+`</span>`)
 
 		// ----------------------------------------------------------------------------------------------
 
