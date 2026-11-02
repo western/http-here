@@ -401,6 +401,17 @@ func Core() {
 		util.WalkAndClearZeroFile(path.Join(conf.ConfigRoot, "thumb"), 0)
 		//go WalkAndClearOld(path.Join(conf.ConfigRoot, "thumb"))
 	}
+	
+	
+	
+	thumbFS, err := safefs.NewSafeFS(path.Join(conf.ConfigRoot, "thumb"))
+	if err != nil {
+		fmt.Println("Safefs err: ", err.Error())
+		return
+	}
+	conf.ThumbRootFS = thumbFS
+	
+	
 
 	tempFS, err := safefs.NewSafeFS(path.Join(conf.ConfigRoot, "temp"))
 	if err != nil {
