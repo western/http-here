@@ -94,6 +94,20 @@ func (r *RootFS) Close() error {
 	return root.Close()
 }
 
+// Create file
+func (r *RootFS) Create(name string) (*os.File, error) {
+	if err := r.valid(); err != nil {
+		return nil, err
+	}
+
+	name, err := cleanPath(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.root.Create(name)
+}
+
 // Mkdir creates directory inside the root.
 func (r *RootFS) Mkdir(name string, perm fs.FileMode) error {
 	if err := r.valid(); err != nil {
