@@ -2,6 +2,7 @@ package api
 
 import (
 	"html/template"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
+	//"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/charlievieth/fastwalk"
@@ -21,7 +23,7 @@ func PageSearch(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 
-	result_list := FileFastSearchResult(searchString)
+	result_list := FileSearchResult(searchString)
 
 	model2.EventLogAdd(c, 200, "GetSearch", "Get search '"+searchString+"'")
 
@@ -53,13 +55,31 @@ type FileSearchType struct {
 func FileSearchResult(s string) []FileSearchType {
 
 	var ret []FileSearchType
+
+	Root := conf.ArgFoldRootFS
+	if Root == nil {
+		return ret
+	}
+
 	repl := regexp.MustCompile(`(?i)` + s)
 
 	resultPathFoundRegex := regexp.MustCompile(s)
 
-	FileSearchWalk := func(resultPath string, de os.DirEntry, err error) error {
+	FileSearchWalk := func(relPath string, de fs.DirEntry, err error) error {
 
-		resultPathCut := strings.Replace(resultPath, conf.ArgFold, "", 1)
+		if err != nil || de == nil {
+			return nil
+		}
+
+		// '.' is the root itself, skip it
+		if relPath == "." {
+			return nil
+		}
+
+		// relPath is slash-separated path relative to root,
+		// restore the same view as before (cut root prefix)
+		resultPathCut := string(filepath.Separator) + filepath.FromSlash(relPath)
+
 		name := util.GetFileName(resultPathCut)
 		ext := util.GetExtNorm(resultPathCut)
 
@@ -116,7 +136,8 @@ func FileSearchResult(s string) []FileSearchType {
 		return nil
 	}
 
-	filepath.WalkDir(conf.ArgFold, FileSearchWalk)
+	//nolint:errcheck
+	Root.Walk(FileSearchWalk)
 
 	return ret
 }
