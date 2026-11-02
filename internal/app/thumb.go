@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"runtime"
 	//"strconv"
-	//"context"
+	"context"
 	"strings"
 	//"syscall"
 	"golang.org/x/image/draw"
@@ -27,6 +27,7 @@ import (
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
 	//"github.com/western/http-here/v2/internal/safefs"
+	"github.com/western/http-here/v2/internal/lopool"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/edwvee/exiffix"
@@ -149,7 +150,7 @@ func GetThumb(c fiber.Ctx) error {
 		})
 	}
 
-	hex_name := util.GetMd5File(path.Join(conf.ArgFold, c_Path))
+	hex_name := util.GetMd5File(targetPath)
 
 	if len(hex_name) == 0 {
 
@@ -179,7 +180,8 @@ func GetThumb(c fiber.Ctx) error {
 		if fileInfoOriginal.Size() < 50*1024 {
 
 			model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig file without resize "+c_Path+", size is small")
-			return c.SendFile(path.Join(conf.ArgFold, c_Path))
+
+			return c.SendFile(targetPath)
 		}
 
 		return ServeImgFile(c, c_Path, hex_name)
@@ -188,7 +190,8 @@ func GetThumb(c fiber.Ctx) error {
 	is_preview_doc := previewDocRegex.MatchString(file_ext_norm)
 	if is_preview_doc {
 
-		return ServeOfficeFile(c, c_Path, hex_name)
+		//return ServeOfficeFile(c, c_Path, hex_name)
+		return ServeOfficePool(c, c_Path, hex_name)
 	}
 
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -199,18 +202,37 @@ func GetThumb(c fiber.Ctx) error {
 
 }
 
-func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
+func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
-	file_ext := util.GetExtNorm(c_path)
 	var err error
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	input, _ := os.Open(path.Join(conf.ArgFold, c_path))
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	input, err := conf.ArgFoldRootFS.Open(strings.TrimPrefix(c_Path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "ServeImgFile", "err1: "+err.Error())
+		c.Type("png")
+		return c.Send(util.PNGPixel)
+	}
 	defer input.Close()
 
-	output, _ := os.Create(path.Join(conf.ConfigRoot, "thumb", hex_name))
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	output, err := conf.ThumbRootFS.Create(hex_name)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
+		c.Type("png")
+		return c.Send(util.PNGPixel)
+	}
 	defer output.Close()
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	file_ext := util.GetExtNorm(c_Path)
 
 	var src image.Image
 
@@ -218,7 +240,11 @@ func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 	if file_ext == "png" {
 		src, err = png.Decode(input)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
@@ -227,14 +253,22 @@ func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 		// src, err = jpeg.Decode(input)
 		src, _, err = exiffix.Decode(input)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
 	if file_ext == "gif" {
 		src, err = gif.Decode(input)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err5: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
@@ -249,14 +283,18 @@ func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 		dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
 	} else {
 
-		model2.EventLogAdd(c, 200, "ServeImgFile", "SendFile orig without resize "+path.Join(conf.ArgFold, c_path))
+		model2.EventLogAdd(c, 200, "ServeImgFile", "SendFile orig without resize "+path.Join(conf.ArgFold, c_Path))
 
-		err := os.Remove(path.Join(conf.ConfigRoot, "thumb", hex_name))
+		err := conf.ThumbRootFS.Remove(hex_name)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 
-		return c.SendFile(path.Join(conf.ArgFold, c_path))
+		return c.SendFile(path.Join(conf.ArgFold, c_Path))
 	}
 
 	// Resize:
@@ -265,21 +303,33 @@ func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 	if file_ext == "png" {
 		err = png.Encode(output, dst)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
 	if file_ext == "jpg" {
 		err = jpeg.Encode(output, dst, nil)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
 	if file_ext == "gif" {
 		err = gif.Encode(output, dst, nil)
 		if err != nil {
-			panic(err)
+			//panic(err)
+
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err9: "+err.Error())
+			c.Type("png")
+			return c.Send(util.PNGPixel)
 		}
 	}
 
@@ -289,10 +339,59 @@ func ServeImgFile(c fiber.Ctx, c_path string, hex_name string) error {
 	src = nil
 	dst = nil
 
-	model2.EventLogAdd(c, 200, "ServeImgFile", "Resize and SendFile "+path.Join(c_path))
+	model2.EventLogAdd(c, 200, "ServeImgFile", "Resize and SendFile "+c_Path)
 
 	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
+}
 
+func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
+
+	ctx := c.Context()
+
+	targetPath := path.Join(conf.ArgFold, c_Path)
+
+	cctx, cancel := context.WithTimeout(ctx, lopool.ConvertTimeout)
+	//_, cancel := context.WithTimeout(ctx, lopool.ConvertTimeout)
+	defer cancel()
+
+	pngPath, err := lopool.LibreOfficePool.Convert(cctx, targetPath, "/tmp")
+	if err != nil {
+		//panic(err)
+
+		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err1:"+err.Error())
+
+		c.Type("png")
+		return c.Send(util.PNGPixel)
+	}
+
+	//fmt.Println("pngPath=", pngPath)
+
+	defer os.Remove(pngPath)
+
+	err = util.CopyFile(pngPath, path.Join(conf.ConfigRoot, "thumb", hex_name))
+	if err != nil {
+		//panic(err)
+
+		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err2:"+err.Error())
+
+		c.Type("png")
+		return c.Send(util.PNGPixel)
+	}
+
+	// --------------------------------------------------------------------------------------------------------------------------------
+
+	model2.EventLogAdd(c, 200, "ServeOfficePool", "Make office thumbnail and SendFile "+c_Path)
+
+	//return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
+
+	/*
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Some libreoffice error",
+		})
+	*/
+
+	return c.SendFile(path.Join(conf.ConfigRoot, "thumb", hex_name))
 }
 
 func ServeOfficeFile(c fiber.Ctx, c_path string, hex_name string) error {
