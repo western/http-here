@@ -13,6 +13,7 @@ import (
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
 	"github.com/western/http-here/v2/internal/model2"
+	"github.com/western/http-here/v2/internal/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/gofiber/fiber/v3"
@@ -35,19 +36,6 @@ func PostFile(c fiber.Ctx) error {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// open root with trust ArgFold
-
-	/*
-		Root, err := os.OpenRoot(conf.ArgFold)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "PostFile", "open storage Root err1. "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "open storage Root err1",
-			})
-		}
-	*/
 
 	Root := conf.ArgFoldRootFS
 
@@ -78,7 +66,8 @@ func PostFile(c fiber.Ctx) error {
 	// -------------------------------------------------------------------------------------------------------------------------
 	// reopen targetRoot with full targetPath
 
-	targetRoot, err := os.OpenRoot(targetPath)
+	//targetRoot, err := os.OpenRoot(targetPath)
+	targetRoot, err := safefs.NewSafeFS(targetPath)
 	if err != nil {
 
 		model2.EventLogAdd(c, 500, "PostFile", "open storage targetRoot err1. "+err.Error())
@@ -143,7 +132,7 @@ func PostFile(c fiber.Ctx) error {
 	})
 }
 
-func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName string) error {
+func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *safefs.RootFS, fileName string) error {
 
 	//fmt.Println("targetRoot.Name()=", targetRoot.Name())
 
@@ -206,7 +195,7 @@ func uploadOnly(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fi
 	return nil
 }
 
-func uploadAndEncrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *os.Root, fileName, code string) error {
+func uploadAndEncrypt(c fiber.Ctx, file *multipart.FileHeader, targetRoot *safefs.RootFS, fileName, code string) error {
 
 	// ------------------------------------------------------------------------------------------------------------------
 
