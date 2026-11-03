@@ -35,6 +35,7 @@ import (
 	"github.com/gofiber/template/html/v3"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jellydator/ttlcache/v3"
+	//badgerstorage "github.com/gofiber/storage/badger/v2"
 )
 
 //go:embed view/*
@@ -327,7 +328,7 @@ func Core() {
 
 		model2.EventLogAdd(nil, 0, "INIT", "run "+conf.ArgFold)
 
-		go model2.FileChkAsync()
+		//go model2.FileChkAsync()
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -426,14 +427,12 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	engine := html.NewFileSystem(http.FS(view_fs), ".html")
-
-	config := fiber.Config{
+	fiberConfig := fiber.Config{
 		//Prefork:               *arg_prefork,
 		//DisableStartupMessage: true,
 		ServerHeader: "",
-		Views:        engine,
-		BodyLimit:    conf.FieldSizeMax,
+		//Views:        templateEngine,
+		BodyLimit: conf.FieldSizeMax,
 
 		// Timeouts
 		ReadTimeout:  30 * time.Second, // nil, The amount of time allowed to read the full request, including the body. The default timeout is unlimited.
@@ -453,9 +452,23 @@ func Core() {
 		// Disable features for better performance
 		//DisablePreParseMultipartForm: true, // false
 		//StreamRequestBody:            true, // false
+
+		//SharedStorage:     redisStorage,
 	}
 
-	app := fiber.New(config)
+	//templateEngine := html.NewFileSystem(http.FS(view_fs), ".html")
+	fiberConfig.Views = html.NewFileSystem(http.FS(view_fs), ".html")
+
+	/*
+		    if !model2.Dbse.BadgerEnable {
+
+			    store := badgerstorage.NewFromConnection(db)
+			}
+	*/
+
+	//fiberConfig.SharedStorage = badgerstorage.NewFromConnection(db)
+
+	app := fiber.New(fiberConfig)
 
 	app.Use(func(c fiber.Ctx) error {
 
