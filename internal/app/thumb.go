@@ -351,10 +351,22 @@ func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 	targetPath := filepath.Join(conf.ArgFold, c_Path)
 
 	cctx, cancel := context.WithTimeout(ctx, lopool.ConvertTimeout)
-	//_, cancel := context.WithTimeout(ctx, lopool.ConvertTimeout)
 	defer cancel()
 
-	pngPath, err := lopool.LibreOfficePool.Convert(cctx, targetPath, "/tmp")
+	tmp, err := os.MkdirTemp("", "office_pool_")
+	if err != nil {
+		//return "", fmt.Errorf("tmpdir: %w", err)
+
+		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err0:"+err.Error())
+
+		c.Type("png")
+		return c.Send(util.PNGPixel)
+	}
+	defer os.RemoveAll(tmp)
+
+	//fmt.Println("tmp=", tmp)
+
+	pngPath, err := lopool.LibreOfficePool.Convert(cctx, targetPath, tmp)
 	if err != nil {
 		//panic(err)
 
