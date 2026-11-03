@@ -143,10 +143,10 @@ func PostFile(c fiber.Ctx) error {
 		})
 	}
 
-	RemoveCacheDir(targetPath)
-
 	err = errGroup1.Wait()
 	if err != nil {
+
+		RemoveCacheDir(targetPath)
 
 		model2.EventLogAdd(c, 500, "PostFile", "Upload error: "+err.Error())
 
@@ -155,6 +155,8 @@ func PostFile(c fiber.Ctx) error {
 			"msg":  "Upload error",
 		})
 	}
+
+	RemoveCacheDir(targetPath)
 
 	return c.JSON(fiber.Map{
 		"code": 200,
