@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -190,9 +191,20 @@ func PostMove(c fiber.Ctx) error {
 	errGroup1 := new(errgroup.Group)
 	errGroup1.SetLimit(10)
 
+	var errGroupMutex1 sync.Mutex
+	var err_list []error
+
 	for _, name := range names {
 
-		errGroup1.Go(func() error { return entityPostMove(c, sourceRoot, targetRoot, name) })
+		errGroup1.Go(func() error {
+			errInside := entityPostMove(c, sourceRoot, targetRoot, name)
+
+			errGroupMutex1.Lock()
+			err_list = append(err_list, err)
+			errGroupMutex1.Unlock()
+
+			return errInside
+		})
 	}
 
 	err = errGroup1.Wait()
@@ -201,7 +213,9 @@ func PostMove(c fiber.Ctx) error {
 		RemoveCacheDir(filepath.Join(conf.ArgFold, from_path))
 		RemoveCacheDir(filepath.Join(conf.ArgFold, to_path))
 
-		model2.EventLogAdd(c, 500, "PostMove", "Move error: "+err.Error())
+		for _, err_el := range err_list {
+			model2.EventLogAdd(c, 500, "PostMove", "Move error: "+err_el.Error())
+		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
