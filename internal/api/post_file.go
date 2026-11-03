@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"strings"
 	//"errors"
+	"sync"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
@@ -102,6 +103,9 @@ func PostFile(c fiber.Ctx) error {
 	errGroup1 := new(errgroup.Group)
 	errGroup1.SetLimit(10)
 
+	var errGroupMutex1 sync.Mutex
+	var err_list []error
+
 	// file = type *multipart.FileHeader
 	for _, file := range files {
 
@@ -110,8 +114,31 @@ func PostFile(c fiber.Ctx) error {
 			fileName, err := util.GetClearFilename(file.Filename)
 			if err != nil {
 
+				errGroupMutex1.Lock()
+				err_list = append(err_list, err)
+				errGroupMutex1.Unlock()
 				return err
 			}
+
+			/*
+				if i == 2 {
+
+				    err := errors.New("some err2")
+				    errGroupMutex1.Lock()
+					err_list = append(err_list, err)
+					errGroupMutex1.Unlock()
+					return err
+				}
+
+				if i == 3 {
+
+				    err := errors.New("some err3")
+				    errGroupMutex1.Lock()
+					err_list = append(err_list, err)
+					errGroupMutex1.Unlock()
+					return err
+				}
+			*/
 
 			// -------------------------------------------------------------------------------------------------------------------------
 
@@ -128,6 +155,10 @@ func PostFile(c fiber.Ctx) error {
 
 				err := uploadAndEncrypt(c, file, targetRoot, fileName, code)
 				if err != nil {
+
+					errGroupMutex1.Lock()
+					err_list = append(err_list, err)
+					errGroupMutex1.Unlock()
 					return err
 				}
 
@@ -135,6 +166,10 @@ func PostFile(c fiber.Ctx) error {
 
 				err := uploadOnly(c, file, targetRoot, fileName)
 				if err != nil {
+
+					errGroupMutex1.Lock()
+					err_list = append(err_list, err)
+					errGroupMutex1.Unlock()
 					return err
 				}
 			}
@@ -148,7 +183,9 @@ func PostFile(c fiber.Ctx) error {
 
 		RemoveCacheDir(targetPath)
 
-		model2.EventLogAdd(c, 500, "PostFile", "Upload error: "+err.Error())
+		for _, err_el := range err_list {
+			model2.EventLogAdd(c, 500, "PostFile", "Upload error: "+err_el.Error())
+		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
