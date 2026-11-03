@@ -9,7 +9,9 @@ import (
 	//"path"
 	"path/filepath"
 	//"regexp"
+	"golang.org/x/sync/errgroup"
 	"strings"
+	//"errors"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
@@ -97,49 +99,62 @@ func PostFile(c fiber.Ctx) error {
 	form, _ := c.MultipartForm()
 	files := form.File["fileBlob"]
 
+	errGroup1 := new(errgroup.Group)
+	errGroup1.SetLimit(10)
+
 	// file = type *multipart.FileHeader
 	for _, file := range files {
 
-		fileName, err := util.GetClearFilename(file.Filename)
-		if err != nil {
+		errGroup1.Go(func() error {
 
-			model2.EventLogAdd(c, 500, "PostFile", "Error clear file name "+err.Error())
-
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error clear file name ",
-			})
-		}
-
-		// -------------------------------------------------------------------------------------------------------------------------
-
-		arg_crypt := GetBoolFromLocals(c, "arg_crypt")
-		code := c.Cookies("code")
-
-		// reset code for safety
-		if !arg_crypt && len(code) > 0 {
-
-			setCookie(c, "code", "")
-		}
-
-		if arg_crypt && len(code) > 0 {
-
-			err := uploadAndEncrypt(c, file, targetRoot, fileName, code)
+			fileName, err := util.GetClearFilename(file.Filename)
 			if err != nil {
+
 				return err
 			}
 
-		} else {
+			// -------------------------------------------------------------------------------------------------------------------------
 
-			err := uploadOnly(c, file, targetRoot, fileName)
-			if err != nil {
-				return err
+			arg_crypt := GetBoolFromLocals(c, "arg_crypt")
+			code := c.Cookies("code")
+
+			// reset code for safety
+			if !arg_crypt && len(code) > 0 {
+
+				setCookie(c, "code", "")
 			}
-		}
 
+			if arg_crypt && len(code) > 0 {
+
+				err := uploadAndEncrypt(c, file, targetRoot, fileName, code)
+				if err != nil {
+					return err
+				}
+
+			} else {
+
+				err := uploadOnly(c, file, targetRoot, fileName)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
 	}
 
 	RemoveCacheDir(targetPath)
+
+	err = errGroup1.Wait()
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "PostFile", "Upload error: "+err.Error())
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code": 500,
+			"msg":  "Upload error",
+		})
+	}
 
 	return c.JSON(fiber.Map{
 		"code": 200,
