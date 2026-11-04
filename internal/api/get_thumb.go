@@ -44,18 +44,20 @@ var (
 
 func GetThumb(c fiber.Ctx) error {
 
-	if _, err := os.Stat(filepath.Join(conf.ConfigRoot, "thumb")); err != nil {
+	/*
+		if _, err := os.Stat(filepath.Join(conf.ConfigRoot, "thumb")); err != nil {
 
-		if err := os.MkdirAll(filepath.Join(conf.ConfigRoot, "thumb"), os.ModePerm); err != nil {
+			if err := os.MkdirAll(filepath.Join(conf.ConfigRoot, "thumb"), os.ModePerm); err != nil {
 
-			model2.EventLogAdd(c, 500, "GetThumb", "MkdirAll error "+err.Error())
+				model2.EventLogAdd(c, 500, "GetThumb", "MkdirAll error "+err.Error())
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"code": 500,
-				"msg":  "Error thumbnails folder create",
-			})
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code": 500,
+					"msg":  "Error thumbnails folder create",
+				})
+			}
 		}
-	}
+	*/
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
