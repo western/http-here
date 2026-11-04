@@ -39,7 +39,7 @@ func GetTemp(c fiber.Ctx) error {
 
 	if err != nil {
 
-		model2.EventLogAdd(c, 500, "__temp", "Root.Stat err "+err.Error())
+		model2.EventLogAdd(c, 404, "__temp", "Root.Stat err "+err.Error())
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
@@ -51,11 +51,11 @@ func GetTemp(c fiber.Ctx) error {
 
 	if !fileMode.IsRegular() {
 
-		model2.EventLogAdd(c, 500, "__temp", "It is not regular file. "+targetTempPath)
+		model2.EventLogAdd(c, 500, "__temp", "Is not a regular file. "+targetTempPath)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": 500,
-			"msg":  "It is not regular file",
+			"msg":  "Is not a regular file",
 		})
 	}
 
