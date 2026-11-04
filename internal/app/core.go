@@ -679,7 +679,7 @@ func Core() {
 
 	if *arg_extend_mode {
 
-		app.Get("/__thumb/*", GetThumb)
+		app.Get("/__thumb/*", api.GetThumb)
 	}
 
 	app.Get("/__temp/*", api.GetTemp)

@@ -407,8 +407,8 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
 var (
-	previewImgRegex = regexp.MustCompile("^(jpg|jpeg|png|gif)$")
-	previewDocRegex = regexp.MustCompile("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+	//previewImgRegex = regexp.MustCompile("^(jpg|jpeg|png|gif)$")
+	//previewDocRegex = regexp.MustCompile("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
 
 	editDocRegex  = regexp.MustCompile("^(html|rtf|doc|docx|odt)$")
 	editCodeRegex = regexp.MustCompile("^(html|txt|js|css|md|sh|json)$")

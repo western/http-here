@@ -2,6 +2,7 @@ package api
 
 import (
 	//"strconv"
+	"regexp"
 	"sync"
 	"time"
 
@@ -35,6 +36,12 @@ func setCookie(c fiber.Ctx, name, value string) {
 	cookie.Value = value
 	c.Cookie(cookie)
 }
+
+var (
+	previewImgRegex = regexp.MustCompile("^(jpg|jpeg|png|gif)$")
+	previewDocRegex = regexp.MustCompile("^(pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+	previewAllRegex = regexp.MustCompile("^(jpg|jpeg|png|gif|pdf|rtf|doc|docx|xls|xlsx|odt|ods)$")
+)
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
 
