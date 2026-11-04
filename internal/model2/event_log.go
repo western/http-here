@@ -73,7 +73,7 @@ func EventLogGetPrimaryId() uint64 {
 	return 0
 }
 
-func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
+func EventLogAdd(c fiber.Ctx, status int, tag string, msg ...string) {
 
 	pref := ""
 
@@ -126,9 +126,16 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 
 	pref += "[" + tag + "] "
 
-	msg = strings.Replace(msg, conf.ArgFold, white_clr(conf.ArgFold), 1)
+	// ----------------------------------------------------------------------------
+	// msg join
 
-	pref += msg
+	msgConcat := strings.Join(msg, " ")
+
+	// ----------------------------------------------------------------------------
+
+	msgConcat = strings.Replace(msgConcat, conf.ArgFold, white_clr(conf.ArgFold), 1)
+
+	pref += msgConcat
 
 	if tag != "INIT" && !arg_silence {
 		fmt.Println(pref)
@@ -145,7 +152,7 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 
 	if Dbse.JsonToEnable {
 
-		msg1 := util.StringClearColor(msg)
+		msgWithoutColor := util.StringClearColor(msgConcat)
 
 		el := EventLog{
 			ProcId: os.Getpid(),
@@ -157,7 +164,7 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 			Code: status,
 
 			Tag: tag,
-			Msg: msg1,
+			Msg: msgWithoutColor,
 		}
 
 		payload, err := json.MarshalIndent(el, "", "    ")
@@ -178,7 +185,7 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 
 	if Dbse.BadgerEnable && !arg_nolog && event_log_id > 0 {
 
-		msg1 := util.StringClearColor(msg)
+		msgWithoutColor := util.StringClearColor(msgConcat)
 
 		el := EventLog{
 			ProcId: os.Getpid(),
@@ -190,7 +197,7 @@ func EventLogAdd(c fiber.Ctx, status int, tag, msg string) {
 			Code: status,
 
 			Tag: tag,
-			Msg: msg1,
+			Msg: msgWithoutColor,
 		}
 		payload, _ := json.Marshal(el)
 
