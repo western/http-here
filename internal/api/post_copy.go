@@ -205,7 +205,7 @@ func PostCopy(c fiber.Ctx) error {
 			errInside := entityPostCopy(c, sourceRoot, targetRoot, name)
 
 			errGroupMutex1.Lock()
-			err_list = append(err_list, err)
+			err_list = append(err_list, errInside)
 			errGroupMutex1.Unlock()
 
 			return errInside
