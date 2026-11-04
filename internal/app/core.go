@@ -19,9 +19,9 @@ import (
 	"github.com/western/http-here/v2/internal/api"
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
-	"github.com/western/http-here/v2/internal/lopool"
+	"github.com/western/http-here/v2/pkg/lopool"
 	"github.com/western/http-here/v2/internal/model2"
-	"github.com/western/http-here/v2/internal/safefs"
+	"github.com/western/http-here/v2/pkg/safefs"
 	"github.com/western/http-here/v2/internal/util"
 
 	"github.com/fatih/color"

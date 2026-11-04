@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/western/http-here/v2/internal/safefs"
+	"github.com/western/http-here/v2/pkg/safefs"
 
 	"github.com/gofiber/fiber/v3"
 )
