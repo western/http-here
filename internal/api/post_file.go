@@ -120,26 +120,6 @@ func PostFile(c fiber.Ctx) error {
 				return err
 			}
 
-			/*
-				if i == 2 {
-
-				    err := errors.New("some err2")
-				    errGroupMutex1.Lock()
-					err_list = append(err_list, err)
-					errGroupMutex1.Unlock()
-					return err
-				}
-
-				if i == 3 {
-
-				    err := errors.New("some err3")
-				    errGroupMutex1.Lock()
-					err_list = append(err_list, err)
-					errGroupMutex1.Unlock()
-					return err
-				}
-			*/
-
 			// -------------------------------------------------------------------------------------------------------------------------
 
 			arg_crypt := GetBoolFromLocals(c, "arg_crypt")
