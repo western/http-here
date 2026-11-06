@@ -286,7 +286,7 @@ make without_cdn_build
 
 ## API
 
-[western/http-here/refs/heads/dev/internal/docs/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/western/http-here/refs/heads/dev/internal/docs/openapi.yaml)
+[western/http-here/refs/heads/dev/internal/openapi/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/western/http-here/refs/heads/v2/internal/openapi/openapi.yaml)
 
 ## DATABASE
 
