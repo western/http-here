@@ -3,13 +3,14 @@ package api
 import (
 	"errors"
 	//"fmt"
+	"cmp"
 	"html/template"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -574,39 +575,37 @@ func generateRows(c fiber.Ctx, targetRoot *safefs.RootFS, s_sort string) ([]File
 
 func sortAndCombine(rows_dir, rows_file []FileRow, s_sort string) []FileRow {
 
-	if s_sort == "name" {
+	// CLONE to avoid mutating data from dirCache.
+	// Slices from the cache are shared across goroutines;
+	// in-place sorting would result in a data race.
+	rows_dir = slices.Clone(rows_dir)
+	rows_file = slices.Clone(rows_file)
 
-		sort.Slice(rows_dir, func(i, j int) bool {
-			return rows_dir[i].Name < rows_dir[j].Name
+	switch s_sort {
+	case "name":
+		slices.SortFunc(rows_dir, func(a, b FileRow) int {
+			return cmp.Compare(a.Name, b.Name)
+		})
+		slices.SortFunc(rows_file, func(a, b FileRow) int {
+			return cmp.Compare(a.Name, b.Name)
 		})
 
-		sort.Slice(rows_file, func(i, j int) bool {
-			return rows_file[i].Name < rows_file[j].Name
+	case "modified":
+		slices.SortFunc(rows_dir, func(a, b FileRow) int {
+			return cmp.Compare(a.ModTime.Unix(), b.ModTime.Unix())
 		})
-	}
-
-	if s_sort == "modified" {
-
-		sort.Slice(rows_dir, func(i, j int) bool {
-			return rows_dir[i].ModTime.Unix() < rows_dir[j].ModTime.Unix()
+		slices.SortFunc(rows_file, func(a, b FileRow) int {
+			return cmp.Compare(a.ModTime.Unix(), b.ModTime.Unix())
 		})
 
-		sort.Slice(rows_file, func(i, j int) bool {
-			return rows_file[i].ModTime.Unix() < rows_file[j].ModTime.Unix()
+	case "size":
+		slices.SortFunc(rows_dir, func(a, b FileRow) int {
+			return cmp.Compare(a.Size, b.Size)
 		})
-	}
-
-	if s_sort == "size" {
-
-		sort.Slice(rows_dir, func(i, j int) bool {
-			return rows_dir[i].Size < rows_dir[j].Size
-		})
-
-		sort.Slice(rows_file, func(i, j int) bool {
-			return rows_file[i].Size < rows_file[j].Size
+		slices.SortFunc(rows_file, func(a, b FileRow) int {
+			return cmp.Compare(a.Size, b.Size)
 		})
 	}
 
 	return append(rows_dir, rows_file...)
-
 }
