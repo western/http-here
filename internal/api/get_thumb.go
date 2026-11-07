@@ -26,9 +26,9 @@ import (
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
-	//"github.com/western/http-here/v2/pkg/safefs"
 	"github.com/western/http-here/v2/internal/util"
 	"github.com/western/http-here/v2/pkg/lopool"
+	"github.com/western/http-here/v2/pkg/safefs"
 
 	"github.com/edwvee/exiffix"
 	"github.com/gofiber/fiber/v3"
@@ -43,21 +43,6 @@ var (
 */
 
 func GetThumb(c fiber.Ctx) error {
-
-	/*
-		if _, err := os.Stat(filepath.Join(conf.ConfigRoot, "thumb")); err != nil {
-
-			if err := os.MkdirAll(filepath.Join(conf.ConfigRoot, "thumb"), os.ModePerm); err != nil {
-
-				model2.EventLogAdd(c, 500, "GetThumb", "MkdirAll error "+err.Error())
-
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"code": 500,
-					"msg":  "Error thumbnails folder create",
-				})
-			}
-		}
-	*/
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
@@ -111,8 +96,8 @@ func GetThumb(c fiber.Ctx) error {
 		*/
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			"file": filepath.Join("/__thumb/", c_Path),
-			"msg":  "Not found",
+			//"file": filepath.Join("/__thumb/", c_Path),
+			"msg": "Not found",
 		})
 	}
 
@@ -139,6 +124,37 @@ func GetThumb(c fiber.Ctx) error {
 			"msg":  "Forbidden",
 		})
 	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	targetDir := filepath.Dir(targetPath)
+
+	targetRoot, err := safefs.NewSafeFS(targetDir)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "GetThumb", "stat dir err: "+err.Error())
+
+		/*
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code": 500,
+				"msg":  "Stat err",
+			})
+		*/
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"code": 404,
+			//"file": filepath.Join("/__thumb/", c_Path),
+			"msg": "Not found",
+		})
+	}
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// EXTRACT filename from path
+
+	targetFileName := util.GetFileName(c_Path)
+
+	targetFileExt := filepath.Ext(c_Path) // ext with point, as ".jpg"
+
+	targetFileName += targetFileExt
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
@@ -173,7 +189,7 @@ func GetThumb(c fiber.Ctx) error {
 
 		model2.EventLogAdd(c, 200, "GetThumb", "SendFile thumb/cache "+c_Path)
 
-		return c.SendFile(filepath.Join(conf.ConfigRoot, "thumb", hex_name))
+		return c.SendFile(hex_name, fiber.SendFile{FS: conf.ThumbRootFS.OSRoot().FS()})
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------------------
@@ -185,7 +201,8 @@ func GetThumb(c fiber.Ctx) error {
 
 			model2.EventLogAdd(c, 200, "GetThumb", "SendFile orig file without resize "+c_Path+", size is small")
 
-			return c.SendFile(targetPath)
+			return c.SendFile(targetFileName, fiber.SendFile{FS: targetRoot.OSRoot().FS()})
+
 		}
 
 		return ServeImgFile(c, c_Path, hex_name)
@@ -194,7 +211,6 @@ func GetThumb(c fiber.Ctx) error {
 	is_preview_doc := previewDocRegex.MatchString(file_ext_norm)
 	if is_preview_doc {
 
-		//return ServeOfficeFile(c, c_Path, hex_name)
 		return ServeOfficePool(c, c_Path, hex_name)
 	}
 
@@ -207,12 +223,6 @@ func GetThumb(c fiber.Ctx) error {
 }
 
 func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
-
-	//var err error
-
-	// ------------------------------------------------------------------------------------------------------------------------------
-
-	// ------------------------------------------------------------------------------------------------------------------------------
 
 	input, err := conf.ArgFoldRootFS.Open(strings.TrimPrefix(c_Path, "/"))
 	if err != nil {
@@ -281,7 +291,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 	var dst *image.RGBA
 
 	if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
+
 		dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+
 	} else {
 
 		model2.EventLogAdd(c, 200, "ServeImgFile", "SendFile orig without resize "+filepath.Join(conf.ArgFold, c_Path))
@@ -338,7 +350,7 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	model2.EventLogAdd(c, 200, "ServeImgFile", "Resize and SendFile "+c_Path)
 
-	return c.SendFile(filepath.Join(conf.ConfigRoot, "thumb", hex_name))
+	return c.SendFile(hex_name, fiber.SendFile{FS: conf.ThumbRootFS.OSRoot().FS()})
 }
 
 func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
@@ -384,5 +396,5 @@ func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	model2.EventLogAdd(c, 200, "ServeOfficePool", "Make office thumbnail and SendFile "+c_Path)
 
-	return c.SendFile(filepath.Join(conf.ConfigRoot, "thumb", hex_name))
+	return c.SendFile(hex_name, fiber.SendFile{FS: conf.ThumbRootFS.OSRoot().FS()})
 }
