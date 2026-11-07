@@ -520,11 +520,11 @@ func Core() {
 				if err != nil {
 
 					model2.EventLogAdd(c, 500, "CSRF_ERR", "Error "+c_Path+" "+err.Error())
-					//return c.Status(fiber.StatusInternalServerError).Render("view/500", fiber.Map{}, "view/layout/error")
+
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{})
 				}
 
-				model2.EventLogAdd(c, 403, "CSRF_ERR", c_Path)
+				model2.EventLogAdd(c, 403, "CSRF_ERR", "Cross-Site Request Forgery Error "+c_Path)
 
 				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 					"code": 403,
