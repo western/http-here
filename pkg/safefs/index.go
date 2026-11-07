@@ -94,6 +94,14 @@ func (r *RootFS) Close() error {
 	return root.Close()
 }
 
+func (r *RootFS) OSRoot() *os.Root {
+	if err := r.valid(); err != nil {
+		return nil
+	}
+
+	return r.root
+}
+
 // Create file
 func (r *RootFS) Create(name string) (*os.File, error) {
 	if err := r.valid(); err != nil {
