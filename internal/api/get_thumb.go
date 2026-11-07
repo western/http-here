@@ -113,9 +113,7 @@ func GetThumb(c fiber.Ctx) error {
 		})
 	}
 
-	if fileModeOriginal.Perm()&0444 == 0444 {
-
-	} else {
+	if fileModeOriginal.Perm()&0444 != 0444 {
 
 		model2.EventLogAdd(c, 403, "GetThumb", "Forbidden for read "+targetPath)
 

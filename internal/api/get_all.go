@@ -386,12 +386,9 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 	} else {
 
-		//fileInfo, _ := targetRoot.RootStat()
 		fileMode := fileInfo.Mode()
 
-		if fileMode.Perm()&0444 == 0444 {
-
-		} else {
+		if fileMode.Perm()&0444 != 0444 {
 
 			model2.EventLogAdd(c, 403, "CORE", "Forbidden for read "+targetPath)
 			return c.Status(fiber.StatusForbidden).Render("view/error", fiber.Map{
