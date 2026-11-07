@@ -146,7 +146,8 @@ func serveDirectory(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 	if _, err := targetRoot.Stat("index.html"); err == nil {
 
 		model2.EventLogAdd(c, 200, "CORE", "Index file found for path '"+c_Path+"', SendFile "+filepath.Join(targetPath, "index.html"))
-		return c.SendFile(filepath.Join(targetPath, "index.html"))
+
+		return c.SendFile("index.html", fiber.SendFile{FS: targetRoot.OSRoot().FS()})
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
@@ -400,7 +401,7 @@ func serveFile(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 
 		model2.EventLogAdd(c, 200, "CORE", "SendFile "+targetPath)
 
-		return c.SendFile(targetPath)
+		return c.SendFile(targetFileName, fiber.SendFile{FS: targetRoot.OSRoot().FS()})
 	}
 }
 
