@@ -80,6 +80,7 @@ func GetAll(c fiber.Ctx) error {
 		//fmt.Println("1) targetDir=", targetDir)
 
 		targetRoot, err := safefs.NewSafeFS(targetDir)
+
 		if err != nil {
 
 			model2.EventLogAdd(c, 500, "CORE", "Open storage targetRoot err: "+err.Error())

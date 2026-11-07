@@ -96,8 +96,7 @@ func GetThumb(c fiber.Ctx) error {
 		*/
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			//"file": filepath.Join("/__thumb/", c_Path),
-			"msg": "Not found",
+			"msg":  "Not found",
 		})
 	}
 
@@ -140,8 +139,7 @@ func GetThumb(c fiber.Ctx) error {
 		*/
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"code": 404,
-			//"file": filepath.Join("/__thumb/", c_Path),
-			"msg": "Not found",
+			"msg":  "Not found",
 		})
 	}
 
@@ -227,20 +225,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 		model2.EventLogAdd(c, 500, "ServeImgFile", "err1: "+err.Error())
 		c.Type("png")
-		return c.Send(util.PNGPixel)
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 	}
 	defer input.Close()
-
-	// ------------------------------------------------------------------------------------------------------------------------------
-
-	output, err := conf.ThumbRootFS.Create(hex_name)
-	if err != nil {
-
-		model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
-		c.Type("png")
-		return c.Send(util.PNGPixel)
-	}
-	defer output.Close()
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
@@ -253,9 +240,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		src, err = png.Decode(input)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
@@ -265,9 +252,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		src, _, err = exiffix.Decode(input)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
@@ -275,9 +262,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		src, err = gif.Decode(input)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err5: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
@@ -296,27 +283,33 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 		model2.EventLogAdd(c, 200, "ServeImgFile", "SendFile orig without resize "+filepath.Join(conf.ArgFold, c_Path))
 
-		err := conf.ThumbRootFS.Remove(hex_name)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
-			c.Type("png")
-			return c.Send(util.PNGPixel)
-		}
-
 		return c.SendFile(filepath.Join(conf.ArgFold, c_Path))
 	}
 
 	// Resize:
-	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	//draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	output, err := conf.ThumbRootFS.Create(hex_name)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "ServeImgFile", "err5: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+	defer output.Close()
+
+	// ------------------------------------------------------------------------------------------------------------------------------
 
 	if file_ext == "png" {
 		err = png.Encode(output, dst)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
@@ -324,9 +317,9 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		err = jpeg.Encode(output, dst, nil)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
@@ -334,17 +327,14 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		err = gif.Encode(output, dst, nil)
 		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err9: "+err.Error())
+			model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
 			c.Type("png")
-			return c.Send(util.PNGPixel)
+			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 		}
 	}
 
 	output.Close()
 	input.Close()
-
-	src = nil
-	dst = nil
 
 	model2.EventLogAdd(c, 200, "ServeImgFile", "Resize and SendFile "+c_Path)
 
@@ -366,7 +356,7 @@ func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err0:"+err.Error())
 
 		c.Type("png")
-		return c.Send(util.PNGPixel)
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 	}
 	defer os.RemoveAll(tmp)
 
@@ -376,7 +366,7 @@ func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err1:"+err.Error())
 
 		c.Type("png")
-		return c.Send(util.PNGPixel)
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 	}
 
 	defer os.Remove(pngPath)
@@ -387,7 +377,7 @@ func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 		model2.EventLogAdd(c, 500, "ServeOfficePool", c_Path+" err2:"+err.Error())
 
 		c.Type("png")
-		return c.Send(util.PNGPixel)
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------------------
