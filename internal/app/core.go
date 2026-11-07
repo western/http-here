@@ -407,11 +407,13 @@ func Core() {
 
 	}
 
-	if !fiber.IsChild() {
+	/*
+		if !fiber.IsChild() {
 
-		util.WalkAndClearZeroFile(path.Join(conf.ConfigRoot, "thumb"), 0)
-		//go WalkAndClearOld(path.Join(conf.ConfigRoot, "thumb"))
-	}
+			util.WalkAndClearZeroFile(path.Join(conf.ConfigRoot, "thumb"), 0)
+
+		}
+	*/
 
 	thumbFS, err := safefs.NewSafeFS(path.Join(conf.ConfigRoot, "thumb"))
 	if err != nil {
