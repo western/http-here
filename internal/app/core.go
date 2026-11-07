@@ -14,11 +14,13 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	//"syscall"
 	"time"
 
 	"github.com/western/http-here/v2/internal/api"
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
+	//"github.com/western/http-here/v2/internal/fiberinterstate"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 	"github.com/western/http-here/v2/pkg/lopool"
@@ -456,17 +458,7 @@ func Core() {
 		//SharedStorage:     redisStorage,
 	}
 
-	//templateEngine := html.NewFileSystem(http.FS(view_fs), ".html")
 	fiberConfig.Views = html.NewFileSystem(http.FS(view_fs), ".html")
-
-	/*
-		    if !model2.Dbse.BadgerEnable {
-
-			    store := badgerstorage.NewFromConnection(db)
-			}
-	*/
-
-	//fiberConfig.SharedStorage = badgerstorage.NewFromConnection(db)
 
 	app := fiber.New(fiberConfig)
 
@@ -488,6 +480,15 @@ func Core() {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// MIDDLEWARE
+
+	/*
+		app.Use(fiberinterstate.New(fiberinterstate.Config{
+
+			App: app,
+			BadgerDirectory: path.Join(conf.ConfigRoot, "db", "registry.bd."+conf.Version),
+			LogEnable: true,
+		}))
+	*/
 
 	app.Use(favicon.New(favicon.Config{
 		File: "",
