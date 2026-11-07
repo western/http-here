@@ -8,12 +8,15 @@ require (
 	github.com/edwvee/exiffix v0.0.0-20240229113213-0dbb146775be
 	github.com/fatih/color v1.19.0
 	github.com/gofiber/fiber/v3 v3.6.1
-	github.com/gofiber/template/html/v3 v3.0.12
+	github.com/gofiber/template/html/v3 v3.1.0
+	github.com/gofiber/utils/v2 v2.6.4
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/jellydator/ttlcache/v3 v3.4.1
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.58.0
-	golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e
+	golang.org/x/exp v0.0.0-20261106192419-47ce03d25ef0
 	golang.org/x/image v0.47.0
+	golang.org/x/sync v0.24.0
 )
 
 require (
@@ -24,9 +27,8 @@ require (
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/gofiber/schema v1.9.2 // indirect
-	github.com/gofiber/template/v2 v2.1.5 // indirect
-	github.com/gofiber/utils/v2 v2.6.3 // indirect
+	github.com/gofiber/schema v1.9.3 // indirect
+	github.com/gofiber/template/v2 v2.1.6 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.20.3 // indirect
@@ -44,8 +46,8 @@ require (
 	go.opentelemetry.io/otel/log v1.47.0 // indirect
 	go.opentelemetry.io/otel/metric v1.47.0 // indirect
 	go.opentelemetry.io/otel/trace v1.47.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/net v0.62.0 // indirect
-	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
