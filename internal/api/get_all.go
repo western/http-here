@@ -249,7 +249,7 @@ func serveDirectory(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 		csrf_token = csrf.TokenFromContext(c)
 	}
 
-	return c.Render("view/"+template_file, fiber.Map{
+	returnMap := fiber.Map{
 
 		"Breadcrumb": template.HTML(breadcrumb),
 
@@ -272,7 +272,20 @@ func serveDirectory(c fiber.Ctx, targetRoot *safefs.RootFS) error {
 		"arg_usedb":               arg_usedb,
 
 		"csrf_token": csrf_token,
-	}, "view/layout/default")
+	}
+
+	return c.Format(
+		fiber.ResFmt{MediaType: "application/json", Handler: func(c fiber.Ctx) error {
+
+			return c.JSON(returnMap)
+
+		}},
+		fiber.ResFmt{MediaType: "text/html", Handler: func(c fiber.Ctx) error {
+
+			return c.Render("view/"+template_file, returnMap, "view/layout/default")
+
+		}},
+	)
 
 }
 
