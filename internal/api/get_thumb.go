@@ -235,38 +235,59 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	var src image.Image
 
-	// Decode the image (from PNG to image.Image):
-	if file_ext == "png" {
-		src, err = png.Decode(input)
-		if err != nil {
+	/*
+		if file_ext == "png" {
+			src, err = png.Decode(input)
+			if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
 		}
-	}
 
-	if file_ext == "jpg" {
+		if file_ext == "jpg" {
 
+			// src, err = jpeg.Decode(input)
+			src, _, err = exiffix.Decode(input)
+			if err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+		}
+
+		if file_ext == "gif" {
+			src, err = gif.Decode(input)
+			if err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+		}
+	*/
+
+	switch file_ext {
+	case "png":
+		src, err = png.Decode(input)
+
+	case "jpg":
 		// src, err = jpeg.Decode(input)
 		src, _, err = exiffix.Decode(input)
-		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-		}
-	}
-
-	if file_ext == "gif" {
+	case "gif":
 		src, err = gif.Decode(input)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-		}
 	}
+
+	if err != nil {
+		model2.EventLogAdd(c, 500, "ServeImgFile", "image decode error: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
 
 	i_width := 600
 
@@ -303,35 +324,58 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
-	if file_ext == "png" {
+	/*
+		if file_ext == "png" {
+			err = png.Encode(output, dst)
+			if err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+		}
+
+		if file_ext == "jpg" {
+			err = jpeg.Encode(output, dst, nil)
+			if err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+		}
+
+		if file_ext == "gif" {
+			err = gif.Encode(output, dst, nil)
+			if err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+		}
+	*/
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	switch file_ext {
+	case "png":
 		err = png.Encode(output, dst)
-		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-		}
-	}
-
-	if file_ext == "jpg" {
+	case "jpg":
 		err = jpeg.Encode(output, dst, nil)
-		if err != nil {
 
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-		}
-	}
-
-	if file_ext == "gif" {
+	case "gif":
 		err = gif.Encode(output, dst, nil)
-		if err != nil {
-
-			model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
-			c.Type("png")
-			return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-		}
 	}
+
+	if err != nil {
+		model2.EventLogAdd(c, 500, "ServeImgFile", "image encoding error: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
 
 	output.Close()
 	input.Close()
