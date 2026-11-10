@@ -20,7 +20,7 @@ import (
 	"github.com/western/http-here/v2/internal/api"
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/crypt"
-	//"github.com/western/http-here/v2/internal/fiberinterstate"
+	//fis "github.com/western/http-here/v2/internal/fiberinterstate"
 	"github.com/western/http-here/v2/internal/model2"
 	"github.com/western/http-here/v2/internal/util"
 	"github.com/western/http-here/v2/pkg/lopool"
@@ -197,6 +197,13 @@ func Core() {
 
 		fmt.Println("")
 		fmt.Println("You can not run --share-only with --extend-mode")
+		return
+	}
+
+	if !*arg_csrf_disable && *arg_prefork {
+
+		fmt.Println("")
+		fmt.Println("You can not run --prefork with CSRF Secutiry. You can run --prefork with --csrf-disable together")
 		return
 	}
 
@@ -484,11 +491,12 @@ func Core() {
 	// MIDDLEWARE
 
 	/*
-		app.Use(fiberinterstate.New(fiberinterstate.Config{
+		app.Use(fis.New(fis.Config{
 
 			App: app,
-			BadgerDirectory: path.Join(conf.ConfigRoot, "db", "registry.bd."+conf.Version),
-			LogEnable: true,
+			//BadgerDirectory: path.Join(conf.ConfigRoot, "db", "registry.bd."+conf.Version),
+			BadgerDirectory: path.Join(os.TempDir(), "db_test"),
+			//LogEnable: true,
 		}))
 	*/
 
@@ -686,6 +694,15 @@ func Core() {
 	}
 
 	app.Get("/__temp/*", api.GetTemp)
+
+	// -------------------------------------------------------------------------------------------------------------------------------------------
+	// TESTS
+
+	/*
+		app.Get("/api/test/get", api.GetTestGet)
+		app.Get("/api/test/set", api.GetTestSet)
+		app.Get("/api/test/del", api.GetTestDel)
+	*/
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 	// ROUTE
