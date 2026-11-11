@@ -8,6 +8,7 @@ import (
 	"github.com/western/http-here/v2/internal/conf"
 
 	badger "github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4/options"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -86,7 +87,17 @@ func ConnectToBadger() (*badger.DB, error) {
 
 	// -------------------------------------------------------------------------------------------------------------------------------------------
 
-	opts := badger.DefaultOptions(dbPath)
+	//opts := badger.DefaultOptions(dbPath)
+
+	opts := badger.DefaultOptions(dbPath).
+		WithMemTableSize(16 << 20).
+		WithNumMemtables(2).
+		WithNumLevelZeroTables(2).
+		WithNumLevelZeroTablesStall(4).
+		WithBlockCacheSize(16 << 20).
+		WithValueLogFileSize(32 << 20).
+		WithNumCompactors(2).
+		WithCompression(options.None)
 
 	// one of DEBUG, INFO, WARNING or ERROR levels
 	// The default value of LoggingLevel is INFO
@@ -94,7 +105,6 @@ func ConnectToBadger() (*badger.DB, error) {
 	//opts = opts.WithLoggingLevel(badger.INFO)
 	opts = opts.WithLoggingLevel(badger.ERROR)
 
-	//db, err := badger.Open(badger.DefaultOptions(dbPath))
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
