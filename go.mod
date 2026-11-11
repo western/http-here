@@ -9,7 +9,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/gofiber/fiber/v3 v3.7.0
 	github.com/gofiber/template/html/v3 v3.1.0
-	github.com/gofiber/utils/v2 v2.6.4
+	github.com/gofiber/utils/v2 v2.6.5
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/jellydator/ttlcache/v3 v3.4.1
 	github.com/stretchr/testify v1.12.1
@@ -27,7 +27,7 @@ require (
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/gofiber/schema v1.9.3 // indirect
+	github.com/gofiber/schema v1.9.4 // indirect
 	github.com/gofiber/template/v2 v2.1.6 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
