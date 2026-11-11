@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-const Version = "v2.5.1"
+const Version = "v2.5.2"
 
 const FilesCountMax = 200
 const FieldSizeMax = 14 * 1024 * 1024 * 1024
