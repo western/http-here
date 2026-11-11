@@ -235,40 +235,6 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	var src image.Image
 
-	/*
-		if file_ext == "png" {
-			src, err = png.Decode(input)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-
-		if file_ext == "jpg" {
-
-			// src, err = jpeg.Decode(input)
-			src, _, err = exiffix.Decode(input)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err3: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-
-		if file_ext == "gif" {
-			src, err = gif.Decode(input)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err4: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-	*/
-
 	switch file_ext {
 	case "png":
 		src, err = png.Decode(input)
@@ -323,38 +289,6 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 	defer output.Close()
 
 	// ------------------------------------------------------------------------------------------------------------------------------
-
-	/*
-		if file_ext == "png" {
-			err = png.Encode(output, dst)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err6: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-
-		if file_ext == "jpg" {
-			err = jpeg.Encode(output, dst, nil)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err7: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-
-		if file_ext == "gif" {
-			err = gif.Encode(output, dst, nil)
-			if err != nil {
-
-				model2.EventLogAdd(c, 500, "ServeImgFile", "err8: "+err.Error())
-				c.Type("png")
-				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
-			}
-		}
-	*/
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
