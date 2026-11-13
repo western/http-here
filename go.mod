@@ -13,7 +13,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/jellydator/ttlcache/v3 v3.4.1
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/crypto v0.58.0
+	golang.org/x/crypto v0.59.0
 	golang.org/x/exp v0.0.0-20261109185158-a52e3aef5920
 	golang.org/x/image v0.48.0
 	golang.org/x/sync v0.25.0
