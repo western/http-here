@@ -23,6 +23,8 @@ import (
 	"image/png"
 	"math"
 	//"time"
+	"sync"
+	//"bytes"
 
 	"github.com/western/http-here/v2/internal/conf"
 	"github.com/western/http-here/v2/internal/model2"
@@ -201,7 +203,8 @@ func GetThumb(c fiber.Ctx) error {
 
 		}
 
-		return ServeImgFile(c, c_Path, hex_name)
+		//return ServeImgFile_0(c, c_Path, hex_name)
+		return ServeImgFile_1(c, c_Path, hex_name)
 	}
 
 	is_preview_doc := previewDocRegex.MatchString(file_ext_norm)
@@ -218,7 +221,155 @@ func GetThumb(c fiber.Ctx) error {
 
 }
 
-func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
+// ------------------------------------------------------------------------------------------------------------------------------
+
+var rgbaPool = sync.Pool{
+	New: func() any {
+		return &image.RGBA{}
+	},
+}
+
+func getRGBA(bounds image.Rectangle) *image.RGBA {
+	rgba := rgbaPool.Get().(*image.RGBA)
+	size := bounds.Dx() * bounds.Dy() * 4 // 4 bytes by px (R, G, B, A)
+
+	if cap(rgba.Pix) >= size {
+		rgba.Pix = rgba.Pix[:size]
+	} else {
+
+		rgba.Pix = make([]uint8, size)
+	}
+
+	rgba.Stride = bounds.Dx() * 4
+	rgba.Rect = bounds
+	return rgba
+}
+
+func putRGBA(rgba *image.RGBA) {
+
+	if cap(rgba.Pix) > 20*1024*1024 {
+		return
+	}
+	rgbaPool.Put(rgba)
+}
+
+func ServeImgFile_1(c fiber.Ctx, c_Path string, hex_name string) error {
+
+	input, err := conf.ArgFoldRootFS.Open(strings.TrimPrefix(c_Path, "/"))
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "ServeImgFile_1", "err1: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+	defer input.Close()
+
+	file_ext := util.GetExtNorm(c_Path)
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// DECODE
+
+	var src image.Image
+
+	switch file_ext {
+	case "png":
+		src, err = png.Decode(input)
+
+	case "jpg":
+		// src, err = jpeg.Decode(input)
+		src, _, err = exiffix.Decode(input)
+
+	case "gif":
+		src, err = gif.Decode(input)
+	}
+
+	if err != nil {
+		model2.EventLogAdd(c, 500, "ServeImgFile_1", "image decode error: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// POOL
+
+	bounds := src.Bounds()
+
+	dst := getRGBA(bounds)
+	defer putRGBA(dst)
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// RESIZE
+
+	i_width := 600
+
+	ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
+	i_height := int(math.Round(float64(i_width) * ratio))
+
+	//var dst *image.RGBA
+
+	if src.Bounds().Max.X > i_width || src.Bounds().Max.Y > i_height {
+
+		dst = image.NewRGBA(image.Rect(0, 0, i_width, i_height))
+
+	} else {
+
+		model2.EventLogAdd(c, 200, "ServeImgFile_1", "SendFile orig without resize "+filepath.Join(conf.ArgFold, c_Path))
+
+		return c.SendFile(filepath.Join(conf.ArgFold, c_Path))
+	}
+
+	// Resize:
+	//draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// CREATE
+
+	output, err := conf.ThumbRootFS.Create(hex_name)
+	if err != nil {
+
+		model2.EventLogAdd(c, 500, "ServeImgFile_1", "err5: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+	defer output.Close()
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+	// ENCODE
+
+	switch file_ext {
+	case "png":
+		err = png.Encode(output, dst)
+
+	case "jpg":
+		err = jpeg.Encode(output, dst, nil)
+
+	case "gif":
+		err = gif.Encode(output, dst, nil)
+	}
+
+	if err != nil {
+		model2.EventLogAdd(c, 500, "ServeImgFile_1", "image encoding error: "+err.Error())
+		c.Type("png")
+		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	output.Close()
+	input.Close()
+
+	model2.EventLogAdd(c, 200, "ServeImgFile_1", "Resize and SendFile "+c_Path)
+
+	return c.SendFile(hex_name, fiber.SendFile{FS: conf.ThumbRootFS.OSRoot().FS()})
+
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------
+
+func ServeImgFile_0(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	input, err := conf.ArgFoldRootFS.Open(strings.TrimPrefix(c_Path, "/"))
 	if err != nil {
@@ -228,6 +379,24 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 		return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
 	}
 	defer input.Close()
+
+	// ------------------------------------------------------------------------------------------------------------------------------
+
+	/*
+		    buf := bufPool.Get().(*bytes.Buffer)
+
+		    defer func() {
+				buf.Reset()
+				bufPool.Put(buf)
+			}()
+
+			if _, err := io.Copy(buf, input); err != nil {
+
+				model2.EventLogAdd(c, 500, "ServeImgFile", "err2: "+err.Error())
+				c.Type("png")
+				return c.Status(fiber.StatusInternalServerError).Send(util.PNGPixel)
+			}
+	*/
 
 	// ------------------------------------------------------------------------------------------------------------------------------
 
@@ -318,6 +487,8 @@ func ServeImgFile(c fiber.Ctx, c_Path string, hex_name string) error {
 
 	return c.SendFile(hex_name, fiber.SendFile{FS: conf.ThumbRootFS.OSRoot().FS()})
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------
 
 func ServeOfficePool(c fiber.Ctx, c_Path string, hex_name string) error {
 
