@@ -26,6 +26,8 @@ var TempRootFS *safefs.RootFS
 
 var MasterPID int
 
+var ArgsMap map[string]any
+
 func init() {
 
 	homepath, err := os.UserHomeDir()
